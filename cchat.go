@@ -6,9 +6,9 @@ import (
 	"github.com/diamondburned/cchat/text"
 )
 
-// Core contains the bare minimum set of interface that a backend has to
+// Service contains the bare minimum set of interface that a backend has to
 // implement. Core can also implement Authenticator.
-type Core interface {
+type Service interface {
 	Server
 	ServerList
 }
