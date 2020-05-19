@@ -20,7 +20,17 @@ type Configurator interface {
 	SetConfiguration(map[string]string) error
 }
 
-// Authenticator is what the backend can implement for authentication.
+// Authenticator is what the backend can implement for authentication. A typical
+// authentication frontend implementation would look like this:
+//
+//    for {
+//        outputs := renderAuthForm(svc.AuthenticateForm())
+//        if err := svc.Authenticate(outputs); err != nil {
+//            log.Println("Error while authenticating:", err)
+//            continue // retry
+//        }
+//        break // success
+//    }
 type Authenticator interface {
 	// AuthenticateForm should return a list of authentication entries for
 	// the frontend to render.
@@ -47,12 +57,33 @@ type Server interface {
 	// Implement ServerList and/or ServerMessage.
 }
 
+// ServerIcon is an extra interface that Server could implement for an icon.
+type ServerIcon interface {
+	IconURL() (string, error)
+}
+
 // ServerList is for servers that contain children servers. This is similar to
 // guilds containing channels in Discord, or IRC servers containing channels.
+//
+// There isn't a similar LeaveServers() API like ServerMessage because all
+// servers are expected to be listed. However, they could be hidden, such as
+// collapsing a tree.
 type ServerList interface {
-	// Servers should return a list of children servers/channels or nil if
-	// none.
-	Servers() ([]Server, error)
+	// Servers should call SetServers() on the given ServersContainer to render
+	// all servers.
+	Servers(ServersContainer) error
+}
+
+// ServersContainer is a frontend implementation for a server view, with
+// synchronous callbacks to render those events. The frontend is typically
+// expected to reset the entire list, but it can do so with or without deleting
+// everything and starting all over again.
+type ServersContainer interface {
+	// SetServer is called by the backend service to request a reset of the
+	// server list. The frontend can choose to call Servers() on each of the
+	// given servers, or it can call that later. The backend should handle both
+	// cases.
+	SetServers([]Server)
 }
 
 // ServerMessage is for servers that contain messages. This is similar to
@@ -65,11 +96,6 @@ type ServerMessage interface {
 	// LeaveServer indicates the backend to stop calling the controller over.
 	// This should be called before any other JoinServer() calls are made.
 	LeaveServer() error
-}
-
-// ServerIcon is an extra interface that Server could implement for an icon.
-type ServerIcon interface {
-	IconURL() (string, error)
 }
 
 // Worth pointing out that frontend container interfaces will not have an error
