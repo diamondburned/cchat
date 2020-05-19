@@ -13,6 +13,13 @@ type Core interface {
 	ServerList
 }
 
+// Configurator is what the backend can implement for an arbitrary configuration
+// API.
+type Configurator interface {
+	Configuration() (map[string]string, error)
+	SetConfiguration(map[string]string) error
+}
+
 // Authenticator is what the backend can implement for authentication.
 type Authenticator interface {
 	// AuthenticateForm should return a list of authentication entries for
