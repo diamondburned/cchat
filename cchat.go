@@ -10,7 +10,7 @@ import (
 // Service contains the bare minimum set of interface that a backend has to
 // implement. Core can also implement Authenticator.
 type Service interface {
-	Server
+	Name() string
 	ServerList
 }
 
@@ -95,7 +95,7 @@ type Identifier interface {
 // or ServerMessage, else the frontend must treat it as a no-op.
 type Server interface {
 	Identifier
-	// Name returns the server's name or the service's name.
+	// Name returns the server's name.
 	Name() (string, error)
 	// Implement ServerList and/or ServerMessage.
 }
