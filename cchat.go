@@ -20,6 +20,22 @@ type Configurator interface {
 	SetConfiguration(map[string]string) error
 }
 
+// ErrInvalidConfigAtField is the structure for an error at a specific
+// configuration field. Frontends can use this and highlight fields if the
+// backends support it.
+type ErrInvalidConfigAtField struct {
+	Key string
+	Err error
+}
+
+func (err *ErrInvalidConfigAtField) Error() string {
+	return "Error at " + err.Key + ": " + err.Err.Error()
+}
+
+func (err *ErrInvalidConfigAtField) Unwrap() error {
+	return err.Err
+}
+
 // Authenticator is what the backend can implement for authentication. A typical
 // authentication frontend implementation would look like this:
 //
