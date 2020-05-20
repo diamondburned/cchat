@@ -1,6 +1,7 @@
 package cchat
 
 import (
+	"io"
 	"time"
 
 	"github.com/diamondburned/cchat/text"
@@ -64,6 +65,24 @@ type AuthenticateEntry struct {
 	Secret bool
 }
 
+// Commander is an optional interface that a backend could implement for command
+// support. This is different from just intercepting the SendMessage() API, as
+// this extends the entire service.
+type Commander interface {
+	// RunCommand executes the given command, with the slice being already split
+	// arguments, similar to os.Args.
+	RunCommand([]string) (io.Reader, error)
+}
+
+// CommandCompleter is an optional interface that a backend could implement for
+// completion support. This also depends on whether or not the frontend supports
+// it.
+type CommandCompleter interface {
+	// CompleteCommand is called with the line and current word, which the
+	// backend should return with a list of new words.
+	CompleteCommand(words []string, wordIndex int) []string
+}
+
 // Server is a single server-like entity that could translate to a guild, a
 // channel, a chat-room, and such. A server must implement at least ServerList
 // or ServerMessage, else the frontend must treat it as a no-op.
@@ -112,6 +131,8 @@ type ServerMessage interface {
 	// LeaveServer indicates the backend to stop calling the controller over.
 	// This should be called before any other JoinServer() calls are made.
 	LeaveServer() error
+	// SendMessage is called by the frontend to send a message to this channel.
+	SendMessage(string) error
 }
 
 // Worth pointing out that frontend container interfaces will not have an error
