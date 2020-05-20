@@ -20,7 +20,23 @@ A service is a server with extra services implemented.
 ### Authenticator
 
 The authenticator interface allows for a multistage initial authentication API
-that the backend could use.
+that the backend could use. Multistage is done by calling `AuthenticateForm`
+then `Authenticate` again forever until no errors are returned.
+
+```go
+for {
+	// Pseudo-function to render the form and return the results of those forms
+	// when the user confirms it.
+    outputs := renderAuthForm(svc.AuthenticateForm())
+
+    if err := svc.Authenticate(outputs); err != nil {
+		renderError(errors.Wrap(err, "Error while authenticating"))
+        continue // retry
+    }
+
+    break // success
+}
+```
 
 ### Commander
 
