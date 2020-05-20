@@ -70,8 +70,9 @@ type AuthenticateEntry struct {
 // this extends the entire service.
 type Commander interface {
 	// RunCommand executes the given command, with the slice being already split
-	// arguments, similar to os.Args.
-	RunCommand([]string) (io.Reader, error)
+	// arguments, similar to os.Args. The function could return an output
+	// stream, in which the frontend must display it live and close it on EOF.
+	RunCommand([]string) (io.ReadCloser, error)
 }
 
 // CommandCompleter is an optional interface that a backend could implement for
