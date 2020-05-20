@@ -127,7 +127,7 @@ type ServerMessage interface {
 	// JoinServer should be called if Servers() returns nil, in which the
 	// backend should connect to the server and start calling methods in the
 	// container.
-	JoinServer(MessageContainer) error
+	JoinServer(MessagesContainer) error
 	// LeaveServer indicates the backend to stop calling the controller over.
 	// This should be called before any other JoinServer() calls are made.
 	LeaveServer() error
@@ -138,9 +138,9 @@ type ServerMessage interface {
 // Worth pointing out that frontend container interfaces will not have an error
 // handling API, as frontends can do that themselves.
 
-// MessageContainer is a frontend implementation for a message view, with
+// MessagesContainer is a frontend implementation for a message view, with
 // synchronous callbacks to render those events.
-type MessageContainer interface {
+type MessagesContainer interface {
 	CreateMessage(MessageCreate)
 	UpdateMessage(MessageUpdate)
 	DeleteMessage(MessageDelete)
