@@ -47,6 +47,11 @@ easily extend the API.
 
 - CommandCompleter (optional)
 
+### Identifier
+
+The identifier interface forces whatever interface that embeds this one to be
+uniquely identifiable.
+
 ### Server
 
 A server is any entity that is usually a channel or a guild.

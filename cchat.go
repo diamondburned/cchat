@@ -84,10 +84,17 @@ type CommandCompleter interface {
 	CompleteCommand(words []string, wordIndex int) []string
 }
 
+// Identifier requires ID() to return a uniquely identifiable string for
+// whatever this is embedded into. Typically, servers and messages have IDs.
+type Identifier interface {
+	ID() string
+}
+
 // Server is a single server-like entity that could translate to a guild, a
 // channel, a chat-room, and such. A server must implement at least ServerList
 // or ServerMessage, else the frontend must treat it as a no-op.
 type Server interface {
+	Identifier
 	// Name returns the server's name or the service's name.
 	Name() (string, error)
 	// Implement ServerList and/or ServerMessage.
@@ -155,7 +162,7 @@ type MessagesContainer interface {
 
 // MessageHeader implements the interface for any message event.
 type MessageHeader interface {
-	ID() string
+	Identifier
 	Time() time.Time
 }
 
