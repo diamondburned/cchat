@@ -27,14 +27,14 @@ then `Authenticate` again forever until no errors are returned.
 for {
 	// Pseudo-function to render the form and return the results of those forms
 	// when the user confirms it.
-    outputs := renderAuthForm(svc.AuthenticateForm())
+	outputs := renderAuthForm(svc.AuthenticateForm())
 
-    if err := svc.Authenticate(outputs); err != nil {
+	if err := svc.Authenticate(outputs); err != nil {
 		renderError(errors.Wrap(err, "Error while authenticating"))
-        continue // retry
-    }
+		continue // retry
+	}
 
-    break // success
+	break // success
 }
 ```
 
