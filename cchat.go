@@ -133,7 +133,13 @@ type ServerMessage interface {
 	// This should be called before any other JoinServer() calls are made.
 	LeaveServer() error
 	// SendMessage is called by the frontend to send a message to this channel.
-	SendMessage(string) error
+	SendMessage(SendableMessage) error
+}
+
+// SendableMessage is the bare minimum interface of a sendable message, that is,
+// a message that can be sent with SendMessage().
+type SendableMessage interface {
+	Content() string
 }
 
 // Worth pointing out that frontend container interfaces will not have an error
@@ -174,8 +180,21 @@ type MessageDelete interface {
 	MessageHeader
 }
 
+// MessageNonce extends SendableMessage and MessageCreate to add nonce support.
+// This is known in IRC as labeled responses. Clients could use this for
+// various purposes, including knowing when a message has been sent
+// successfully.
+//
+// Both the backend and frontend must implement this for the feature to work
+// properly. The backend must check if SendableMessage implements MessageNonce,
+// and the frontend must check if MessageCreate implements MessageNonce.
+type MessageNonce interface {
+	Nonce() string
+}
+
 // MessageAuthorAvatar is an optional interface that messages could implement. A
 // frontend may optionally support this.
 type MessageAuthorAvatar interface {
+	MessageHeader
 	AuthorAvatar() (url string)
 }

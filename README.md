@@ -56,6 +56,15 @@ A server is any entity that is usually a channel or a guild.
 - ServerList and/or ServerMessage
 - ServerIcon (optional)
 
+### Messages
+
+#### Interfaces
+
+- MessageHeader
+- MessageCreate or MessageUpdate or MessageDelete
+- MessageNonce (optional)
+- MessageAuthorAvatar (optional)
+
 ## Frontend
 
 ### ServersContainer
@@ -78,3 +87,13 @@ live. This implements the 3 most common message events: `CreateMessage`,
 Since this container interface extends a single Server, the frontend is allowed
 to have multiple views. This is usually done with tabs or splits, but the
 backend should update them all nonetheless.
+
+### SendableMessage
+
+The frontend can make its own send message data implementation to indicate extra
+capabilities that the backend may want.
+
+An example of this is `MessageNonce`, which is similar to IRCv3's [labeled
+response extension](https://ircv3.net/specs/extensions/labeled-response).
+The frontend could implement this interface and check if incoming
+`MessageCreate` events implement the same interface.
