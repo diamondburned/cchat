@@ -113,7 +113,9 @@ type ServerIcon interface {
 // collapsing a tree.
 type ServerList interface {
 	// Servers should call SetServers() on the given ServersContainer to render
-	// all servers.
+	// all servers. However, if this call requires IO, then the backend should
+	// do the IO in a goroutine then call SetServers() to prevent blocking the
+	// GUI.
 	Servers(ServersContainer) error
 }
 
