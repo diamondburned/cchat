@@ -141,8 +141,19 @@ type ServerMessage interface {
 	// LeaveServer indicates the backend to stop calling the controller over.
 	// This should be called before any other JoinServer() calls are made.
 	LeaveServer() error
+}
+
+// ServerMessageSender optionally extends ServerMessage to add message sending
+// capability to the server.
+type ServerMessageSender interface {
 	// SendMessage is called by the frontend to send a message to this channel.
 	SendMessage(SendableMessage) error
+}
+
+// ServerMessageSendCompleter optionally extends ServerMessageSender to add
+// autocompletion into the message composer.
+type ServerMessageSendCompleter interface {
+	CompleteMessage(words []string, wordIndex int) []string
 }
 
 // SendableMessage is the bare minimum interface of a sendable message, that is,

@@ -52,6 +52,11 @@ easily extend the API.
 The identifier interface forces whatever interface that embeds this one to be
 uniquely identifiable.
 
+### Configurator
+
+The configurator interface is a way for the frontend to display configuration
+options that the backend has.
+
 ### Server
 
 A server is any entity that is usually a channel or a guild.
@@ -61,11 +66,21 @@ A server is any entity that is usually a channel or a guild.
 - ServerList and/or ServerMessage
 - ServerIcon (optional)
 
+### ServerMessage
+
+A server message is an entity that contains messages to be displayed. An example
+would be channels in Discord and IRC.
+
+#### Interfaces
+
+- ServerMessageSender (optional): adds message sending capability.
+- ServerMessageSendCompleter (optional): adds message completion capability.
+
 ### Messages
 
 #### Interfaces
 
-- MessageHeader
+- MessageHeader: the minimum for a proper message.
 - MessageCreate or MessageUpdate or MessageDelete
 - MessageNonce (optional)
 - MessageAuthorAvatar (optional)
