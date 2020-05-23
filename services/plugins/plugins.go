@@ -1,5 +1,12 @@
 // Package plugins provides a source for cchat services as Go plugins. This
 // package looks in UserConfigDir()/cchat/plugins/ by default.
+//
+// Usage
+//
+// The package can easily be used by just dash importing it:
+//
+//    _ "github.com/diamondburned/cchat/services/plugins"
+//
 package plugins
 
 import (
@@ -46,6 +53,14 @@ func loadPlugins() (errs []error) {
 
 	d, err := ioutil.ReadDir(pluginPath)
 	if err != nil {
+		// If the directory does not exist, then make one and exit.
+		if os.IsNotExist(err) {
+			if err := os.MkdirAll(pluginPath, 0755); err != nil {
+				errs = []error{errors.Wrap(err, "Failed to make plugins dir")}
+			}
+			return
+		}
+
 		errs = []error{errors.Wrap(err, "Failed to read plugin path")}
 		return
 	}
