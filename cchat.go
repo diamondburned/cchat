@@ -10,8 +10,9 @@ import (
 // Service contains the bare minimum set of interface that a backend has to
 // implement. Core can also implement Authenticator.
 type Service interface {
+	// Name returns the name of the service.
 	Name() string
-	ServerList
+	Authenticator
 }
 
 // Configurator is what the backend can implement for an arbitrary configuration
@@ -54,7 +55,7 @@ type Authenticator interface {
 	AuthenticateForm() []AuthenticateEntry
 	// Authenticate will be called with a list of values with indices
 	// correspond to the returned slice of AuthenticateEntry.
-	Authenticate([]string) error
+	Authenticate([]string) (Session, error)
 }
 
 // AuthenticateEntry represents a single authentication entry, usually an email
@@ -63,6 +64,14 @@ type Authenticator interface {
 type AuthenticateEntry struct {
 	Name   string
 	Secret bool
+}
+
+// Service contains the bare minimum set of interface that a backend has to
+// implement. Core can also implement Authenticator.
+type Session interface {
+	// Name returns the name of the session, typically the username.
+	Name() (string, error)
+	ServerList
 }
 
 // Commander is an optional interface that a backend could implement for command
@@ -100,8 +109,10 @@ type Server interface {
 	// Implement ServerList and/or ServerMessage.
 }
 
-// ServerIcon is an extra interface that Server could implement for an icon.
-type ServerIcon interface {
+// Icon is an extra interface that an interface could implement for an icon.
+// Typically, Service would return the service logo, Session would return the
+// user's avatar, and Server would return the server icon.
+type Icon interface {
 	IconURL() (string, error)
 }
 

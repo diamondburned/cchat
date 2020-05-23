@@ -7,15 +7,13 @@ and frontend together.
 
 ### Service
 
-A service is a server with extra services implemented.
+A service is a complete service that's capable of multiple sessions.
 
 #### Interfaces
 
-- Server
-- ServerList
-- ServerIcon (optional)
-- Configurator (optional)
-- Authenticator (optional)
+-   Authenticator
+-   Configurator (optional)
+-   Icon (optional)
 
 ### Authenticator
 
@@ -24,12 +22,16 @@ that the backend could use. Multistage is done by calling `AuthenticateForm`
 then `Authenticate` again forever until no errors are returned.
 
 ```go
+var s *cchat.Session
+var err error
+
 for {
 	// Pseudo-function to render the form and return the results of those forms
 	// when the user confirms it.
 	outputs := renderAuthForm(svc.AuthenticateForm())
 
-	if err := svc.Authenticate(outputs); err != nil {
+	s, err = svc.Authenticate(outputs)
+	if err != nil {
 		renderError(errors.Wrap(err, "Error while authenticating"))
 		continue // retry
 	}
@@ -38,6 +40,16 @@ for {
 }
 ```
 
+### Session
+
+A session is returned after authentication on the service. Session implements
+`Name()`, which should return the username most of the time.
+
+#### Interfaces
+
+-   ServerList
+-   Icon (optional)
+
 ### Commander
 
 The commander interface allows the backend to implement custom commands to
@@ -45,7 +57,7 @@ easily extend the API.
 
 #### Interfaces
 
-- CommandCompleter (optional)
+-   CommandCompleter (optional)
 
 ### Identifier
 
@@ -63,8 +75,8 @@ A server is any entity that is usually a channel or a guild.
 
 #### Interfaces
 
-- ServerList and/or ServerMessage
-- ServerIcon (optional)
+-   ServerList and/or ServerMessage
+-   Icon (optional)
 
 ### ServerMessage
 
@@ -73,17 +85,17 @@ would be channels in Discord and IRC.
 
 #### Interfaces
 
-- ServerMessageSender (optional): adds message sending capability.
-- ServerMessageSendCompleter (optional): adds message completion capability.
+-   ServerMessageSender (optional): adds message sending capability.
+-   ServerMessageSendCompleter (optional): adds message completion capability.
 
 ### Messages
 
 #### Interfaces
 
-- MessageHeader: the minimum for a proper message.
-- MessageCreate or MessageUpdate or MessageDelete
-- MessageNonce (optional)
-- MessageAuthorAvatar (optional)
+-   MessageHeader: the minimum for a proper message.
+-   MessageCreate or MessageUpdate or MessageDelete
+-   MessageNonce (optional)
+-   MessageAuthorAvatar (optional)
 
 ## Frontend
 
