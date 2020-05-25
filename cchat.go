@@ -12,7 +12,9 @@ import (
 type Service interface {
 	// Name returns the name of the service.
 	Name() string
-	Authenticator
+	// Authenticate begins the authentication process. It's put into a method so
+	// backends can easily restart the entire process.
+	Authenticate() Authenticator
 }
 
 // Configurator is what the backend can implement for an arbitrary configuration

@@ -7,11 +7,12 @@ and frontend together.
 
 ### Service
 
-A service is a complete service that's capable of multiple sessions.
+A service is a complete service that's capable of multiple sessions. It has to
+implement the `Authenticate()` method, which returns an implementation of
+Authenticator.
 
 #### Interfaces
 
--   Authenticator
 -   Configurator (optional)
 -   Icon (optional)
 
