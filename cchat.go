@@ -64,8 +64,9 @@ type Authenticator interface {
 // or password prompt. Passwords or similar entries should have Secrets set to
 // true, which should imply to frontends that the fields be masked.
 type AuthenticateEntry struct {
-	Name   string
-	Secret bool
+	Name      string
+	Secret    bool
+	Multiline bool
 }
 
 // Service contains the bare minimum set of interface that a backend has to
