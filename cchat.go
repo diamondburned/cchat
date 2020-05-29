@@ -17,6 +17,15 @@ type Service interface {
 	Authenticate() Authenticator
 }
 
+// SessionRestorer extends Service and is called by the frontend to restore a
+// saved session. The frontend may call this at any time, but it's usually on
+// startup.
+//
+// To save a session, refer to SessionSaver which extends Session.
+type SessionRestorer interface {
+	RestoreSession(map[string]string) (Session, error)
+}
+
 // Configurator is what the backend can implement for an arbitrary configuration
 // API.
 type Configurator interface {
@@ -75,6 +84,16 @@ type Session interface {
 	// Name returns the name of the session, typically the username.
 	Name() (string, error)
 	ServerList
+}
+
+// SessionSaver extends Session and is called by the frontend to save the
+// current session. This is typically called right after authentication, but a
+// frontend may call this any time, including when it's closing.
+//
+// The frontend can ask to restore a session using SessionRestorer, which
+// extends Service.
+type SessionSaver interface {
+	Save() (map[string]string, error)
 }
 
 // Commander is an optional interface that a backend could implement for command

@@ -11,8 +11,18 @@ A service is a complete service that's capable of multiple sessions. It has to
 implement the `Authenticate()` method, which returns an implementation of
 Authenticator.
 
+A service can implement `SessionRestorer`, which would indicate the frontend
+that it can restore past sessions. Sessions are saved using the `SessionSaver`
+interface that `Session` can implement.
+
+A service can also implement `Configurator` if it has additional configurations.
+The current API is a flat key-value map, which can be parsed by the backend
+itself into more meaningful data structures. All configurations must be
+optional, as frontends may not implement a configurator UI.
+
 #### Interfaces
 
+-   SessionRestorer (optional)
 -   Configurator (optional)
 -   Icon (optional)
 
@@ -46,10 +56,16 @@ for {
 A session is returned after authentication on the service. Session implements
 `Name()`, which should return the username most of the time.
 
+A session can implement `SessionSaver`, which would allow the frontend to save
+the session into its keyring at any time. Whether the keyring is completely
+secure or not is up to the frontend. For cchat-gtk, that would be using the
+Gnome Keyring daemon.
+
 #### Interfaces
 
 -   ServerList
 -   Icon (optional)
+-   SessionSaver (optional)
 
 ### Commander
 
