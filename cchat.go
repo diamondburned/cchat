@@ -218,7 +218,7 @@ type MessageHeader interface {
 // MessageCreate is the interface for an incoming message.
 type MessageCreate interface {
 	MessageHeader
-	Author() text.Rich
+	Author() MessageAuthor
 	Content() text.Rich
 }
 
