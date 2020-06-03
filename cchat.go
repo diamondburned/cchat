@@ -99,9 +99,9 @@ type SessionSaver interface {
 	Save() (map[string]string, error)
 }
 
-// Commander is an optional interface that a backend could implement for command
+// Commander is an optional interface that a session could implement for command
 // support. This is different from just intercepting the SendMessage() API, as
-// this extends the entire service.
+// this extends the entire session.
 type Commander interface {
 	// RunCommand executes the given command, with the slice being already split
 	// arguments, similar to os.Args. The function could return an output
@@ -109,7 +109,7 @@ type Commander interface {
 	RunCommand([]string) (io.ReadCloser, error)
 }
 
-// CommandCompleter is an optional interface that a backend could implement for
+// CommandCompleter is an optional interface that a session could implement for
 // completion support. This also depends on whether or not the frontend supports
 // it.
 type CommandCompleter interface {

@@ -29,8 +29,6 @@ type ServiceFull interface {
 	// Optional
 	SessionRestorer
 	Configurator
-	Commander
-	CommandCompleter
 	Icon
 }
 ```
@@ -39,7 +37,6 @@ type ServiceFull interface {
 
 -   SessionRestorer (optional)
 -   Configurator (optional)
--   Commander (optional)
 -   Icon (optional)
 
 
@@ -71,25 +68,6 @@ for {
 ```
 
 
-### Commander
-
-The commander interface allows the backend to implement custom commands to
-easily extend the API.
-
-```go
-type CommanderFull interface {
-	Commander
-
-	// Optional
-	CommandCompleter
-}
-```
-
-#### Interfaces
-
--   CommandCompleter (optional)
-
-
 ### Session
 
 A session is returned after authentication on the service. Session implements
@@ -109,6 +87,8 @@ type SessionFull interface {
 
 	Icon
 	SessionSaver
+	Commander
+	CommandCompleter
 }
 ```
 
@@ -116,7 +96,27 @@ type SessionFull interface {
 
 -   ServerList
 -   Icon (optional)
+-   Commander (optional)
 -   SessionSaver (optional)
+
+
+### Commander
+
+The commander interface allows the backend to implement custom commands to
+easily extend the API.
+
+```go
+type CommanderFull interface {
+	Commander
+
+	// Optional
+	CommandCompleter
+}
+```
+
+#### Interfaces
+
+-   CommandCompleter (optional)
 
 
 ### Identifier
