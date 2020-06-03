@@ -264,3 +264,11 @@ type MessageDelete interface {
 type MessageNonce interface {
 	Nonce() string
 }
+
+// MessageMentioned extends MessageCreate to add mentioning support. The
+// frontend may or may not implement this. If it does, the frontend will
+// typically format the message into a notification and play a sound.
+type MessageMentioned interface {
+	// Mentioned returns whether or not the message mentions the current user.
+	Mentioned() bool
+}
