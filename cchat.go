@@ -243,7 +243,9 @@ type MessageAuthor interface {
 }
 
 // MessageAuthorAvatar is an optional interface that MessageAuthor could
-// implement. A frontend may optionally support this.
+// implement. A frontend may optionally support this. A backend may return an
+// empty string, in which the frontend must handle, perhaps by using a
+// placeholder.
 type MessageAuthorAvatar interface {
 	Avatar() (url string)
 }
