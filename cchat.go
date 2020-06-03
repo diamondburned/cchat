@@ -83,6 +83,9 @@ type AuthenticateEntry struct {
 type Session interface {
 	// Name returns the name of the session, typically the username.
 	Name() (string, error)
+	// UserID returns the user ID, which is used to identify MessageAuthor.ID.
+	UserID() string
+
 	ServerList
 }
 
@@ -224,8 +227,25 @@ type MessageCreate interface {
 // changed.
 type MessageUpdate interface {
 	MessageHeader
-	Author() text.Rich  // optional
-	Content() text.Rich // optional
+	Author() MessageAuthor // optional
+	Content() text.Rich    // optional
+}
+
+// MessageAuthor is the interface for an identifiable message author. The
+// returned ID may or may not be used by the frontend, but clients must
+// guarantee uniqueness for intended behaviors.
+//
+// The frontend may also use this to squash messages with the same author
+// together.
+type MessageAuthor interface {
+	Identifier
+	Text() text.Rich
+}
+
+// MessageAuthorAvatar is an optional interface that MessageAuthor could
+// implement. A frontend may optionally support this.
+type MessageAuthorAvatar interface {
+	Avatar() (url string)
 }
 
 // MessageDelete is the interface for a message delete event.
@@ -243,11 +263,4 @@ type MessageDelete interface {
 // and the frontend must check if MessageCreate implements MessageNonce.
 type MessageNonce interface {
 	Nonce() string
-}
-
-// MessageAuthorAvatar is an optional interface that messages could implement. A
-// frontend may optionally support this.
-type MessageAuthorAvatar interface {
-	MessageHeader
-	AuthorAvatar() (url string)
 }

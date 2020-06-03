@@ -54,7 +54,9 @@ for {
 ### Session
 
 A session is returned after authentication on the service. Session implements
-`Name()`, which should return the username most of the time.
+`Name()`, which should return the username most of the time. It also implements
+`UserID()`, which might be used by frontends to check against
+`MessageAuthor.ID()` and other things.
 
 A session can implement `SessionSaver`, which would allow the frontend to save
 the session into its keyring at any time. Whether the keyring is completely
@@ -112,7 +114,15 @@ would be channels in Discord and IRC.
 -   MessageHeader: the minimum for a proper message.
 -   MessageCreate or MessageUpdate or MessageDelete
 -   MessageNonce (optional)
--   MessageAuthorAvatar (optional)
+
+### MessageAuthor
+
+MessageAuthor is the interface that a message author would implement. ID would
+typically return the user ID, or the username if that's the unique identifier.
+
+#### Interfaces
+
+- MessageAuthorAvatar (optional)
 
 ## Frontend
 
