@@ -239,7 +239,7 @@ type MessageUpdate interface {
 // together.
 type MessageAuthor interface {
 	Identifier
-	Text() text.Rich
+	Name() text.Rich
 }
 
 // MessageAuthorAvatar is an optional interface that MessageAuthor could
