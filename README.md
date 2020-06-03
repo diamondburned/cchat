@@ -114,6 +114,7 @@ would be channels in Discord and IRC.
 -   MessageHeader: the minimum for a proper message.
 -   MessageCreate or MessageUpdate or MessageDelete
 -   MessageNonce (optional)
+-   MessageMentionable (optional)
 
 ### MessageAuthor
 
