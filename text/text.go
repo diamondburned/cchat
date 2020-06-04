@@ -35,7 +35,7 @@ type Imager interface {
 // Colorer is a text color format that a segment could implement. This is to be
 // applied directly onto the text.
 type Colorer interface {
-	Color() uint16
+	Color() uint32
 }
 
 // Attributor is a rich text markup format that a segment could implement. This
