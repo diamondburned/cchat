@@ -1,3 +1,7 @@
+// Package cchat is a set of stabilized interfaces for cchat implementations,
+// joining the backend and frontend together.
+//
+// For detailed explanations, refer to the README.
 package cchat
 
 import (
@@ -81,10 +85,11 @@ type AuthenticateEntry struct {
 // Service contains the bare minimum set of interface that a backend has to
 // implement. Core can also implement Authenticator.
 type Session interface {
-	// Name returns the name of the session, typically the username.
-	Name() (string, error)
-	// UserID returns the user ID, which is used to identify MessageAuthor.ID.
-	UserID() string
+	// Identifier should typically return the user ID.
+	Identifier
+	// Name set the name of the session, typically the username. The name may
+	// update asynchronously.
+	Name(LabelContainer) error
 
 	ServerList
 }
@@ -129,16 +134,26 @@ type Identifier interface {
 // or ServerMessage, else the frontend must treat it as a no-op.
 type Server interface {
 	Identifier
-	// Name returns the server's name.
-	Name() (string, error)
+	// Name sets the server's name in the LabelContainer. The name may update
+	// asynchronously.
+	Name(LabelContainer) error
+
 	// Implement ServerList and/or ServerMessage.
+}
+
+// ServerNickname extends Server to add a specific user nickname into a server.
+// The frontend should not traverse up the server tree, and thus the backend
+// must handle nickname inheritance. By default, the session name should be
+// used.
+type ServerNickname interface {
+	Nickname(LabelContainer) error
 }
 
 // Icon is an extra interface that an interface could implement for an icon.
 // Typically, Service would return the service logo, Session would return the
 // user's avatar, and Server would return the server icon.
 type Icon interface {
-	IconURL() (string, error)
+	Icon(IconContainer) error
 }
 
 // ServerList is for servers that contain children servers. This is similar to
@@ -153,18 +168,6 @@ type ServerList interface {
 	// do the IO in a goroutine then call SetServers() to prevent blocking the
 	// GUI.
 	Servers(ServersContainer) error
-}
-
-// ServersContainer is a frontend implementation for a server view, with
-// synchronous callbacks to render those events. The frontend is typically
-// expected to reset the entire list, but it can do so with or without deleting
-// everything and starting all over again.
-type ServersContainer interface {
-	// SetServer is called by the backend service to request a reset of the
-	// server list. The frontend can choose to call Servers() on each of the
-	// given servers, or it can call that later. The backend should handle both
-	// cases.
-	SetServers([]Server)
 }
 
 // ServerMessage is for servers that contain messages. This is similar to
@@ -192,23 +195,6 @@ type ServerMessageSendCompleter interface {
 	CompleteMessage(words []string, wordIndex int) []string
 }
 
-// SendableMessage is the bare minimum interface of a sendable message, that is,
-// a message that can be sent with SendMessage().
-type SendableMessage interface {
-	Content() string
-}
-
-// Worth pointing out that frontend container interfaces will not have an error
-// handling API, as frontends can do that themselves.
-
-// MessagesContainer is a frontend implementation for a message view, with
-// synchronous callbacks to render those events.
-type MessagesContainer interface {
-	CreateMessage(MessageCreate)
-	UpdateMessage(MessageUpdate)
-	DeleteMessage(MessageDelete)
-}
-
 // MessageHeader implements the interface for any message event.
 type MessageHeader interface {
 	Identifier
@@ -227,8 +213,8 @@ type MessageCreate interface {
 // changed.
 type MessageUpdate interface {
 	MessageHeader
-	Author() MessageAuthor // optional
-	Content() text.Rich    // optional
+	Author() MessageAuthor // optional (nilable)
+	Content() text.Rich    // optional (rich.Content == "")
 }
 
 // MessageAuthor is the interface for an identifiable message author. The

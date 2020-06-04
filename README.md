@@ -4,7 +4,9 @@ A set of stabilized interfaces for cchat implementations, joining the backend
 and frontend together.
 
 
+
 ## Backend
+
 
 
 ### Service
@@ -22,22 +24,12 @@ The current API is a flat key-value map, which can be parsed by the backend
 itself into more meaningful data structures. All configurations must be
 optional, as frontends may not implement a configurator UI.
 
-```go
-type ServiceFull interface {
-	Service
-
-	// Optional
-	SessionRestorer
-	Configurator
-	Icon
-}
-```
-
 #### Interfaces
 
 -   SessionRestorer (optional)
 -   Configurator (optional)
 -   Icon (optional)
+
 
 
 ### Authenticator
@@ -68,6 +60,7 @@ for {
 ```
 
 
+
 ### Session
 
 A session is returned after authentication on the service. Session implements
@@ -80,18 +73,6 @@ the session into its keyring at any time. Whether the keyring is completely
 secure or not is up to the frontend. For cchat-gtk, that would be using the
 Gnome Keyring daemon.
 
-```go
-type SessionFull interface {
-	// Session already inherits ServerList.
-	Session
-
-	Icon
-	SessionSaver
-	Commander
-	CommandCompleter
-}
-```
-
 #### Interfaces
 
 -   ServerList
@@ -100,23 +81,16 @@ type SessionFull interface {
 -   SessionSaver (optional)
 
 
+
 ### Commander
 
 The commander interface allows the backend to implement custom commands to
 easily extend the API.
 
-```go
-type CommanderFull interface {
-	Commander
-
-	// Optional
-	CommandCompleter
-}
-```
-
 #### Interfaces
 
 -   CommandCompleter (optional)
+
 
 
 ### Identifier
@@ -125,36 +99,24 @@ The identifier interface forces whatever interface that embeds this one to be
 uniquely identifiable.
 
 
+
 ### Configurator
 
 The configurator interface is a way for the frontend to display configuration
 options that the backend has.
 
 
+
 ### Server
 
 A server is any entity that is usually a channel or a guild.
 
-```go
-type ServerFull interface {
-	Server
-	[ ServerList | (
-		ServerMessage
-
-		// Optional
-		ServerMessageSender
-		ServerMessageSendCompleter
-	) ]
-
-	// Optional
-	Icon
-}
-```
-
 #### Interfaces
 
 -   ServerList and/or ServerMessage
+-   ServerNickname
 -   Icon (optional)
+
 
 
 ### ServerMessage
@@ -162,34 +124,14 @@ type ServerFull interface {
 A server message is an entity that contains messages to be displayed. An example
 would be channels in Discord and IRC.
 
-```go
-type ServerMessageFull interface {
-	ServerMessage
-
-	// Optional
-	ServerMessageSender
-	ServerMessageSendCompleter
-}
-```
-
 #### Interfaces
 
 -   ServerMessageSender (optional): adds message sending capability.
 -   ServerMessageSendCompleter (optional): adds message completion capability.
 
 
+
 ### Messages
-
-```go
-type MessageFull interface {
-	// These 3 types already inherit MessageHeader.
-	[ MessageCreate | MessageUpdate | MessageDelete ]
-
-	// Optional
-	MessageNonce
-	MessageMentionable
-}
-```
 
 #### Interfaces
 
@@ -199,26 +141,30 @@ type MessageFull interface {
 -   MessageMentionable (optional)
 
 
+
 ### MessageAuthor
 
 MessageAuthor is the interface that a message author would implement. ID would
 typically return the user ID, or the username if that's the unique identifier.
-
-```go
-type MessageAuthorFull interface {
-	MessageAuthor
-
-	// Optional
-	MessageAuthorAvatar
-}
-```
 
 #### Interfaces
 
 - MessageAuthorAvatar (optional)
 
 
+
 ## Frontend
+
+Frontend contains all interfaces that a frontend can or must implement. The
+backend may call these methods any time from any goroutine. Thus, they should
+be thread-safe. They should also not block the call by doing so, as backends
+may call these methods in its own main thread.
+
+It is worth pointing out that frontend container interfaces will not have an
+error handling API, as frontends can do that themselves. Errors returned by
+backend methods will be errors from the backend itself and never the frontend
+errors.
+
 
 
 ### ServersContainer
@@ -233,6 +179,7 @@ instead of a tree view, as servers can be infinitely nested.
 This interface expects the frontend to handle its own errors.
 
 
+
 ### MessagesContainer
 
 A messages container is a view implementation that displays a list of messages
@@ -242,6 +189,14 @@ live. This implements the 3 most common message events: `CreateMessage`,
 Since this container interface extends a single Server, the frontend is allowed
 to have multiple views. This is usually done with tabs or splits, but the
 backend should update them all nonetheless.
+
+
+
+### LabelContainer 
+
+A label container is a generic abstraction for any container that can hold
+texts. It's typically used for labels that can update itself, such as usernames.
+
 
 
 ### SendableMessage
@@ -254,15 +209,7 @@ response extension](https://ircv3.net/specs/extensions/labeled-response).
 The frontend could implement this interface and check if incoming
 `MessageCreate` events implement the same interface.
 
-```go
-type SendableMessageFull interface {
-	SendableMessage
-
-	// Optional
-	MessageNonce
-}
-```
-
 #### Interfaces (only known)
 
 -   MessageNonce (optional)
+
