@@ -212,8 +212,10 @@ type ServerMessageActioner interface {
 	// the frontend will use to directly display.
 	MessageActions() []string
 	// DoMessageAction executes a message action on the given messageID, which
-	// would be taken from MessageHeader.ID().
-	DoMessageAction(action, messageID string) error
+	// would be taken from MessageHeader.ID(). This function should not do any
+	// IO. If it must, then it has to do it inside a goroutine, or
+	// asynchronously.
+	DoMessageAction(c MessagesContainer, action, messageID string) error
 }
 
 // ServerMessageSendCompleter optionally extends ServerMessageSender to add
