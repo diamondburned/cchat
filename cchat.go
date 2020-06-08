@@ -214,7 +214,10 @@ type ServerMessageActioner interface {
 	// would be taken from MessageHeader.ID(). This function should not do any
 	// IO. If it must, then it has to do it inside a goroutine, or
 	// asynchronously.
-	DoMessageAction(c MessagesContainer, action, messageID string) (stop func(), err error)
+	//
+	// This method must not store MessagesContainer. It should ideally only use
+	// the container interface exactly once.
+	DoMessageAction(c MessagesContainer, action, messageID string) error
 }
 
 // ServerMessageSendCompleter optionally extends ServerMessageSender to add
