@@ -7,6 +7,13 @@ and frontend together.
 
 ## Backend
 
+Methods implemented by the backend that have frontend containers as arguments
+should not do any IO. If IO is a must, they should be ran in goroutines, then
+call the container callbacks when done. Other interface methods can do IO
+normally.
+
+*Note:* IO in most cases usually refer to networking, but they should include
+files and such as well.
 
 
 ### Service
@@ -116,6 +123,8 @@ A server is any entity that is usually a channel or a guild.
 -   ServerList and/or ServerMessage
 -   ServerNickname
 -   Icon (optional)
+-   ServerMessageEditor
+-   ServerMessageActioner
 
 
 

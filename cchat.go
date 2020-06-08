@@ -143,8 +143,9 @@ type Server interface {
 
 // ServerNickname extends Server to add a specific user nickname into a server.
 // The frontend should not traverse up the server tree, and thus the backend
-// must handle nickname inheritance. By default, the session name should be
-// used.
+// must handle nickname inheritance. This also means that servers that don't
+// implement ServerMessage also don't need to implement ServerNickname. By
+// default, the session name should be used.
 type ServerNickname interface {
 	Nickname(LabelContainer) error
 }
@@ -152,6 +153,9 @@ type ServerNickname interface {
 // Icon is an extra interface that an interface could implement for an icon.
 // Typically, Service would return the service logo, Session would return the
 // user's avatar, and Server would return the server icon.
+//
+// For session, the avatar should be the same as the one returned by messages
+// sent by the current user.
 type Icon interface {
 	Icon(IconContainer) error
 }
@@ -187,6 +191,29 @@ type ServerMessage interface {
 type ServerMessageSender interface {
 	// SendMessage is called by the frontend to send a message to this channel.
 	SendMessage(SendableMessage) error
+}
+
+// ServerMessageEditor optionally extends ServerMessage to add message editing
+// capability to the server. These functions can have IO, and the frontend
+// should take care of running them in goroutines.
+type ServerMessageEditor interface {
+	// RawMessageContent gets the original message text for editing.
+	RawMessageContent(id string) (string, error)
+	// EditMessage edits the message with the given ID to the given content,
+	// which is the edited string from RawMessageContent.
+	EditMessage(id, content string) error
+}
+
+// ServerMessageActioner optionally extends ServerMessage to add custom message
+// action capabilities to the server. Similarly to ServerMessageEditor, these
+// functions can have IO.
+type ServerMessageActioner interface {
+	// MessageActions returns a list of possible actions in pretty strings that
+	// the frontend will use to directly display.
+	MessageActions() []string
+	// DoMessageAction executes a message action on the given messageID, which
+	// would be taken from MessageHeader.ID().
+	DoMessageAction(action, messageID string) error
 }
 
 // ServerMessageSendCompleter optionally extends ServerMessageSender to add
