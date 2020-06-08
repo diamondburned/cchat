@@ -89,7 +89,7 @@ type Session interface {
 	Identifier
 	// Name set the name of the session, typically the username. The name may
 	// update asynchronously.
-	Name(LabelContainer) (stop func(), err error)
+	Name(LabelContainer) error
 
 	ServerList
 }
@@ -136,7 +136,7 @@ type Server interface {
 	Identifier
 	// Name sets the server's name in the LabelContainer. The name may update
 	// asynchronously.
-	Name(LabelContainer) (stop func(), err error)
+	Name(LabelContainer) error
 
 	// Implement ServerList and/or ServerMessage.
 }
@@ -147,7 +147,7 @@ type Server interface {
 // implement ServerMessage also don't need to implement ServerNickname. By
 // default, the session name should be used.
 type ServerNickname interface {
-	Nickname(LabelContainer) (stop func(), err error)
+	Nickname(LabelContainer) error
 }
 
 // Icon is an extra interface that an interface could implement for an icon.
@@ -157,7 +157,7 @@ type ServerNickname interface {
 // For session, the avatar should be the same as the one returned by messages
 // sent by the current user.
 type Icon interface {
-	Icon(IconContainer) (stop func(), err error)
+	Icon(IconContainer) error
 }
 
 // ServerList is for servers that contain children servers. This is similar to

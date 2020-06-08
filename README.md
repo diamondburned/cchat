@@ -174,9 +174,6 @@ error handling API, as frontends can do that themselves. Errors returned by
 backend methods will be errors from the backend itself and never the frontend
 errors.
 
-Most functions that take in frontend containers will return a callback as a
-cancel function. 
-
 
 
 ### ServersContainer
