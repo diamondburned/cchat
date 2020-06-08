@@ -8,12 +8,12 @@ and frontend together.
 ## Backend
 
 Methods implemented by the backend that have frontend containers as arguments
-should not do any IO. If IO is a must, they should be ran in goroutines, then
-call the container callbacks when done. Other interface methods can do IO
-normally.
+can do IO. Frontends must NOT rely on individual backend caches and should always
+assume that they will block.
 
-*Note:* IO in most cases usually refer to networking, but they should include
-files and such as well.
+**Note:** IO in most cases usually refer to networking, but they should files and
+anything that could block, such as mutexes or semaphores.
+
 
 
 ### Service
@@ -173,6 +173,9 @@ It is worth pointing out that frontend container interfaces will not have an
 error handling API, as frontends can do that themselves. Errors returned by
 backend methods will be errors from the backend itself and never the frontend
 errors.
+
+Most functions that take in frontend containers will return a callback as a
+cancel function. 
 
 
 

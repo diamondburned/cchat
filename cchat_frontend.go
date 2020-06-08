@@ -15,7 +15,7 @@ type ServersContainer interface {
 }
 
 // MessagesContainer is a frontend implementation for a message view, with
-// synchronous callbacks to render those events.
+// thread-safe callbacks to render those events.
 type MessagesContainer interface {
 	CreateMessage(MessageCreate)
 	UpdateMessage(MessageUpdate)
