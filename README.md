@@ -11,6 +11,10 @@ Methods implemented by the backend that have frontend containers as arguments
 can do IO. Frontends must NOT rely on individual backend caches and should always
 assume that they will block.
 
+Methods that do not return an error must NOT do any IO to prevent blocking the
+main thread. Methods that do return an error may do IO, but they should be
+documented per method. `ID()` and `Name()` must never do any IO.
+
 **Note:** IO in most cases usually refer to networking, but they should files and
 anything that could block, such as mutexes or semaphores.
 
@@ -33,6 +37,7 @@ optional, as frontends may not implement a configurator UI.
 
 #### Interfaces
 
+-   Namer
 -   SessionRestorer (optional)
 -   Configurator (optional)
 -   Icon (optional)
@@ -82,6 +87,8 @@ Gnome Keyring daemon.
 
 #### Interfaces
 
+-   Identifier
+-   Namer
 -   ServerList
 -   Icon (optional)
 -   Commander (optional)
@@ -107,6 +114,13 @@ uniquely identifiable.
 
 
 
+### Namer
+
+The namer interface forces whatever interface that embeds it to have an ideally
+human-friendly name. This is typically a username or a service name.
+
+
+
 ### Configurator
 
 The configurator interface is a way for the frontend to display configuration
@@ -120,11 +134,13 @@ A server is any entity that is usually a channel or a guild.
 
 #### Interfaces
 
+-   Identifier
+-   Namer
 -   ServerList and/or ServerMessage
--   ServerNickname
+-   ServerNickname (optional)
 -   Icon (optional)
--   ServerMessageEditor
--   ServerMessageActioner
+-   ServerMessageEditor (optional)
+-   ServerMessageActioner (optional)
 
 
 
@@ -176,6 +192,19 @@ errors.
 
 
 
+### LabelContainer 
+
+A label container is a generic abstraction for any container that can hold
+texts. It's typically used for labels that can update itself, such as usernames.
+
+
+
+### IconContainer
+
+The icon container is similar to the label container. Refer to above.
+
+
+
 ### ServersContainer
 
 A servers container is any type of view that displays the list of servers. It
@@ -201,13 +230,6 @@ backend should update them all nonetheless.
 
 
 
-### LabelContainer 
-
-A label container is a generic abstraction for any container that can hold
-texts. It's typically used for labels that can update itself, such as usernames.
-
-
-
 ### SendableMessage
 
 The frontend can make its own send message data implementation to indicate extra
@@ -221,4 +243,5 @@ The frontend could implement this interface and check if incoming
 #### Interfaces (only known)
 
 -   MessageNonce (optional)
+
 

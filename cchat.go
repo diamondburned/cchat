@@ -14,8 +14,8 @@ import (
 // Service contains the bare minimum set of interface that a backend has to
 // implement. Core can also implement Authenticator.
 type Service interface {
-	// Name returns the name of the service.
-	Name() string
+	// Namer returns the name of the service.
+	Namer
 	// Authenticate begins the authentication process. It's put into a method so
 	// backends can easily restart the entire process.
 	Authenticate() Authenticator
@@ -82,14 +82,25 @@ type AuthenticateEntry struct {
 	Multiline bool
 }
 
+// Identifier requires ID() to return a uniquely identifiable string for
+// whatever this is embedded into. Typically, servers and messages have IDs.
+type Identifier interface {
+	ID() string
+}
+
+// Namer requires Name() to return the name of the object. Typically, this
+// implies usernames for sessions or service names for services.
+type Namer interface {
+	Name() string
+}
+
 // Service contains the bare minimum set of interface that a backend has to
 // implement. Core can also implement Authenticator.
 type Session interface {
 	// Identifier should typically return the user ID.
 	Identifier
-	// Name set the name of the session, typically the username. The name may
-	// update asynchronously.
-	Name(LabelContainer) error
+	// Namer gives the name of the session, which is typically the username.
+	Namer
 
 	ServerList
 }
@@ -123,20 +134,12 @@ type CommandCompleter interface {
 	CompleteCommand(words []string, wordIndex int) []string
 }
 
-// Identifier requires ID() to return a uniquely identifiable string for
-// whatever this is embedded into. Typically, servers and messages have IDs.
-type Identifier interface {
-	ID() string
-}
-
 // Server is a single server-like entity that could translate to a guild, a
 // channel, a chat-room, and such. A server must implement at least ServerList
 // or ServerMessage, else the frontend must treat it as a no-op.
 type Server interface {
 	Identifier
-	// Name sets the server's name in the LabelContainer. The name may update
-	// asynchronously.
-	Name(LabelContainer) error
+	Namer
 
 	// Implement ServerList and/or ServerMessage.
 }
