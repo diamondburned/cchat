@@ -15,6 +15,18 @@ Methods that do not return an error must NOT do any IO to prevent blocking the
 main thread. Methods that do return an error may do IO, but they should be
 documented per method. `ID()` and `Name()` must never do any IO.
 
+Backend implementations have certain conditions that should be adhered to:
+
+-   Storing MessagesContainer and ServersContainer are advised against; however,
+	they should be done if need be.
+-   Other containers such as LabelContainer and IconContainer should also not be
+	stored; however, the same rule as above applies.
+-   For the server list, icon updates and such that happen after their calls
+    should use `SetServers()`.
+-   For the nickname of the current server, the backend can store the state of
+    the label container. It must, however, remove the state when the cancel
+	callback from `JoinServer()` is called.
+
 **Note:** IO in most cases usually refer to networking, but they should files and
 anything that could block, such as mutexes or semaphores.
 
