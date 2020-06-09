@@ -91,7 +91,7 @@ type Identifier interface {
 // Namer requires Name() to return the name of the object. Typically, this
 // implies usernames for sessions or service names for services.
 type Namer interface {
-	Name() string
+	Name() text.Rich
 }
 
 // Service contains the bare minimum set of interface that a backend has to
