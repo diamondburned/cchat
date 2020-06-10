@@ -227,7 +227,9 @@ type ServerMessageActioner interface {
 // autocompletion into the message composer. IO is not allowed and the backend
 // should do that only in goroutines and update its state for future calls.
 type ServerMessageSendCompleter interface {
-	CompleteMessage(words []string, wordIndex int) []CompletionEntry
+	// CompleteMessage returns the list of possible completion entries for the
+	// given word list and the current word index.
+	CompleteMessage(words []string, current int) []CompletionEntry
 }
 
 // CompletionEntry is a single completion entry returned by CompleteMessage. The
