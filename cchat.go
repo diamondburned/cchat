@@ -231,7 +231,9 @@ type ServerMessageActioner interface {
 // and index.
 type ServerMessageSendCompleter interface {
 	// CompleteMessage returns the list of possible completion entries for the
-	// given word list and the current word index.
+	// given word list and the current word index. It takes in a list of
+	// whitespace-split slice of string as well as the position of the cursor
+	// relative to the given string slice.
 	CompleteMessage(words []string, current int) []CompletionEntry
 }
 
