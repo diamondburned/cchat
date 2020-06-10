@@ -226,6 +226,9 @@ type ServerMessageActioner interface {
 // ServerMessageSendCompleter optionally extends ServerMessageSender to add
 // autocompletion into the message composer. IO is not allowed and the backend
 // should do that only in goroutines and update its state for future calls.
+//
+// Frontends could utilize the split package inside utils for splitting words
+// and index.
 type ServerMessageSendCompleter interface {
 	// CompleteMessage returns the list of possible completion entries for the
 	// given word list and the current word index.
