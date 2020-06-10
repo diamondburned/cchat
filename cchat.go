@@ -224,9 +224,17 @@ type ServerMessageActioner interface {
 }
 
 // ServerMessageSendCompleter optionally extends ServerMessageSender to add
-// autocompletion into the message composer.
+// autocompletion into the message composer. IO is not allowed and the backend
+// should do that only in goroutines and update its state for future calls.
 type ServerMessageSendCompleter interface {
-	CompleteMessage(words []string, wordIndex int) []string
+	CompleteMessage(words []string, wordIndex int) []CompletionEntry
+}
+
+// CompletionEntry is a single completion entry returned by CompleteMessage. The
+// icon URL field is optional.
+type CompletionEntry struct {
+	Text    text.Rich
+	IconURL string
 }
 
 // MessageHeader implements the interface for any message event.
