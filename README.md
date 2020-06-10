@@ -24,7 +24,7 @@ Backend implementations have certain conditions that should be adhered to:
 -   For the server list, icon updates and such that happen after their calls
     should use `SetServers()`.
 -   For the nickname of the current server, the backend can store the state of
-    the label container. It must, however, remove the state when the cancel
+    the label container. It must, however, remove the container when the stop
 	callback from `JoinServer()` is called.
 
 **Note:** IO in most cases usually refer to networking, but they should files and
