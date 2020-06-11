@@ -240,7 +240,12 @@ type ServerMessageSendCompleter interface {
 // CompletionEntry is a single completion entry returned by CompleteMessage. The
 // icon URL field is optional.
 type CompletionEntry struct {
-	Text    text.Rich
+	// Raw is the text to be replaced in the input box.
+	Raw string
+	// Text is the label to be displayed.
+	Text text.Rich
+	// IconURL is the URL to the icon that will be displayed on the left of the
+	// text. This field is optional.
 	IconURL string
 }
 
