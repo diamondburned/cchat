@@ -103,11 +103,17 @@ type Session interface {
 	Namer
 
 	// Disconnect asks the service to disconnect. It does not necessarily mean
-	// removing the service. The frontend must cancel the active ServerMessage
-	// before disconnecting. The backend can rely on this behavior.
+	// removing the service.
+	//
+	// The frontend must cancel the active ServerMessage before disconnecting.
+	// The backend can rely on this behavior.
 	//
 	// The frontend will reuse the stored session data from SessionSaver to
 	// reconnect.
+	//
+	// When this function fails, the frontend may display the error upfront.
+	// However, it will treat the session as actually disconnected. If needed,
+	// the backend must implement reconnection by itself.
 	Disconnect() error
 
 	ServerList
