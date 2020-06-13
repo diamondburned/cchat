@@ -102,6 +102,14 @@ type Session interface {
 	// Namer gives the name of the session, which is typically the username.
 	Namer
 
+	// Disconnect asks the service to disconnect. It does not necessarily mean
+	// removing the service. The frontend must cancel the active ServerMessage
+	// before disconnecting. The backend can rely on this behavior.
+	//
+	// The frontend will reuse the stored session data from SessionSaver to
+	// reconnect.
+	Disconnect() error
+
 	ServerList
 }
 
