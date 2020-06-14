@@ -26,9 +26,15 @@ Backend implementations have certain conditions that should be adhered to:
 -   For the nickname of the current server, the backend can store the state of
     the label container. It must, however, remove the container when the stop
 	callback from `JoinServer()` is called.
+-   Some methods that take in a container may take in a context as well.
+	Although implementations don't have to use this context, it should try to.
 
 **Note:** IO in most cases usually refer to networking, but they should files and
 anything that could block, such as mutexes or semaphores.
+
+**Note:** As mentioned above, contexts are optional for both the frontend and
+backend. The frontend may use it for cancellation, and the backend may ignore
+it.
 
 
 

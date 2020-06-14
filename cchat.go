@@ -5,6 +5,7 @@
 package cchat
 
 import (
+	"context"
 	"io"
 	"time"
 
@@ -164,7 +165,7 @@ type Server interface {
 // implement ServerMessage also don't need to implement ServerNickname. By
 // default, the session name should be used.
 type ServerNickname interface {
-	Nickname(LabelContainer) error
+	Nickname(context.Context, LabelContainer) error
 }
 
 // Icon is an extra interface that an interface could implement for an icon.
@@ -174,7 +175,7 @@ type ServerNickname interface {
 // For session, the avatar should be the same as the one returned by messages
 // sent by the current user.
 type Icon interface {
-	Icon(IconContainer) error
+	Icon(context.Context, IconContainer) error
 }
 
 // ServerList is for servers that contain children servers. This is similar to
@@ -190,7 +191,7 @@ type ServerList interface {
 	// Servers should call SetServers() on the given ServersContainer to render
 	// all servers. This function can do IO, and the frontend should run this in
 	// a goroutine.
-	Servers(ServersContainer) error
+	Servers(context.Context, ServersContainer) error
 }
 
 // ServerMessage is for servers that contain messages. This is similar to
@@ -199,14 +200,14 @@ type ServerMessage interface {
 	// JoinServer should be called if Servers() returns nil, in which the
 	// backend should connect to the server and start calling methods in the
 	// container.
-	JoinServer(MessagesContainer) (stop func(), err error)
+	JoinServer(context.Context, MessagesContainer) (stop func(), err error)
 }
 
 // ServerMessageSender optionally extends ServerMessage to add message sending
 // capability to the server.
 type ServerMessageSender interface {
 	// SendMessage is called by the frontend to send a message to this channel.
-	SendMessage(SendableMessage) error
+	SendMessage(context.Context, SendableMessage) error
 }
 
 // ServerMessageEditor optionally extends ServerMessage to add message editing
@@ -234,7 +235,7 @@ type ServerMessageActioner interface {
 	//
 	// This method must not store MessagesContainer. It should ideally only use
 	// the container interface exactly once.
-	DoMessageAction(c MessagesContainer, action, messageID string) error
+	DoMessageAction(ctx context.Context, c MessagesContainer, action, messageID string) error
 }
 
 // ServerMessageSendCompleter optionally extends ServerMessageSender to add
