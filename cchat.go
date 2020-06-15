@@ -191,7 +191,7 @@ type ServerList interface {
 	// Servers should call SetServers() on the given ServersContainer to render
 	// all servers. This function can do IO, and the frontend should run this in
 	// a goroutine.
-	Servers(context.Context, ServersContainer) error
+	Servers(ServersContainer) error
 }
 
 // ServerMessage is for servers that contain messages. This is similar to
@@ -207,7 +207,7 @@ type ServerMessage interface {
 // capability to the server.
 type ServerMessageSender interface {
 	// SendMessage is called by the frontend to send a message to this channel.
-	SendMessage(context.Context, SendableMessage) error
+	SendMessage(SendableMessage) error
 }
 
 // ServerMessageEditor optionally extends ServerMessage to add message editing
@@ -235,7 +235,7 @@ type ServerMessageActioner interface {
 	//
 	// This method must not store MessagesContainer. It should ideally only use
 	// the container interface exactly once.
-	DoMessageAction(ctx context.Context, c MessagesContainer, action, messageID string) error
+	DoMessageAction(action, messageID string) error
 }
 
 // ServerMessageSendCompleter optionally extends ServerMessageSender to add
