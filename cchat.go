@@ -211,13 +211,13 @@ type ServerMessageSender interface {
 }
 
 // ServerMessageEditor optionally extends ServerMessage to add message editing
-// capability to the server. These functions can have IO, and the frontend
-// should take care of running them in goroutines.
+// capability to the server. Only EditMessage can have IO.
 type ServerMessageEditor interface {
-	// RawMessageContent gets the original message text for editing.
+	// RawMessageContent gets the original message text for editing. Backends
+	// must not do IO.
 	RawMessageContent(id string) (string, error)
 	// EditMessage edits the message with the given ID to the given content,
-	// which is the edited string from RawMessageContent.
+	// which is the edited string from RawMessageContent. This method can do IO.
 	EditMessage(id, content string) error
 }
 
