@@ -51,6 +51,11 @@ type Attributor interface {
 // Attribute is the type for basic rich text markup attributes.
 type Attribute uint16
 
+// HasAttr returns whether or not "attr" has "this" attribute.
+func (attr Attribute) Has(this Attribute) bool {
+	return (attr & this) == this
+}
+
 const (
 	// AttrBold represents bold text.
 	AttrBold Attribute = 1 << iota
