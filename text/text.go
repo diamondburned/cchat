@@ -24,7 +24,7 @@ type Segment interface {
 // tag with href being the URL and the inner text being the text string.
 type Linker interface {
 	Segment
-	Link() (text, url string)
+	Link() (url string)
 }
 
 // Imager implies the segment should be replaced with a (possibly inlined)
