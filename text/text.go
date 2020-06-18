@@ -28,7 +28,7 @@ type Linker interface {
 }
 
 // Imager implies the segment should be replaced with a (possibly inlined)
-// image.
+// image. Only the starting bound matters, as images cannot substitute texts.
 type Imager interface {
 	Segment
 	Image() (url string)
