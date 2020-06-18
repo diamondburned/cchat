@@ -31,7 +31,15 @@ type Linker interface {
 // image. Only the starting bound matters, as images cannot substitute texts.
 type Imager interface {
 	Segment
+	// Image returns the URL for the image.
 	Image() (url string)
+	// ImageSize returns the requested dimension for the image. This function
+	// could return (0, 0), which the frontend should use the image's
+	// dimensions.
+	ImageSize() (w, h int)
+	// ImageText returns the underlying text of the image. Frontends could use
+	// this for hovering or displaying the text instead of the image.
+	ImageText() string
 }
 
 // Colorer is a text color format that a segment could implement. This is to be
