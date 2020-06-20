@@ -240,15 +240,14 @@ type ServerMessageEditor interface {
 // functions can have IO.
 type ServerMessageActioner interface {
 	// MessageActions returns a list of possible actions in pretty strings that
-	// the frontend will use to directly display.
-	MessageActions() []string
-	// DoMessageAction executes a message action on the given messageID, which
-	// would be taken from MessageHeader.ID(). This function should not do any
-	// IO. If it must, then it has to do it inside a goroutine, or
-	// asynchronously.
+	// the frontend will use to directly display. This function must not do any
+	// IO.
 	//
-	// This method must not store MessagesContainer. It should ideally only use
-	// the container interface exactly once.
+	// The string slice returned can be nil or empty.
+	MessageActions(messageID string) []string
+	// DoMessageAction executes a message action on the given messageID, which
+	// would be taken from MessageHeader.ID(). This function is allowed to do
+	// IO; the frontend should take care of running this asynchronously.
 	DoMessageAction(action, messageID string) error
 }
 
