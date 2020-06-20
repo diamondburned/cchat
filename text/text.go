@@ -7,8 +7,14 @@ type Rich struct {
 	Segments []Segment
 }
 
+// Empty returns whether or not the rich text is considered empty.
 func (r Rich) Empty() bool {
 	return r.Content == ""
+}
+
+// String returns the content. This is used mainly for printing.
+func (r Rich) String() string {
+	return r.Content
 }
 
 // Segment is the minimum requirement for a format segment. Frontends will use
