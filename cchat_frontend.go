@@ -42,6 +42,22 @@ type IconContainer interface {
 	SetIcon(url string)
 }
 
+// UnreadIndicator is a generic interface for any container that can have
+// different styles to indicate an unread and/or mentioned server.
+//
+// Servers that have this highlighted must traverse up the tree and highlight
+// their parent servers too, if needed.
+//
+// Methods that have this interface as its arguments can do IO.
+type UnreadIndicator interface {
+	// Unread sets the container's unread state to the given boolean. The
+	// frontend may choose how to represent this.
+	SetUnread(bool)
+	// SetMentioned calls the frontend to display a notification and update the
+	// unread state to highlight differently.
+	SetMentioned(MessageCreate)
+}
+
 // SendableMessage is the bare minimum interface of a sendable message, that is,
 // a message that can be sent with SendMessage().
 type SendableMessage interface {

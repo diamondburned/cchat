@@ -203,6 +203,20 @@ type ServerMessage interface {
 	JoinServer(context.Context, MessagesContainer) (stop func(), err error)
 }
 
+// ServerMessageIndicator is for servers that can contain messages and know from
+// the state if that message makes the server unread and if it contains a
+// message that mentions the user.
+type ServerMessageIndicator interface {
+	// Indicate subscribes the given unread indicator for unread and mention
+	// events. Examples include when a new message is arrived and the backend
+	// needs to indicate that it's unread.
+	//
+	// This method does not return an error, as it's expected to use the
+	// backend's local state. The backend should either support or not support
+	// this at all.
+	Indicate(UnreadIndicator)
+}
+
 // ServerMessageSender optionally extends ServerMessage to add message sending
 // capability to the server.
 type ServerMessageSender interface {

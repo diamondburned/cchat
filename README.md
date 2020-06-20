@@ -159,6 +159,7 @@ A server is any entity that is usually a channel or a guild.
 -   Icon (optional)
 -   ServerMessageEditor (optional)
 -   ServerMessageActioner (optional)
+-   ServerMessageIndicator (optional)
 
 
 
@@ -263,3 +264,20 @@ The frontend could implement this interface and check if incoming
 -   MessageNonce (optional)
 
 
+
+### UnreadIndicator
+
+A single server container (such as a button or a tree node) can implement this
+interface if it's capable of indicating the read and mentioned status for that
+channel.
+
+Server containers that implement this has to implement both `SetUnread` and
+`SetMentioned`, and they should also represent those statuses differently. For
+example, a mentioned channel could have a red outline, while an unread channel
+could appear brighter.
+
+Server containers are expected to represent this information in their parent
+nodes as well. For example, if a server is unread, then its parent servers as
+well as the session node should indicate the same status. Highlighting the
+session and service nodes are, however, implementation details, meaning that
+this decision is up to the frontend to decide.
