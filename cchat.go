@@ -227,6 +227,9 @@ type ServerMessageSender interface {
 // ServerMessageEditor optionally extends ServerMessage to add message editing
 // capability to the server. Only EditMessage can have IO.
 type ServerMessageEditor interface {
+	// MessageEditable returns whether or not a message can be edited by the
+	// client.
+	MessageEditable(id string) bool
 	// RawMessageContent gets the original message text for editing. Backends
 	// must not do IO.
 	RawMessageContent(id string) (string, error)
