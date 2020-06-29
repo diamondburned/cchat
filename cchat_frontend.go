@@ -58,6 +58,23 @@ type UnreadIndicator interface {
 	SetMentioned(MessageCreate)
 }
 
+// TypingIndicator is a generic interface for any container that can display
+// users typing in the current chatbox. The typing indicator must adhere to the
+// TypingTimeout returned from ServerMessageTypingIndicator. The backend should
+// assume that to be the case and send events appropriately.
+//
+// For more documentation, refer to ServerMessageTypingIndicator.
+type TypingIndicator interface {
+	// AddTyper appends the typer into the frontend's list of typers, or it
+	// pushes this typer on top of others.
+	AddTyper(Typer)
+	// RemoveTyper explicitly removes the typer with the given user ID from the
+	// list of typers. This function is usually not needed, as the client will
+	// take care of removing them after TypingTimeout has been reached or other
+	// conditions listed in ServerMessageTypingIndicator are met.
+	RemoveTyper(id string)
+}
+
 // SendableMessage is the bare minimum interface of a sendable message, that is,
 // a message that can be sent with SendMessage().
 type SendableMessage interface {

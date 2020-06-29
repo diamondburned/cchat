@@ -203,18 +203,14 @@ type ServerMessage interface {
 	JoinServer(context.Context, MessagesContainer) (stop func(), err error)
 }
 
-// ServerMessageIndicator is for servers that can contain messages and know from
-// the state if that message makes the server unread and if it contains a
-// message that mentions the user.
-type ServerMessageIndicator interface {
-	// Indicate subscribes the given unread indicator for unread and mention
-	// events. Examples include when a new message is arrived and the backend
-	// needs to indicate that it's unread.
-	//
-	// This method does not return an error, as it's expected to use the
-	// backend's local state. The backend should either support or not support
-	// this at all.
-	Indicate(UnreadIndicator)
+// ServerMessageUnreadIndicator is for servers that can contain messages and
+// know from the state if that message makes the server unread and if it
+// contains a message that mentions the user.
+type ServerMessageUnreadIndicator interface {
+	// UnreadIndicate subscribes the given unread indicator for unread and
+	// mention events. Examples include when a new message is arrived and the
+	// backend needs to indicate that it's unread.
+	UnreadIndicate(UnreadIndicator) error
 }
 
 // ServerMessageSender optionally extends ServerMessage to add message sending
@@ -252,6 +248,40 @@ type ServerMessageActioner interface {
 	// would be taken from MessageHeader.ID(). This function is allowed to do
 	// IO; the frontend should take care of running this asynchronously.
 	DoMessageAction(action, messageID string) error
+}
+
+// ServerMessageTypingIndicator optionally extends ServerMessage to provide
+// bidirectional typing indicating capabilities. This is similar to typing
+// events on Discord and typing client tags on IRCv3.
+//
+// The client should remove a typer when a message is received with the same
+// user ID, when RemoveTyper() is called by the backend or when the timeout
+// returned from TypingTimeout() has been reached.
+type ServerMessageTypingIndicator interface {
+	// Typing is called by the client to indicate that the user is typing. This
+	// function can do IO calls, and the client will take care of calling it in
+	// a goroutine (or an asynchronous queue) as well as throttling it to
+	// TypingTimeout.
+	Typing() error
+	// TypingTimeout returns the interval between typing events sent by the
+	// client as well as the timeout before the client should remove the typer.
+	// Typically, a constant should be returned.
+	TypingTimeout() time.Duration
+	// TypingSubscribe subscribes the given indicator to typing events sent by
+	// the backend. The added event handlers have to be removed by the backend
+	// when the stop() callback from JoinServer is called.
+	//
+	// This method does not take in a context, as it's supposed to only use
+	// event handlers and not do any IO calls. Nonetheless, the client must
+	// treat it like it does and call it asynchronously.
+	TypingSubscribe(TypingIndicator) error
+}
+
+// Typer is an individual user that's typing. This interface is used
+// interchangably in TypingIndicator and thus ServerMessageTypingIndicator as
+// well.
+type Typer interface {
+	MessageAuthor
 }
 
 // ServerMessageSendCompleter optionally extends ServerMessageSender to add
@@ -310,7 +340,7 @@ type MessageUpdate interface {
 // together.
 type MessageAuthor interface {
 	Identifier
-	Name() text.Rich
+	Namer
 }
 
 // MessageAuthorAvatar is an optional interface that MessageAuthor could

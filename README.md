@@ -1,4 +1,4 @@
-# cchat
+# [cchat](https://godoc.org/github.com/diamondburned/cchat)
 
 A set of stabilized interfaces for cchat implementations, joining the backend
 and frontend together.
@@ -157,9 +157,6 @@ A server is any entity that is usually a channel or a guild.
 -   ServerList and/or ServerMessage
 -   ServerNickname (optional)
 -   Icon (optional)
--   ServerMessageEditor (optional)
--   ServerMessageActioner (optional)
--   ServerMessageIndicator (optional)
 
 
 
@@ -171,7 +168,11 @@ would be channels in Discord and IRC.
 #### Interfaces
 
 -   ServerMessageSender (optional): adds message sending capability.
--   ServerMessageSendCompleter (optional): adds message completion capability.
+-   ServerMessageSendCompleter (optional): adds message input completion capability.
+-   ServerMessageEditor (optional): adds message editing capability.
+-   ServerMessageActioner (optional): adds custom actions capability.
+-   ServerMessageUnreadIndicator (optional): adds unread indication capability.
+-   ServerMessageTypingIndicator (optional): adds typing indication capability.
 
 
 
@@ -281,3 +282,12 @@ nodes as well. For example, if a server is unread, then its parent servers as
 well as the session node should indicate the same status. Highlighting the
 session and service nodes are, however, implementation details, meaning that
 this decision is up to the frontend to decide.
+
+
+
+### TypingIndicator
+
+The frontend can arbitrarily implement this on any of their containers, which
+would add typing indicator capability. This is similar to Discord's and IRCv3's.
+For more information, refer to the documentation for TypingIndicator and
+ServerMessageTypingIndicator in GoDoc.
