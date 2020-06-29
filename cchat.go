@@ -165,7 +165,7 @@ type Server interface {
 // implement ServerMessage also don't need to implement ServerNickname. By
 // default, the session name should be used.
 type ServerNickname interface {
-	Nickname(context.Context, LabelContainer) error
+	Nickname(context.Context, LabelContainer) (stop func(), err error)
 }
 
 // Icon is an extra interface that an interface could implement for an icon.
@@ -175,7 +175,7 @@ type ServerNickname interface {
 // For session, the avatar should be the same as the one returned by messages
 // sent by the current user.
 type Icon interface {
-	Icon(context.Context, IconContainer) error
+	Icon(context.Context, IconContainer) (stop func(), err error)
 }
 
 // ServerList is for servers that contain children servers. This is similar to
@@ -210,6 +210,9 @@ type ServerMessageUnreadIndicator interface {
 	// UnreadIndicate subscribes the given unread indicator for unread and
 	// mention events. Examples include when a new message is arrived and the
 	// backend needs to indicate that it's unread.
+	//
+	// This function does not provide a way to remove callbacks, as like any
+	// other server containers, it's supposed to be added and never removed.
 	UnreadIndicate(UnreadIndicator) error
 }
 
@@ -269,12 +272,12 @@ type ServerMessageTypingIndicator interface {
 	TypingTimeout() time.Duration
 	// TypingSubscribe subscribes the given indicator to typing events sent by
 	// the backend. The added event handlers have to be removed by the backend
-	// when the stop() callback from JoinServer is called.
+	// when the stop() callback is called.
 	//
 	// This method does not take in a context, as it's supposed to only use
 	// event handlers and not do any IO calls. Nonetheless, the client must
 	// treat it like it does and call it asynchronously.
-	TypingSubscribe(TypingIndicator) error
+	TypingSubscribe(TypingIndicator) (stop func(), err error)
 }
 
 // Typer is an individual user that's typing. This interface is used

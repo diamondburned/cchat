@@ -1,6 +1,8 @@
 package cchat
 
-import "github.com/diamondburned/cchat/text"
+import (
+	"github.com/diamondburned/cchat/text"
+)
 
 // ServersContainer is a frontend implementation for a server view, with
 // synchronous callbacks to render those events. The frontend is typically
