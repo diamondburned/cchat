@@ -132,11 +132,18 @@ type SessionSaver interface {
 
 // Commander is an optional interface that a session could implement for command
 // support. This is different from just intercepting the SendMessage() API, as
-// this extends the entire session.
+// this extends globally to the entire session.
 type Commander interface {
 	// RunCommand executes the given command, with the slice being already split
 	// arguments, similar to os.Args. The function could return an output
 	// stream, in which the frontend must display it live and close it on EOF.
+	//
+	// The function must not do any IO; if it does, then they have to be in a
+	// goroutine and stream their results to the ReadCloser.
+	//
+	// The client should make guarantees that an empty string (and thus a
+	// zero-length string slice) should be ignored. The backend should be able
+	// to assume that the argument slice is always length 1 or more.
 	RunCommand([]string) (io.ReadCloser, error)
 }
 
