@@ -35,7 +35,8 @@ type LabelContainer interface {
 }
 
 // IconContainer is a generic interface for any container that can hold an
-// image. It's typically used for icons that can update itself.
+// image. It's typically used for icons that can update itself. Frontends should
+// round these icons. For images that shouldn't be rounded, use ImageContainer.
 //
 // Methods may call SetIcon at any time in its main thread, so the frontend must
 // do any I/O (including downloading the image) in another goroutine to avoid
@@ -44,11 +45,10 @@ type IconContainer interface {
 	SetIcon(url string)
 }
 
-// RoundIconContainer is a container similar to IconContainer, but the frontend
-// should use round corners for the images. Generally, frontend implementations
-// could implement both interfaces within the same struct.
-type RoundIconContainer interface {
-	SetRoundIcon(url string)
+// ImageContainer does nothing; it's reserved for future API usages. Typically,
+// images don't have round corners while icons do.
+type ImageContainer interface {
+	SetImage(url string)
 }
 
 // UnreadIndicator is a generic interface for any container that can have

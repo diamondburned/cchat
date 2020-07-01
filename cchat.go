@@ -322,8 +322,9 @@ type CompletionEntry struct {
 	// IconURL is the URL to the icon that will be displayed on the left of the
 	// text. This field is optional.
 	IconURL string
-	// IconRound returns whether or not the icons are round.
-	IconRound bool
+	// Image returns whether or not the icon URL is actually an image, which
+	// indicates that the frontend should not do rounded corners.
+	Image bool
 }
 
 // MessageHeader implements the interface for any message event.
