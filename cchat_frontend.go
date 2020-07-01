@@ -44,6 +44,13 @@ type IconContainer interface {
 	SetIcon(url string)
 }
 
+// RoundIconContainer is a container similar to IconContainer, but the frontend
+// should use round corners for the images. Generally, frontend implementations
+// could implement both interfaces within the same struct.
+type RoundIconContainer interface {
+	SetRoundIcon(url string)
+}
+
 // UnreadIndicator is a generic interface for any container that can have
 // different styles to indicate an unread and/or mentioned server.
 //

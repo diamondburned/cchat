@@ -315,9 +315,15 @@ type CompletionEntry struct {
 	Raw string
 	// Text is the label to be displayed.
 	Text text.Rich
+	// Secondary is the label to be displayed on the second line, on the right
+	// of Text, or not displayed at all. This should be optional. This text may
+	// be dimmed out as styling.
+	Secondary text.Rich
 	// IconURL is the URL to the icon that will be displayed on the left of the
 	// text. This field is optional.
 	IconURL string
+	// IconRound returns whether or not the icons are round.
+	IconRound bool
 }
 
 // MessageHeader implements the interface for any message event.
