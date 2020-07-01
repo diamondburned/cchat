@@ -225,6 +225,12 @@ The icon container is similar to the label container. Refer to above.
 
 
 
+### RoundIconContainer
+
+Similar to IconContainer, but contains images with rounded corners.
+
+
+
 ### ServersContainer
 
 A servers container is any type of view that displays the list of servers. It
