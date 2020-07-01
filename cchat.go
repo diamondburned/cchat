@@ -292,6 +292,7 @@ type ServerMessageTypingIndicator interface {
 // well.
 type Typer interface {
 	MessageAuthor
+	Time() time.Time
 }
 
 // ServerMessageSendCompleter optionally extends ServerMessageSender to add
