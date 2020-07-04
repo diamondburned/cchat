@@ -48,6 +48,21 @@ type Imager interface {
 	ImageText() string
 }
 
+// Avatarer implies the segment should be replaced with a rounded-corners
+// image. This works similarly to Imager.
+type Avatarer interface {
+	Segment
+	// Avatar returns the URL for the image.
+	Avatar() (url string)
+	// AvatarSize returns the requested dimension for the image. This function
+	// could return (0, 0), which the frontend should use the avatar's
+	// dimensions.
+	AvatarSize() (size int)
+	// AvatarText returns the underlying text of the image. Frontends could use
+	// this for hovering or displaying the text instead of the image.
+	AvatarText() string
+}
+
 // Colorer is a text color format that a segment could implement. This is to be
 // applied directly onto the text.
 type Colorer interface {
