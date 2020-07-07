@@ -21,6 +21,9 @@ func (r Rich) String() string {
 // this to determine when the format starts and ends. They will also assert this
 // interface to any other formatting interface, including Linker, Colorer and
 // Attributor.
+//
+// Note that a segment may implement multiple interfaces. For example, a
+// Mentioner may also implement Colorer.
 type Segment interface {
 	Bounds() (start, end int)
 }
@@ -61,6 +64,15 @@ type Avatarer interface {
 	// AvatarText returns the underlying text of the image. Frontends could use
 	// this for hovering or displaying the text instead of the image.
 	AvatarText() string
+}
+
+// Mentioner implies that the segment can be clickable, and when clicked it
+// should open up a dialog containing information from MentionInfo().
+type Mentioner interface {
+	Segment
+	// MentionInfo returns the popup information of the mentioned segment. This
+	// is typically user information or something similar to that context.
+	MentionInfo() Rich
 }
 
 // Colorer is a text color format that a segment could implement. This is to be
