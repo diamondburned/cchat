@@ -230,6 +230,14 @@ type ServerMessageSender interface {
 	SendMessage(SendableMessage) error
 }
 
+type ServerMessageAttachmentSender interface {
+	// SendAttachments sends only message attachments. The frontend would
+	// most of the time use SendableMessage that implements
+	// SendableMessageAttachments, but this method is useful for detecting
+	// capabilities.
+	SendAttachments([]MessageAttachment) error
+}
+
 // ServerMessageEditor optionally extends ServerMessage to add message editing
 // capability to the server. Only EditMessage can have IO.
 type ServerMessageEditor interface {

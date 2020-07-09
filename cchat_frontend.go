@@ -1,6 +1,8 @@
 package cchat
 
 import (
+	"io"
+
 	"github.com/diamondburned/cchat/text"
 )
 
@@ -88,4 +90,21 @@ type TypingIndicator interface {
 // a message that can be sent with SendMessage().
 type SendableMessage interface {
 	Content() string
+}
+
+// SendableMessageAttachments extends SendableMessage which adds attachments
+// into the message. Backends that can use this interface should implement
+// ServerMessageAttachmentSender.
+type SendableMessageAttachments interface {
+	Attachments() []MessageAttachment
+}
+
+// MessageAttachment represents a single file attachment.
+//
+// If needed, the frontend will close the reader after the message is sent, that
+// is when the SendMessage function returns. The backend must not use the reader
+// after that.
+type MessageAttachment struct {
+	io.Reader
+	Name string
 }
