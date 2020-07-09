@@ -169,6 +169,7 @@ would be channels in Discord and IRC.
 
 -   ServerMessageSender (optional): adds message sending capability.
 -   ServerMessageSendCompleter (optional): adds message input completion capability.
+-   ServerMessageAttachmentSender (optional): adds attachment sending capability
 -   ServerMessageEditor (optional): adds message editing capability.
 -   ServerMessageActioner (optional): adds custom actions capability.
 -   ServerMessageUnreadIndicator (optional): adds unread indication capability.
@@ -269,6 +270,7 @@ The frontend could implement this interface and check if incoming
 #### Interfaces (only known)
 
 -   MessageNonce (optional)
+-   SendableMessageAttachments (optional): adds attachments into the message
 
 
 

@@ -230,7 +230,12 @@ type ServerMessageSender interface {
 	SendMessage(SendableMessage) error
 }
 
+// ServerMessageAttachmentSender optionally extends ServerMessageSender to
+// indicate that the backend can accept attachments in its messages. The
+// attachments will still be sent through SendMessage, though this interface
+// will mostly be used to indicate the capability.
 type ServerMessageAttachmentSender interface {
+	ServerMessageSender
 	// SendAttachments sends only message attachments. The frontend would
 	// most of the time use SendableMessage that implements
 	// SendableMessageAttachments, but this method is useful for detecting
