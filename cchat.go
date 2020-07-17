@@ -218,9 +218,10 @@ type ServerMessageUnreadIndicator interface {
 	// mention events. Examples include when a new message is arrived and the
 	// backend needs to indicate that it's unread.
 	//
-	// This function does not provide a way to remove callbacks, as like any
-	// other server containers, it's supposed to be added and never removed.
-	UnreadIndicate(UnreadIndicator) error
+	// This function must provide a way to remove callbacks, as clients must
+	// call this when the old server is destroyed, such as when Servers is
+	// called.
+	UnreadIndicate(UnreadIndicator) (stop func(), err error)
 }
 
 // ServerMessageSender optionally extends ServerMessage to add message sending
