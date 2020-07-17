@@ -63,10 +63,7 @@ type ImageContainer interface {
 type UnreadIndicator interface {
 	// Unread sets the container's unread state to the given boolean. The
 	// frontend may choose how to represent this.
-	SetUnread(bool)
-	// SetMentioned calls the frontend to display a notification and update the
-	// unread state to highlight differently.
-	SetMentioned(MessageCreate)
+	SetUnread(unread, mentioned bool)
 }
 
 // TypingIndicator is a generic interface for any container that can display
