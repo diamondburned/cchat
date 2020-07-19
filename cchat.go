@@ -1,7 +1,49 @@
 // Package cchat is a set of stabilized interfaces for cchat implementations,
 // joining the backend and frontend together.
 //
-// For detailed explanations, refer to the README.
+// Backend
+//
+// Methods implemented by the backend that have frontend containers as arguments
+// can do IO. Frontends must NOT rely on individual backend caches and should
+// always assume that they will block.
+//
+// Methods that do not return an error must NOT do any IO to prevent blocking
+// the main thread. Methods that do return an error may do IO, but they should
+// be  documented per method. ID() and Name() must never do any IO.
+//
+// Backend implementations have certain conditions that should be adhered to:
+//
+//    - Storing MessagesContainer and ServersContainer are advised against;
+//    however, they should be done if need be.
+//    - Other containers such as LabelContainer and IconContainer should also
+//    not be stored; however, the same rule as above applies.
+//    - For the server list, icon updates and such that happen after their calls
+//    should use SetServers().
+//    - For the nickname of the current server, the backend can store the state
+//    of the label container. It must, however, remove the container when the
+//    stop callback from JoinServer() is called.
+//    - Some methods that take in a container may take in a context as well.
+//    Although implementations don't have to use this context, it should try to.
+//
+// Note: IO in most cases usually refer to networking, but they should files and
+// anything that could block, such as mutexes or semaphores.
+//
+// Note: As mentioned above, contexts are optional for both the frontend and
+// backend. The frontend may use it for cancellation, and the backend may ignore
+// it.
+//
+// Frontend
+//
+// Frontend contains all interfaces that a frontend can or must implement. The
+// backend may call these methods any time from any goroutine. Thus, they should
+// be thread-safe. They should also not block the call by doing so, as backends
+// may call these methods in its own main thread.
+//
+// It is worth pointing out that frontend container interfaces will not have an
+// error handling API, as frontends can do that themselves. Errors returned by
+// backend methods will be errors from the backend itself and never the frontend
+// errors.
+//
 package cchat
 
 import (
@@ -12,8 +54,27 @@ import (
 	"github.com/diamondburned/cchat/text"
 )
 
-// Service contains the bare minimum set of interface that a backend has to
-// implement. Core can also implement Authenticator.
+// A service is a complete service that's capable of multiple sessions. It has
+// to implement the Authenticate() method, which returns an implementation of
+// Authenticator.
+//
+// A service can implement SessionRestorer, which would indicate the frontend
+// that it can restore past sessions. Sessions are saved using the SessionSaver
+// interface that Session can implement.
+//
+// A service can also implement Configurator if it has additional
+// configurations. The current API is a flat key-value map, which can be parsed
+// by the backend itself into more meaningful data structures. All
+// configurations must be optional, as frontends may not implement a
+// configurator UI.
+//
+// Service can implement the following interfaces:
+//
+//    - Namer
+//    - SessionRestorer (optional)
+//    - Configurator (optional)
+//    - Icon (optional)
+//
 type Service interface {
 	// Namer returns the name of the service.
 	Namer
@@ -54,17 +115,28 @@ func (err *ErrInvalidConfigAtField) Unwrap() error {
 	return err.Err
 }
 
-// Authenticator is what the backend can implement for authentication. A typical
-// authentication frontend implementation would look like this:
+// The authenticator interface allows for a multistage initial authentication
+// API that the backend could use. Multistage is done by calling
+// AuthenticateForm then Authenticate again forever until no errors are
+// returned.
+//
+//    var s *cchat.Session
+//    var err error
 //
 //    for {
+//        // Pseudo-function to render the form and return the results of those forms
+//        // when the user confirms it.
 //        outputs := renderAuthForm(svc.AuthenticateForm())
-//        if err := svc.Authenticate(outputs); err != nil {
-//            log.Println("Error while authenticating:", err)
+//
+//        s, err = svc.Authenticate(outputs)
+//        if err != nil {
+//            renderError(errors.Wrap(err, "Error while authenticating"))
 //            continue // retry
 //        }
+//
 //        break // success
 //    }
+//
 type Authenticator interface {
 	// AuthenticateForm should return a list of authentication entries for
 	// the frontend to render.
@@ -84,7 +156,9 @@ type AuthenticateEntry struct {
 }
 
 // Identifier requires ID() to return a uniquely identifiable string for
-// whatever this is embedded into. Typically, servers and messages have IDs.
+// whatever this is embedded into. Typically, servers and messages have IDs. It
+// is worth mentioning that IDs should be consistent throughout the lifespan of
+// the program or maybe even forever.
 type Identifier interface {
 	ID() string
 }
@@ -95,8 +169,25 @@ type Namer interface {
 	Name() text.Rich
 }
 
-// Service contains the bare minimum set of interface that a backend has to
-// implement. Core can also implement Authenticator.
+// A session is returned after authentication on the service. Session implements
+// Name(), which should return the username most of the time. It also implements
+// ID(), which might be used by frontends to check against MessageAuthor.ID()
+// and other things.
+//
+// A session can implement SessionSaver, which would allow the frontend to save
+// the session into its keyring at any time. Whether the keyring is completely
+// secure or not is up to the frontend. For a Gtk client, that would be using
+// the GNOME Keyring daemon.
+//
+// Session can implement the following interfaces:
+//
+//    - Identifier
+//    - Namer
+//    - ServerList
+//    - Icon (optional)
+//    - Commander (optional)
+//    - SessionSaver (optional)
+//
 type Session interface {
 	// Identifier should typically return the user ID.
 	Identifier
@@ -133,6 +224,11 @@ type SessionSaver interface {
 // Commander is an optional interface that a session could implement for command
 // support. This is different from just intercepting the SendMessage() API, as
 // this extends globally to the entire session.
+//
+// Commander can implement the following interfaces:
+//
+//    - CommandCompleter (optional)
+//
 type Commander interface {
 	// RunCommand executes the given command, with the slice being already split
 	// arguments, similar to os.Args. The function could return an output
@@ -159,6 +255,15 @@ type CommandCompleter interface {
 // Server is a single server-like entity that could translate to a guild, a
 // channel, a chat-room, and such. A server must implement at least ServerList
 // or ServerMessage, else the frontend must treat it as a no-op.
+//
+// Server can implement the following interfaces:
+//
+//    - Identifier
+//    - Namer
+//    - ServerList and/or ServerMessage (and its interfaces)
+//    - ServerNickname (optional)
+//    - Icon (optional)
+//
 type Server interface {
 	Identifier
 	Namer
@@ -203,10 +308,25 @@ type ServerList interface {
 
 // ServerMessage is for servers that contain messages. This is similar to
 // Discord or IRC channels.
+//
+// ServerMessage can implement the following interfaces:
+//
+//    - ServerMessageSender (optional): adds message sending capability.
+//    - ServerMessageSendCompleter (optional): adds message input completion
+//    capability.
+//    - ServerMessageAttachmentSender (optional): adds attachment sending
+//    capability.
+//    - ServerMessageEditor (optional): adds message editing capability.
+//    - ServerMessageActioner (optional): adds custom actions capability.
+//    - ServerMessageUnreadIndicator (optional): adds unread indication
+//    capability.
+//    - ServerMessageTypingIndicator (optional): adds typing indication
+//    capability.
+//    - ServerMessageMemberLister (optional): adds member listing capability.
+//
 type ServerMessage interface {
-	// JoinServer should be called if Servers() returns nil, in which the
-	// backend should connect to the server and start calling methods in the
-	// container.
+	// JoinServer joins a server that's capable of receiving messages. The
+	// server may not necessarily support sending messages.
 	JoinServer(context.Context, MessagesContainer) (stop func(), err error)
 }
 
@@ -342,7 +462,78 @@ type CompletionEntry struct {
 	Image bool
 }
 
-// MessageHeader implements the interface for any message event.
+// ServerMessageMemberLister optionally extends ServerMessage to add a member
+// list into each channel. This function works similarly to ServerMessage's
+// JoinServer.
+type ServerMessageMemberLister interface {
+	// ListMembers assigns the given container to the channel's member list.
+	// The given context may be used to provide HTTP request cancellations, but
+	// frontends must not rely solely on this, as the general context rules
+	// applies.
+	ListMembers(context.Context, MemberListContainer) (stop func(), err error)
+}
+
+// UserStatus represents a user's status. This might be used by the frontend to
+// visually display the status.
+type UserStatus uint8
+
+const (
+	UnknownStatus UserStatus = iota
+	OnlineStatus
+	IdleStatus
+	BusyStatus // also known as Do Not Disturb
+	AwayStatus
+	OfflineStatus
+	InvisibleStatus // reserved; currently unused
+)
+
+// String formats a user status as a title string, such as "Online" or
+// "Unknown". It treats unknown constants as UnknownStatus.
+func (s UserStatus) String() string {
+	switch s {
+	case OnlineStatus:
+		return "Online"
+	case IdleStatus:
+		return "Idle"
+	case BusyStatus:
+		return "Busy"
+	case AwayStatus:
+		return "Away"
+	case OfflineStatus:
+		return "Offline"
+	case InvisibleStatus:
+		return "Invisible"
+	case UnknownStatus:
+		fallthrough
+	default:
+		return "Unknown"
+	}
+}
+
+// ListMember represents a single member in the member list. This is a base
+// interface that may implement more interfaces, such as Iconer for the user's
+// avatar. The frontend may give everyone an avatar regardless, or it may not
+// show any avatars at all.
+//
+// This interface works similarly to a slightly extended MessageAuthor
+// interface.
+type ListMember interface {
+	// Identifier identifies the individual member. This works similarly to
+	// MessageAuthor.
+	Identifier
+	// Namer returns the name of the member. This works similarly to a
+	// MessageAuthor.
+	Namer
+	// Status returns the status of the member. The backend does not have to
+	// show offline members with the offline status if it doesn't want to show
+	// offline menbers at all.
+	Status() UserStatus
+	// Secondary returns the subtext of this member. This could be anything,
+	// such as a user's custom status or away reason.
+	Secondary() text.Rich
+}
+
+// MessageHeader implements the minimum interface for any message event.
 type MessageHeader interface {
 	Identifier
 	Time() time.Time

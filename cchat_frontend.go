@@ -6,10 +6,13 @@ import (
 	"github.com/diamondburned/cchat/text"
 )
 
-// ServersContainer is a frontend implementation for a server view, with
-// synchronous callbacks to render those events. The frontend is typically
-// expected to reset the entire list, but it can do so with or without deleting
-// everything and starting all over again.
+// ServersContainer is any type of view that displays the list of servers. It
+// should implement a SetServers([]Server) that the backend could use to call
+// anytime the server list changes (at all).
+//
+// Typically, most frontends should implement this interface onto a tree node,
+// as servers can be infinitely nested. Frontends should also reset the entire
+// node and its children when SetServers is called again.
 type ServersContainer interface {
 	// SetServer is called by the backend service to request a reset of the
 	// server list. The frontend can choose to call Servers() on each of the
@@ -18,8 +21,13 @@ type ServersContainer interface {
 	SetServers([]Server)
 }
 
-// MessagesContainer is a frontend implementation for a message view, with
-// thread-safe callbacks to render those events.
+// MessagesContainer is a view implementation that displays a list of messages
+// live. This implements the 3 most common message events: CreateMessage,
+// UpdateMessage and DeleteMessage. The frontend must handle all 3.
+//
+// Since this container interface extends a single Server, the frontend is
+// allowed to have multiple views. This is usually done with tabs or splits, but
+// the backend should update them all nonetheless.
 type MessagesContainer interface {
 	CreateMessage(MessageCreate)
 	UpdateMessage(MessageUpdate)
@@ -53,13 +61,20 @@ type ImageContainer interface {
 	SetImage(url string)
 }
 
-// UnreadIndicator is a generic interface for any container that can have
-// different styles to indicate an unread and/or mentioned server.
+// UnreadIndicator is an interface that a single server container (such as a
+// button or a tree node) can implement if it's capable of indicating the read
+// and mentioned status for that channel.
 //
-// Servers that have this highlighted must traverse up the tree and highlight
-// their parent servers too, if needed.
+// Server containers that implement this has to implement both SetUnread and
+// SetMentioned, and they should also represent those statuses differently. For
+// example, a mentioned channel could have a red outline, while an unread
+// channel could appear brighter.
 //
-// Methods that have this interface as its arguments can do IO.
+// Server containers are expected to represent this information in their parent
+// nodes as well. For example, if a server is unread, then its parent servers as
+// well as the session node should indicate the same status. Highlighting the
+// session and service nodes are, however, implementation details, meaning that
+// this decision is up to the frontend to decide.
 type UnreadIndicator interface {
 	// Unread sets the container's unread state to the given boolean. The
 	// frontend may choose how to represent this.
@@ -83,8 +98,67 @@ type TypingIndicator interface {
 	RemoveTyper(id string)
 }
 
+// MemberListContainer is a generic interface for any container that can display
+// a member list. This is similar to Discord's right-side member list or IRC's
+// users list. Below is a visual representation of a typical member list
+// container:
+//
+//    +-MemberList-----------\
+//    | +-Section------------|
+//    | |                    |
+//    | | Header - Total     |
+//    | |                    |
+//    | | +-Member-----------|
+//    | | | Name             |
+//    | | |   Secondary      |
+//    | | \__________________|
+//    | |                    |
+//    | | +-Member-----------|
+//    | | | Name             |
+//    | | |   Secondary      |
+//    | | \__________________|
+//    \_\____________________/
+//
+type MemberListContainer interface {
+	// SetSections (re)sets the list of sections to be the given slice. Members
+	// from the old section list should be transferred over to the new section
+	// entry if the section name's content is the same. Old sections that don't
+	// appear in the new slice should be removed.
+	SetSections(sections []MemberListSection)
+	// SetMember adds or updates (or upsert) a member into a section. This
+	// operation must not change the section's member count. As such, changes
+	// should be done separately in SetSection. If the section does not exist,
+	// then the client should ignore this member. As such, backends must call
+	// SetSections first before SetMember on a new section.
+	SetMember(sectionContent string, member ListMember)
+	// RemoveMember removes a member from a section. If neither the member nor
+	// the section exists, then the client should ignore it.
+	RemoveMember(sectionContent string, id string)
+}
+
+// MemberListSection represents a member list section. The section name's
+// content must be unique among other sections from the same list regardless of
+// the rich segments.
+type MemberListSection interface {
+	// Name returns the section name.
+	Name() text.Rich
+	// Total returns the total member count.
+	Total() int
+}
+
 // SendableMessage is the bare minimum interface of a sendable message, that is,
-// a message that can be sent with SendMessage().
+// a message that can be sent with SendMessage(). This allows the frontend to
+// implement its own message data implementation.
+//
+// An example of extending this interface is MessageNonce, which is similar to
+// IRCv3's labeled response extension or Discord's nonces. The frontend could
+// implement this interface and check if incoming MessageCreate events implement
+// the same interface.
+//
+// SendableMessage can implement the following interfaces:
+//
+//    - MessageNonce (optional)
+//    - SendableMessageAttachments (optional): refer to ServerMessageAttachmentSender
 type SendableMessage interface {
 	Content() string
 }
