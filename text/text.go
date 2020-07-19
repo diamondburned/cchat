@@ -68,11 +68,33 @@ type Avatarer interface {
 
 // Mentioner implies that the segment can be clickable, and when clicked it
 // should open up a dialog containing information from MentionInfo().
+//
+// It is worth mentioning that frontends should assume whatever segment that
+// Mentioner highlighted to be the display name of that user. This would allow
+// frontends to flexibly layout the labels.
 type Mentioner interface {
 	Segment
 	// MentionInfo returns the popup information of the mentioned segment. This
 	// is typically user information or something similar to that context.
 	MentionInfo() Rich
+}
+
+// MentionerImage extends Mentioner to give the mentioned object an image.
+// This interface allows the frontend to be more flexible in layouting. A
+// Mentioner can only implement EITHER MentionedImage or MentionedAvatar.
+type MentionerImage interface {
+	Mentioner
+	// Image returns the mentioned object's image URL.
+	Image() (url string)
+}
+
+// MentionerAvatar extends Mentioner to give the mentioned object an avatar.
+// This interface allows the frontend to be more flexible in layouting. A
+// Mentioner can only implement EITHER MentionedImage or MentionedAvatar.
+type MentionerAvatar interface {
+	Mentioner
+	// Avatar returns the mentioned object's avatar URL.
+	Avatar() (url string)
 }
 
 // Colorer is a text color format that a segment could implement. This is to be
