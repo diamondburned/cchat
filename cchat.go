@@ -150,9 +150,11 @@ type Authenticator interface {
 // or password prompt. Passwords or similar entries should have Secrets set to
 // true, which should imply to frontends that the fields be masked.
 type AuthenticateEntry struct {
-	Name      string
-	Secret    bool
-	Multiline bool
+	Name        string
+	Placeholder string
+	Description string
+	Secret      bool
+	Multiline   bool
 }
 
 // Identifier requires ID() to return a uniquely identifiable string for
