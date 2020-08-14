@@ -130,20 +130,30 @@ type MemberListContainer interface {
 	// should be done separately in SetSection. If the section does not exist,
 	// then the client should ignore this member. As such, backends must call
 	// SetSections first before SetMember on a new section.
-	SetMember(sectionContent string, member ListMember)
+	SetMember(sectionID string, member ListMember)
 	// RemoveMember removes a member from a section. If neither the member nor
 	// the section exists, then the client should ignore it.
-	RemoveMember(sectionContent string, id string)
+	RemoveMember(sectionID string, id string)
 }
 
 // MemberListSection represents a member list section. The section name's
 // content must be unique among other sections from the same list regardless of
 // the rich segments.
 type MemberListSection interface {
-	// Name returns the section name.
-	Name() text.Rich
+	// Identifier identifies the current section.
+	Identifier
+	// Namer returns the section name.
+	Namer
 	// Total returns the total member count.
 	Total() int
+	// LoadMore is a method which the client can call to ask for more members.
+	// This method can do IO.
+	//
+	// Clients may call this method on the last section in the section slice;
+	// however, calling this method on any section is allowed. Clients may not
+	// call this method if the number of members in this section is equal to
+	// Total.
+	LoadMore() bool
 }
 
 // SendableMessage is the bare minimum interface of a sendable message, that is,
