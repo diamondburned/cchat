@@ -7,6 +7,11 @@ type Rich struct {
 	Segments []Segment
 }
 
+// Plain creates a rich text with no formatting.
+func Plain(text string) Rich {
+	return Rich{Content: text}
+}
+
 // Empty returns whether or not the rich text is considered empty.
 func (r Rich) Empty() bool {
 	return r.Content == ""
