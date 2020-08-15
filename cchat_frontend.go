@@ -146,6 +146,16 @@ type MemberListSection interface {
 	Namer
 	// Total returns the total member count.
 	Total() int
+}
+
+// MemberListDynamicSection represents a dynamically loaded member list section.
+// The section behaves similarly to MemberListSection, except the information
+// displayed will be considered incomplete until LoadMore returns false.
+//
+// LoadLess can be called by the client to mark chunks as stale, which the
+// server can then unsubscribe from.
+type MemberListDynamicSection interface {
+	MemberListSection
 	// LoadMore is a method which the client can call to ask for more members.
 	// This method can do IO.
 	//
@@ -154,6 +164,13 @@ type MemberListSection interface {
 	// call this method if the number of members in this section is equal to
 	// Total.
 	LoadMore() bool
+	// LoadLess is a method which the client must call after it is done
+	// displaying entries that were added from calling LoadMore.
+	//
+	// The client can call this method exactly as many times as it has called
+	// LoadMore. However, false should be returned if the client should stop,
+	// and future calls without LoadMore should still return false.
+	LoadLess() bool
 }
 
 // SendableMessage is the bare minimum interface of a sendable message, that is,
