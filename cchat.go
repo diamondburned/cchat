@@ -157,12 +157,17 @@ type AuthenticateEntry struct {
 	Multiline   bool
 }
 
+// ID is the type alias for an ID string. This type is used for clarification
+// and documentation purposes only; implementations could either use this type
+// or a string type.
+type ID = string
+
 // Identifier requires ID() to return a uniquely identifiable string for
 // whatever this is embedded into. Typically, servers and messages have IDs. It
 // is worth mentioning that IDs should be consistent throughout the lifespan of
 // the program or maybe even forever.
 type Identifier interface {
-	ID() string
+	ID() ID
 }
 
 // Namer requires Name() to return the name of the object. Typically, this
@@ -325,11 +330,29 @@ type ServerList interface {
 //    - ServerMessageTypingIndicator (optional): adds typing indication
 //    capability.
 //    - ServerMessageMemberLister (optional): adds member listing capability.
+//    - ServerMessageBacklogger (optional): adds chat history capability.
 //
 type ServerMessage interface {
 	// JoinServer joins a server that's capable of receiving messages. The
 	// server may not necessarily support sending messages.
 	JoinServer(context.Context, MessagesContainer) (stop func(), err error)
+}
+
+// ServerMessageBacklogger indicates that the message container has a message
+// history and is capable of fetching that. As there is no stop callback, if the
+// backend needs to fetch messages asynchronously, it is expected to use the
+// context to know when to cancel.
+//
+// The frontend should usually call this method when the user scrolls to the
+// top. It is expected to guarantee not to call MessagesBefore more than once on
+// the same ID.
+//
+// Note: Although backends might rely on this context, the frontend is still
+// expected to invalidate the given container when the channel is changed.
+type ServerMessageBacklogger interface {
+	// MessagesBefore fetches messages before the given message ID into the
+	// MessagesContainer.
+	MessagesBefore(ctx context.Context, before ID, c MessagePrepender) error
 }
 
 // ServerMessageUnreadIndicator is for servers that can contain messages and
@@ -371,13 +394,13 @@ type ServerMessageAttachmentSender interface {
 type ServerMessageEditor interface {
 	// MessageEditable returns whether or not a message can be edited by the
 	// client.
-	MessageEditable(id string) bool
+	MessageEditable(id ID) bool
 	// RawMessageContent gets the original message text for editing. Backends
 	// must not do IO.
-	RawMessageContent(id string) (string, error)
+	RawMessageContent(id ID) (string, error)
 	// EditMessage edits the message with the given ID to the given content,
 	// which is the edited string from RawMessageContent. This method can do IO.
-	EditMessage(id, content string) error
+	EditMessage(id ID, content string) error
 }
 
 // ServerMessageActioner optionally extends ServerMessage to add custom message

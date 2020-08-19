@@ -34,6 +34,14 @@ type MessagesContainer interface {
 	DeleteMessage(MessageDelete)
 }
 
+// MessagePrepender extends MessagesContainer for backlog implementations. The
+// backend is expected to call this interface's method from latest to earliest.
+type MessagePrepender interface {
+	// PrependMessage prepends the given MessageCreate message into the top of
+	// the chat buffer.
+	PrependMessage(MessageCreate)
+}
+
 // LabelContainer is a generic interface for any container that can hold texts.
 // It's typically used for rich text labelling for usernames and server names.
 //
@@ -95,7 +103,7 @@ type TypingIndicator interface {
 	// list of typers. This function is usually not needed, as the client will
 	// take care of removing them after TypingTimeout has been reached or other
 	// conditions listed in ServerMessageTypingIndicator are met.
-	RemoveTyper(id string)
+	RemoveTyper(ID)
 }
 
 // MemberListContainer is a generic interface for any container that can display
@@ -130,10 +138,10 @@ type MemberListContainer interface {
 	// should be done separately in SetSection. If the section does not exist,
 	// then the client should ignore this member. As such, backends must call
 	// SetSections first before SetMember on a new section.
-	SetMember(sectionID string, member ListMember)
+	SetMember(sectionID ID, member ListMember)
 	// RemoveMember removes a member from a section. If neither the member nor
 	// the section exists, then the client should ignore it.
-	RemoveMember(sectionID string, id string)
+	RemoveMember(sectionID, memberID ID)
 }
 
 // MemberListSection represents a member list section. The section name's
