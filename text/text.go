@@ -7,6 +7,9 @@ type Rich struct {
 	Segments []Segment
 }
 
+// Empty describes an empty rich text segment with no formatting.
+var Empty = Rich{}
+
 // Plain creates a rich text with no formatting.
 func Plain(text string) Rich {
 	return Rich{Content: text}
