@@ -49,8 +49,8 @@
 //
 // Below is an example of checking for an extended interface.
 //
-//    if v, ok := server.(cchat.ServerMessageBacklogger); ok && v.IsBacklogger() {
-//        println("Server implements MessageBacklogger.")
+//    if v, ok := server.(cchat.Backlogger); ok && v.IsBacklogger() {
+//        println("Server implements Backlogger.")
 //    }
 //
 // Frontend
