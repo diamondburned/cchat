@@ -4,7 +4,7 @@
 // Backend
 //
 // Methods implemented by the backend that have frontend containers as arguments
-// can do IO. Frontends must NOT rely on individual backend caches and should
+// can do IO. Frontends must NOT rely on individual backend states and should
 // always assume that they will block.
 //
 // Methods that do not return an error must NOT do any IO to prevent blocking
@@ -26,11 +26,32 @@
 //    Although implementations don't have to use this context, it should try to.
 //
 // Note: IO in most cases usually refer to networking, but they should files and
-// anything that could block, such as mutexes or semaphores.
+// anything that is blocking, such as mutexes or semaphores.
 //
 // Note: As mentioned above, contexts are optional for both the frontend and
 // backend. The frontend may use it for cancellation, and the backend may ignore
 // it.
+//
+// Some interfaces can be extended. Interfaces that extend others will usually
+// have the parent interface embedded followed by a method that returns whether
+// or not the frontend can actually use the method. This method is usually named
+// "Is" followd by the interface name with the parent name trimmed off the
+// prefix.
+//
+// Most of the time, backend implementations can always return a constant true
+// on this "Is" method; however, if the implementation cannot be expressed by
+// types alone (e.g. when a server may or may not allow sending messages), then
+// this method can return a variable boolean.
+//
+// Note: Backends must not do IO in the "Is" methods. Instead, it should
+// guarantee that "Is" either returns a value from a state that is pre-fetched
+// or a zero-value boolean (i.e. false).
+//
+// Below is an example of checking for an extended interface.
+//
+//    if v, ok := server.(cchat.ServerMessageBacklogger); ok && v.IsBacklogger() {
+//        println("Server implements MessageBacklogger.")
+//    }
 //
 // Frontend
 //
@@ -48,11 +69,77 @@ package cchat
 
 import (
 	"context"
+	"fmt"
 	"io"
 	"time"
 
 	"github.com/diamondburned/cchat/text"
 )
+
+// ID is the type alias for an ID string. This type is used for clarification
+// and documentation purposes only; implementations could either use this type
+// or a string type.
+type ID = string
+
+// Identifier requires ID() to return a uniquely identifiable string for
+// whatever this is embedded into. Typically, servers and messages have IDs. It
+// is worth mentioning that IDs should be consistent throughout the lifespan of
+// the program or maybe even forever.
+type Identifier interface {
+	ID() ID
+}
+
+// Namer requires Name() to return the name of the object. Typically, this
+// implies usernames for sessions or service names for services.
+type Namer interface {
+	Name() text.Rich
+}
+
+// Iconer is an extra interface that an interface could implement for an icon.
+// Typically, Service would return the service logo, Session would return the
+// user's avatar, and Server would return the server icon.
+//
+// For session, the avatar should be the same as the one returned by messages
+// sent by the current user.
+type Iconer interface {
+	Namer
+	IsIconer() bool
+
+	Icon(context.Context, IconContainer) (stop func(), err error)
+}
+
+// Noncer adds nonce support. A nonce is defined in this context as a unique
+// identifier from the frontend. This interface defines the common nonce getter.
+//
+// Nonces are useful for frontends to know if an incoming event is a reply from
+// the server backend. As such, nonces should be roundtripped through the
+// server. For example, IRC would use labeled responses.
+//
+// Both the backend and frontend must implement this for the feature to work
+// properly. That is, the backend must explicitly check if a type extends to a
+// nonce
+//
+// Contrary to other interfaces that extend with an "Is" method, the Nonce
+// method could return an empty string here.
+type Noncer interface {
+	Nonce() string
+}
+
+// Author is the interface for an identifiable author. The interface defines
+// that an author always have an ID and a name. They can also optionally
+// implement interfaces that extend on those two, such as Iconer, which extends
+// Namer.
+//
+// An example of where this interface is used would be in MessageCreate's Author
+// method or embedded in Typer. The returned ID may or may not be used by the
+// frontend, but backends must guarantee that the Author's ID is in fact a user
+// ID.
+//
+// The frontend may use the ID to squash messages with the same author together.
+type Author interface {
+	Identifier
+	Namer
+}
 
 // A service is a complete service that's capable of multiple sessions. It has
 // to implement the Authenticate() method, which returns an implementation of
@@ -67,52 +154,12 @@ import (
 // by the backend itself into more meaningful data structures. All
 // configurations must be optional, as frontends may not implement a
 // configurator UI.
-//
-// Service can implement the following interfaces:
-//
-//    - Namer
-//    - SessionRestorer (optional)
-//    - Configurator (optional)
-//    - Icon (optional)
-//
 type Service interface {
 	// Namer returns the name of the service.
 	Namer
 	// Authenticate begins the authentication process. It's put into a method so
 	// backends can easily restart the entire process.
 	Authenticate() Authenticator
-}
-
-// SessionRestorer extends Service and is called by the frontend to restore a
-// saved session. The frontend may call this at any time, but it's usually on
-// startup.
-//
-// To save a session, refer to SessionSaver which extends Session.
-type SessionRestorer interface {
-	RestoreSession(map[string]string) (Session, error)
-}
-
-// Configurator is what the backend can implement for an arbitrary configuration
-// API.
-type Configurator interface {
-	Configuration() (map[string]string, error)
-	SetConfiguration(map[string]string) error
-}
-
-// ErrInvalidConfigAtField is the structure for an error at a specific
-// configuration field. Frontends can use this and highlight fields if the
-// backends support it.
-type ErrInvalidConfigAtField struct {
-	Key string
-	Err error
-}
-
-func (err *ErrInvalidConfigAtField) Error() string {
-	return "Error at " + err.Key + ": " + err.Err.Error()
-}
-
-func (err *ErrInvalidConfigAtField) Unwrap() error {
-	return err.Err
 }
 
 // The authenticator interface allows for a multistage initial authentication
@@ -157,23 +204,48 @@ type AuthenticateEntry struct {
 	Multiline   bool
 }
 
-// ID is the type alias for an ID string. This type is used for clarification
-// and documentation purposes only; implementations could either use this type
-// or a string type.
-type ID = string
+// SessionRestorer extends Service and is called by the frontend to restore a
+// saved session. The frontend may call this at any time, but it's usually on
+// startup.
+//
+// To save a session, refer to SessionSaver.
+type SessionRestorer interface {
+	Service
+	IsSessionRestorer() bool
 
-// Identifier requires ID() to return a uniquely identifiable string for
-// whatever this is embedded into. Typically, servers and messages have IDs. It
-// is worth mentioning that IDs should be consistent throughout the lifespan of
-// the program or maybe even forever.
-type Identifier interface {
-	ID() ID
+	RestoreSession(map[string]string) (Session, error)
 }
 
-// Namer requires Name() to return the name of the object. Typically, this
-// implies usernames for sessions or service names for services.
-type Namer interface {
-	Name() text.Rich
+// Configurator is an interface which the backend can implement for a primitive
+// configuration API. Since these methods do return an error, they are allowed
+// to do IO. The frontend should handle this appropriately, including running
+// them asynchronously.
+type Configurator interface {
+	Service
+	IsConfigurator() bool
+
+	Configuration() (map[string]string, error)
+	SetConfiguration(map[string]string) error
+}
+
+// ErrInvalidConfigAtField is the structure for an error at a specific
+// configuration field. Frontends can use this and highlight fields if the
+// backends support it.
+type ErrInvalidConfigAtField struct {
+	Key string
+	Err error
+}
+
+var _ error = (*ErrInvalidConfigAtField)(nil)
+
+// Error formats the error; it satisfies the error interface.
+func (err *ErrInvalidConfigAtField) Error() string {
+	return "Error at " + err.Key + ": " + err.Err.Error()
+}
+
+// Unwrap returns the underlying error.
+func (err *ErrInvalidConfigAtField) Unwrap() error {
+	return err.Err
 }
 
 // A session is returned after authentication on the service. Session implements
@@ -185,16 +257,6 @@ type Namer interface {
 // the session into its keyring at any time. Whether the keyring is completely
 // secure or not is up to the frontend. For a Gtk client, that would be using
 // the GNOME Keyring daemon.
-//
-// Session can implement the following interfaces:
-//
-//    - Identifier
-//    - Namer
-//    - ServerList
-//    - Icon (optional)
-//    - Commander (optional)
-//    - SessionSaver (optional)
-//
 type Session interface {
 	// Identifier should typically return the user ID.
 	Identifier
@@ -215,7 +277,7 @@ type Session interface {
 	// the backend must implement reconnection by itself.
 	Disconnect() error
 
-	ServerList
+	Lister
 }
 
 // SessionSaver extends Session and is called by the frontend to save the
@@ -224,19 +286,26 @@ type Session interface {
 //
 // The frontend can ask to restore a session using SessionRestorer, which
 // extends Service.
+//
+// The SaveSession method must not do IO; if there are any reasons that cause
+// SaveSession to fail, then a nil map should be returned.
 type SessionSaver interface {
-	Save() (map[string]string, error)
+	Session
+	IsSessionSaver() bool
+
+	SaveSession() map[string]string
 }
 
 // Commander is an optional interface that a session could implement for command
 // support. This is different from just intercepting the SendMessage() API, as
 // this extends globally to the entire session.
 //
-// Commander can implement the following interfaces:
-//
-//    - CommandCompleter (optional)
-//
+// A very primitive use of this API would be to provide additional features that
+// are not in cchat through a very basic terminal interface.
 type Commander interface {
+	Session
+	IsCommander() bool
+
 	// RunCommand executes the given command, with the slice being already split
 	// arguments, similar to os.Args. The function could return an output
 	// stream, in which the frontend must display it live and close it on EOF.
@@ -254,6 +323,9 @@ type Commander interface {
 // completion support. This also depends on whether or not the frontend supports
 // it.
 type CommandCompleter interface {
+	Commander
+	IsCommandCompleter() bool
+
 	// CompleteCommand is called with the line and current word, which the
 	// backend should return with a list of new words.
 	CompleteCommand(words []string, wordIndex int) []string
@@ -262,39 +334,9 @@ type CommandCompleter interface {
 // Server is a single server-like entity that could translate to a guild, a
 // channel, a chat-room, and such. A server must implement at least ServerList
 // or ServerMessage, else the frontend must treat it as a no-op.
-//
-// Server can implement the following interfaces:
-//
-//    - Identifier
-//    - Namer
-//    - ServerList and/or ServerMessage (and its interfaces)
-//    - ServerNickname (optional)
-//    - Icon (optional)
-//
 type Server interface {
 	Identifier
 	Namer
-
-	// Implement ServerList and/or ServerMessage.
-}
-
-// ServerNickname extends Server to add a specific user nickname into a server.
-// The frontend should not traverse up the server tree, and thus the backend
-// must handle nickname inheritance. This also means that servers that don't
-// implement ServerMessage also don't need to implement ServerNickname. By
-// default, the session name should be used.
-type ServerNickname interface {
-	Nickname(context.Context, LabelContainer) (stop func(), err error)
-}
-
-// Icon is an extra interface that an interface could implement for an icon.
-// Typically, Service would return the service logo, Session would return the
-// user's avatar, and Server would return the server icon.
-//
-// For session, the avatar should be the same as the one returned by messages
-// sent by the current user.
-type Icon interface {
-	Icon(context.Context, IconContainer) (stop func(), err error)
 }
 
 // ServerList is for servers that contain children servers. This is similar to
@@ -306,7 +348,10 @@ type Icon interface {
 //
 // The backend should call both the container and other icon and label
 // containers, if any.
-type ServerList interface {
+type Lister interface {
+	Server
+	IsLister() bool
+
 	// Servers should call SetServers() on the given ServersContainer to render
 	// all servers. This function can do IO, and the frontend should run this in
 	// a goroutine.
@@ -315,50 +360,54 @@ type ServerList interface {
 
 // ServerMessage is for servers that contain messages. This is similar to
 // Discord or IRC channels.
-//
-// ServerMessage can implement the following interfaces:
-//
-//    - ServerMessageSender (optional): adds message sending capability.
-//    - ServerMessageSendCompleter (optional): adds message input completion
-//    capability.
-//    - ServerMessageAttachmentSender (optional): adds attachment sending
-//    capability.
-//    - ServerMessageEditor (optional): adds message editing capability.
-//    - ServerMessageActioner (optional): adds custom actions capability.
-//    - ServerMessageUnreadIndicator (optional): adds unread indication
-//    capability.
-//    - ServerMessageTypingIndicator (optional): adds typing indication
-//    capability.
-//    - ServerMessageMemberLister (optional): adds member listing capability.
-//    - ServerMessageBacklogger (optional): adds chat history capability.
-//
-type ServerMessage interface {
+type Messager interface {
+	Server
+	IsMessager() bool
+
 	// JoinServer joins a server that's capable of receiving messages. The
 	// server may not necessarily support sending messages.
 	JoinServer(context.Context, MessagesContainer) (stop func(), err error)
 }
 
-// ServerMessageBacklogger indicates that the message container has a message
-// history and is capable of fetching that. As there is no stop callback, if the
-// backend needs to fetch messages asynchronously, it is expected to use the
-// context to know when to cancel.
+// Nicknamer adds the current user's nickname.
+//
+// The frontend will not traverse up the server tree, meaning the backend
+// must handle nickname inheritance. This also means that servers that don't
+// implement ServerMessage also don't need to implement ServerNickname. By
+// default, the session name should be used.
+type Nicknamer interface {
+	Messager
+	IsNicknamer() bool
+
+	Nickname(context.Context, LabelContainer) (stop func(), err error)
+}
+
+// Backlogger adds message history capabilities into a message container. The
+// frontend should typically call this method when the user scrolls to the top.
+//
+// As there is no stop callback, if the backend needs to fetch messages
+// asynchronously, it is expected to use the context to know when to cancel.
 //
 // The frontend should usually call this method when the user scrolls to the
 // top. It is expected to guarantee not to call MessagesBefore more than once on
-// the same ID.
+// the same ID. This can usually be done by deactivating the UI.
 //
 // Note: Although backends might rely on this context, the frontend is still
 // expected to invalidate the given container when the channel is changed.
-type ServerMessageBacklogger interface {
+type Backlogger interface {
+	Messager
+	IsBacklogger() bool
+
 	// MessagesBefore fetches messages before the given message ID into the
 	// MessagesContainer.
 	MessagesBefore(ctx context.Context, before ID, c MessagePrepender) error
 }
 
-// ServerMessageUnreadIndicator is for servers that can contain messages and
-// know from the state if that message makes the server unread and if it
-// contains a message that mentions the user.
-type ServerMessageUnreadIndicator interface {
+// UnreadIndicator adds an unread state API for frontends to use.
+type UnreadIndicator interface {
+	Messager
+	IsUnreadIndicator() bool
+
 	// UnreadIndicate subscribes the given unread indicator for unread and
 	// mention events. Examples include when a new message is arrived and the
 	// backend needs to indicate that it's unread.
@@ -366,36 +415,18 @@ type ServerMessageUnreadIndicator interface {
 	// This function must provide a way to remove callbacks, as clients must
 	// call this when the old server is destroyed, such as when Servers is
 	// called.
-	UnreadIndicate(UnreadIndicator) (stop func(), err error)
+	UnreadIndicate(UnreadContainer) (stop func(), err error)
 }
 
-// ServerMessageSender optionally extends ServerMessage to add message sending
-// capability to the server.
-type ServerMessageSender interface {
-	// SendMessage is called by the frontend to send a message to this channel.
-	SendMessage(SendableMessage) error
-}
+// Editor adds message editing to the messenger. Only EditMessage can do IO.
+type Editor interface {
+	Messager
+	IsEditor() bool
 
-// ServerMessageAttachmentSender optionally extends ServerMessageSender to
-// indicate that the backend can accept attachments in its messages. The
-// attachments will still be sent through SendMessage, though this interface
-// will mostly be used to indicate the capability.
-type ServerMessageAttachmentSender interface {
-	ServerMessageSender
-	// SendAttachments sends only message attachments. The frontend would
-	// most of the time use SendableMessage that implements
-	// SendableMessageAttachments, but this method is useful for detecting
-	// capabilities.
-	SendAttachments([]MessageAttachment) error
-}
-
-// ServerMessageEditor optionally extends ServerMessage to add message editing
-// capability to the server. Only EditMessage can have IO.
-type ServerMessageEditor interface {
 	// MessageEditable returns whether or not a message can be edited by the
-	// client.
+	// client. This method must not do IO.
 	MessageEditable(id ID) bool
-	// RawMessageContent gets the original message text for editing. Backends
+	// RawMessageContent gets the original message text for editing. This method
 	// must not do IO.
 	RawMessageContent(id ID) (string, error)
 	// EditMessage edits the message with the given ID to the given content,
@@ -403,19 +434,20 @@ type ServerMessageEditor interface {
 	EditMessage(id ID, content string) error
 }
 
-// ServerMessageActioner optionally extends ServerMessage to add custom message
-// action capabilities to the server. Similarly to ServerMessageEditor, these
-// functions can have IO.
-type ServerMessageActioner interface {
+// Actioner adds custom message actions into each message. Similarly to
+// ServerMessageEditor, some of these methods may do IO.
+type Actioner interface {
+	Messager
+	IsActioner() bool
+
 	// MessageActions returns a list of possible actions in pretty strings that
-	// the frontend will use to directly display. This function must not do any
-	// IO.
+	// the frontend will use to directly display. This method must not do IO.
 	//
 	// The string slice returned can be nil or empty.
 	MessageActions(messageID string) []string
 	// DoMessageAction executes a message action on the given messageID, which
-	// would be taken from MessageHeader.ID(). This function is allowed to do
-	// IO; the frontend should take care of running this asynchronously.
+	// would be taken from MessageHeader.ID(). This method is allowed to do IO;
+	// the frontend should take care of running it asynchronously.
 	DoMessageAction(action, messageID string) error
 }
 
@@ -426,9 +458,12 @@ type ServerMessageActioner interface {
 // The client should remove a typer when a message is received with the same
 // user ID, when RemoveTyper() is called by the backend or when the timeout
 // returned from TypingTimeout() has been reached.
-type ServerMessageTypingIndicator interface {
+type TypingIndicator interface {
+	Messager
+	IsTypingIndicator() bool
+
 	// Typing is called by the client to indicate that the user is typing. This
-	// function can do IO calls, and the client will take care of calling it in
+	// function can do IO calls, and the client must take care of calling it in
 	// a goroutine (or an asynchronous queue) as well as throttling it to
 	// TypingTimeout.
 	Typing() error
@@ -443,29 +478,7 @@ type ServerMessageTypingIndicator interface {
 	// This method does not take in a context, as it's supposed to only use
 	// event handlers and not do any IO calls. Nonetheless, the client must
 	// treat it like it does and call it asynchronously.
-	TypingSubscribe(TypingIndicator) (stop func(), err error)
-}
-
-// Typer is an individual user that's typing. This interface is used
-// interchangably in TypingIndicator and thus ServerMessageTypingIndicator as
-// well.
-type Typer interface {
-	MessageAuthor
-	Time() time.Time
-}
-
-// ServerMessageSendCompleter optionally extends ServerMessageSender to add
-// autocompletion into the message composer. IO is not allowed and the backend
-// should do that only in goroutines and update its state for future calls.
-//
-// Frontends could utilize the split package inside utils for splitting words
-// and index.
-type ServerMessageSendCompleter interface {
-	// CompleteMessage returns the list of possible completion entries for the
-	// given word list and the current word index. It takes in a list of
-	// whitespace-split slice of string as well as the position of the cursor
-	// relative to the given string slice.
-	CompleteMessage(words []string, current int) []CompletionEntry
+	TypingSubscribe(TypingContainer) (stop func(), err error)
 }
 
 // CompletionEntry is a single completion entry returned by CompleteMessage. The
@@ -487,14 +500,18 @@ type CompletionEntry struct {
 	Image bool
 }
 
-// ServerMessageMemberLister optionally extends ServerMessage to add a member
-// list into each channel. This function works similarly to ServerMessage's
-// JoinServer.
-type ServerMessageMemberLister interface {
+// MemberLister adds a member list into a message server.
+type MemberLister interface {
+	Messager
+	IsMemberLister() bool
+
 	// ListMembers assigns the given container to the channel's member list.
 	// The given context may be used to provide HTTP request cancellations, but
 	// frontends must not rely solely on this, as the general context rules
 	// applies.
+	//
+	// Further behavioral documentations may be in Messenger's JoinServer
+	// method.
 	ListMembers(context.Context, MemberListContainer) (stop func(), err error)
 }
 
@@ -506,7 +523,7 @@ const (
 	UnknownStatus UserStatus = iota
 	OnlineStatus
 	IdleStatus
-	BusyStatus // also known as Do Not Disturb
+	BusyStatus // a.k.a. Do Not Disturb
 	AwayStatus
 	OfflineStatus
 	InvisibleStatus // reserved; currently unused
@@ -529,19 +546,18 @@ func (s UserStatus) String() string {
 	case InvisibleStatus:
 		return "Invisible"
 	case UnknownStatus:
-		fallthrough
-	default:
 		return "Unknown"
+	default:
+		return fmt.Sprintf("UserStatus(%d)", s)
 	}
 }
 
 // ListMember represents a single member in the member list. This is a base
 // interface that may implement more interfaces, such as Iconer for the user's
-// avatar. The frontend may give everyone an avatar regardless, or it may not
-// show any avatars at all.
+// avatar.
 //
-// This interface works similarly to a slightly extended MessageAuthor
-// interface.
+// Note that the frontend may give everyone an avatar regardless, or it may not
+// show any avatars at all.
 type ListMember interface {
 	// Identifier identifies the individual member. This works similarly to
 	// MessageAuthor.
@@ -558,6 +574,45 @@ type ListMember interface {
 	Secondary() text.Rich
 }
 
+// MessageSender adds message sending to a messager. Messagers that don't
+// implement MessageSender will be considered read-only.
+type MessageSender interface {
+	Messager
+	IsMessageSender() bool
+
+	// SendMessage is called by the frontend to send a message to this channel.
+	SendMessage(SendableMessage) error
+}
+
+// AttachmentSender indicates that messages can be sent with attachments. The
+// attachments will be sent through SendMessage using the Attachments interface,
+// though this interface will be used to indicate the capability.
+//
+// A use for this would be hiding the upload button if a backend is not capable
+// of sending attachments.
+type AttachmentSender interface {
+	MessageSender
+	IsAttachmentSender() bool
+}
+
+// MessageCompleter adds autocompletion into the message composer. IO is not
+// allowed, and the backend should do that only in goroutines and update its
+// state for future calls.
+//
+// Frontends could utilize the split package inside utils for splitting words
+// and index. This is the de-facto standard implementation for splitting words,
+// thus backends can rely on their behaviors.
+type MessageCompleter interface {
+	MessageSender
+	IsMessageCompleter() bool
+
+	// CompleteMessage returns the list of possible completion entries for the
+	// given word list and the current word index. It takes in a list of
+	// whitespace-split slice of string as well as the position of the cursor
+	// relative to the given string slice.
+	CompleteMessage(words []string, current int) []CompletionEntry
+}
+
 // MessageHeader implements the minimum interface for any message event.
 type MessageHeader interface {
 	Identifier
@@ -567,7 +622,7 @@ type MessageHeader interface {
 // MessageCreate is the interface for an incoming message.
 type MessageCreate interface {
 	MessageHeader
-	Author() MessageAuthor
+	Author() Author
 	Content() text.Rich
 }
 
@@ -576,27 +631,8 @@ type MessageCreate interface {
 // changed.
 type MessageUpdate interface {
 	MessageHeader
-	Author() MessageAuthor // optional (nilable)
-	Content() text.Rich    // optional (rich.Content == "")
-}
-
-// MessageAuthor is the interface for an identifiable message author. The
-// returned ID may or may not be used by the frontend, but clients must
-// guarantee uniqueness for intended behaviors.
-//
-// The frontend may also use this to squash messages with the same author
-// together.
-type MessageAuthor interface {
-	Identifier
-	Namer
-}
-
-// MessageAuthorAvatar is an optional interface that MessageAuthor could
-// implement. A frontend may optionally support this. A backend may return an
-// empty string, in which the frontend must handle, perhaps by using a
-// placeholder.
-type MessageAuthorAvatar interface {
-	Avatar() (url string)
+	Author() Author     // optional (nilable)
+	Content() text.Rich // optional (rich.Content == "")
 }
 
 // MessageDelete is the interface for a message delete event.
@@ -604,22 +640,19 @@ type MessageDelete interface {
 	MessageHeader
 }
 
-// MessageNonce extends SendableMessage and MessageCreate to add nonce support.
-// This is known in IRC as labeled responses. Clients could use this for
-// various purposes, including knowing when a message has been sent
-// successfully.
-//
-// Both the backend and frontend must implement this for the feature to work
-// properly. The backend must check if SendableMessage implements MessageNonce,
-// and the frontend must check if MessageCreate implements MessageNonce.
+// MessageNonce adds a nonce getter into the incoming messages from backends.
+// Refer to the Noncer interface for more documentation.
 type MessageNonce interface {
-	Nonce() string
+	MessageCreate
+	Noncer
 }
 
 // MessageMentioned extends MessageCreate to add mentioning support. The
 // frontend may or may not implement this. If it does, the frontend will
 // typically format the message into a notification and play a sound.
 type MessageMentioned interface {
+	MessageCreate
+
 	// Mentioned returns whether or not the message mentions the current user.
 	Mentioned() bool
 }

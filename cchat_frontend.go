@@ -2,6 +2,7 @@ package cchat
 
 import (
 	"io"
+	"time"
 
 	"github.com/diamondburned/cchat/text"
 )
@@ -83,7 +84,7 @@ type ImageContainer interface {
 // well as the session node should indicate the same status. Highlighting the
 // session and service nodes are, however, implementation details, meaning that
 // this decision is up to the frontend to decide.
-type UnreadIndicator interface {
+type UnreadContainer interface {
 	// Unread sets the container's unread state to the given boolean. The
 	// frontend may choose how to represent this.
 	SetUnread(unread, mentioned bool)
@@ -95,7 +96,7 @@ type UnreadIndicator interface {
 // assume that to be the case and send events appropriately.
 //
 // For more documentation, refer to ServerMessageTypingIndicator.
-type TypingIndicator interface {
+type TypingContainer interface {
 	// AddTyper appends the typer into the frontend's list of typers, or it
 	// pushes this typer on top of others.
 	AddTyper(Typer)
@@ -104,6 +105,14 @@ type TypingIndicator interface {
 	// take care of removing them after TypingTimeout has been reached or other
 	// conditions listed in ServerMessageTypingIndicator are met.
 	RemoveTyper(ID)
+}
+
+// Typer is an individual user that's typing. This interface is used
+// interchangably in TypingIndicator and thus ServerMessageTypingIndicator as
+// well.
+type Typer interface {
+	Author
+	Time() time.Time
 }
 
 // MemberListContainer is a generic interface for any container that can display
@@ -132,7 +141,7 @@ type MemberListContainer interface {
 	// from the old section list should be transferred over to the new section
 	// entry if the section name's content is the same. Old sections that don't
 	// appear in the new slice should be removed.
-	SetSections(sections []MemberListSection)
+	SetSections(sections []MemberSection)
 	// SetMember adds or updates (or upsert) a member into a section. This
 	// operation must not change the section's member count. As such, changes
 	// should be done separately in SetSection. If the section does not exist,
@@ -147,7 +156,7 @@ type MemberListContainer interface {
 // MemberListSection represents a member list section. The section name's
 // content must be unique among other sections from the same list regardless of
 // the rich segments.
-type MemberListSection interface {
+type MemberSection interface {
 	// Identifier identifies the current section.
 	Identifier
 	// Namer returns the section name.
@@ -162,8 +171,10 @@ type MemberListSection interface {
 //
 // LoadLess can be called by the client to mark chunks as stale, which the
 // server can then unsubscribe from.
-type MemberListDynamicSection interface {
-	MemberListSection
+type MemberDynamicSection interface {
+	MemberSection
+	IsMemberDynamicSession() bool
+
 	// LoadMore is a method which the client can call to ask for more members.
 	// This method can do IO.
 	//
@@ -198,10 +209,19 @@ type SendableMessage interface {
 	Content() string
 }
 
+// NonceSender adds a nonce getter into the messages to be sent. The frontend
+// should implement this method in its messages to be sent if it checks incoming
+// messages for nonces (through MessageNonce).
+type NonceSender interface {
+	SendableMessage
+	Noncer
+}
+
 // SendableMessageAttachments extends SendableMessage which adds attachments
 // into the message. Backends that can use this interface should implement
 // ServerMessageAttachmentSender.
-type SendableMessageAttachments interface {
+type Attachments interface {
+	SendableMessage
 	Attachments() []MessageAttachment
 }
 
