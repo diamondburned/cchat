@@ -360,9 +360,9 @@ type Lister interface {
 
 // ServerMessage is for servers that contain messages. This is similar to
 // Discord or IRC channels.
-type Messager interface {
+type Messenger interface {
 	Server
-	IsMessager() bool
+	IsMessenger() bool
 
 	// JoinServer joins a server that's capable of receiving messages. The
 	// server may not necessarily support sending messages.
@@ -376,7 +376,7 @@ type Messager interface {
 // implement ServerMessage also don't need to implement ServerNickname. By
 // default, the session name should be used.
 type Nicknamer interface {
-	Messager
+	Messenger
 	IsNicknamer() bool
 
 	Nickname(context.Context, LabelContainer) (stop func(), err error)
@@ -395,7 +395,7 @@ type Nicknamer interface {
 // Note: Although backends might rely on this context, the frontend is still
 // expected to invalidate the given container when the channel is changed.
 type Backlogger interface {
-	Messager
+	Messenger
 	IsBacklogger() bool
 
 	// MessagesBefore fetches messages before the given message ID into the
@@ -405,7 +405,7 @@ type Backlogger interface {
 
 // UnreadIndicator adds an unread state API for frontends to use.
 type UnreadIndicator interface {
-	Messager
+	Messenger
 	IsUnreadIndicator() bool
 
 	// UnreadIndicate subscribes the given unread indicator for unread and
@@ -420,7 +420,7 @@ type UnreadIndicator interface {
 
 // Editor adds message editing to the messenger. Only EditMessage can do IO.
 type Editor interface {
-	Messager
+	Messenger
 	IsEditor() bool
 
 	// MessageEditable returns whether or not a message can be edited by the
@@ -437,7 +437,7 @@ type Editor interface {
 // Actioner adds custom message actions into each message. Similarly to
 // ServerMessageEditor, some of these methods may do IO.
 type Actioner interface {
-	Messager
+	Messenger
 	IsActioner() bool
 
 	// MessageActions returns a list of possible actions in pretty strings that
@@ -459,7 +459,7 @@ type Actioner interface {
 // user ID, when RemoveTyper() is called by the backend or when the timeout
 // returned from TypingTimeout() has been reached.
 type TypingIndicator interface {
-	Messager
+	Messenger
 	IsTypingIndicator() bool
 
 	// Typing is called by the client to indicate that the user is typing. This
@@ -502,7 +502,7 @@ type CompletionEntry struct {
 
 // MemberLister adds a member list into a message server.
 type MemberLister interface {
-	Messager
+	Messenger
 	IsMemberLister() bool
 
 	// ListMembers assigns the given container to the channel's member list.
@@ -574,10 +574,10 @@ type ListMember interface {
 	Secondary() text.Rich
 }
 
-// MessageSender adds message sending to a messager. Messagers that don't
+// MessageSender adds message sending to a messenger. Messengers that don't
 // implement MessageSender will be considered read-only.
 type MessageSender interface {
-	Messager
+	Messenger
 	IsMessageSender() bool
 
 	// SendMessage is called by the frontend to send a message to this channel.
