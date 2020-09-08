@@ -173,7 +173,7 @@ type MemberSection interface {
 // server can then unsubscribe from.
 type MemberDynamicSection interface {
 	MemberSection
-	IsMemberDynamicSession() bool
+	IsMemberDynamicSection() bool
 
 	// LoadMore is a method which the client can call to ask for more members.
 	// This method can do IO.
