@@ -277,7 +277,9 @@ type Session interface {
 	// the backend must implement reconnection by itself.
 	Disconnect() error
 
-	Lister
+	// Servers gets the list of servers. This works similarly to the Lister
+	// interface.
+	Servers(ServersContainer) error
 }
 
 // SessionSaver extends Session and is called by the frontend to save the
