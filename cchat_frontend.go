@@ -1,6 +1,7 @@
 package cchat
 
 import (
+	"fmt"
 	"io"
 	"time"
 
@@ -20,6 +21,19 @@ type ServersContainer interface {
 	// given servers, or it can call that later. The backend should handle both
 	// cases.
 	SetServers([]Server)
+
+	// Update
+	UpdateServer(ServerUpdate)
+}
+
+type ServerUpdate interface {
+	// Server embeds a complete server. Unlike MessageUpdate, which only
+	// returns data on methods that are changed, ServerUpdate's methods must
+	// return the complete data even if they stay the same. As such, zero-value
+	// returns are treated as not updated, including the name.
+	Server
+	// PreviousID returns the ID of the item before this server.
+	PreviousID() ID
 }
 
 // MessagesContainer is a view implementation that displays a list of messages
@@ -41,6 +55,39 @@ type MessagePrepender interface {
 	// PrependMessage prepends the given MessageCreate message into the top of
 	// the chat buffer.
 	PrependMessage(MessageCreate)
+}
+
+// MessageHeader implements the minimum interface for any message event.
+type MessageHeader interface {
+	Identifier
+	Time() time.Time
+}
+
+// MessageCreate is the interface for an incoming message.
+type MessageCreate interface {
+	MessageHeader
+	Author() Author
+	Content() text.Rich
+
+	// Optional interfaces and methods that can return zero-values.
+
+	Noncer
+	// Mentioned returns whether or not the message mentions the current user.
+	Mentioned() bool
+}
+
+// MessageUpdate is the interface for a message update (or edit) event. If the
+// returned text.Rich returns true for Empty(), then the element shouldn't be
+// changed.
+type MessageUpdate interface {
+	MessageHeader
+	Author() Author     // optional (nilable)
+	Content() text.Rich // optional (rich.Content == "")
+}
+
+// MessageDelete is the interface for a message delete event.
+type MessageDelete interface {
+	MessageHeader
 }
 
 // LabelContainer is a generic interface for any container that can hold texts.
@@ -153,6 +200,65 @@ type MemberListContainer interface {
 	RemoveMember(sectionID, memberID ID)
 }
 
+// ListMember represents a single member in the member list. This is a base
+// interface that may implement more interfaces, such as Iconer for the user's
+// avatar.
+//
+// Note that the frontend may give everyone an avatar regardless, or it may not
+// show any avatars at all.
+type ListMember interface {
+	// Identifier identifies the individual member. This works similarly to
+	// MessageAuthor.
+	Identifier
+	// Namer returns the name of the member. This works similarly to a
+	// MessageAuthor.
+	Namer
+	// Status returns the status of the member. The backend does not have to
+	// show offline members with the offline status if it doesn't want to show
+	// offline menbers at all.
+	Status() UserStatus
+	// Secondary returns the subtext of this member. This could be anything,
+	// such as a user's custom status or away reason.
+	Secondary() text.Rich
+}
+
+// UserStatus represents a user's status. This might be used by the frontend to
+// visually display the status.
+type UserStatus uint8
+
+const (
+	UnknownStatus UserStatus = iota
+	OnlineStatus
+	IdleStatus
+	BusyStatus // a.k.a. Do Not Disturb
+	AwayStatus
+	OfflineStatus
+	InvisibleStatus // reserved; currently unused
+)
+
+// String formats a user status as a title string, such as "Online" or
+// "Unknown". It treats unknown constants as UnknownStatus.
+func (s UserStatus) String() string {
+	switch s {
+	case OnlineStatus:
+		return "Online"
+	case IdleStatus:
+		return "Idle"
+	case BusyStatus:
+		return "Busy"
+	case AwayStatus:
+		return "Away"
+	case OfflineStatus:
+		return "Offline"
+	case InvisibleStatus:
+		return "Invisible"
+	case UnknownStatus:
+		return "Unknown"
+	default:
+		return fmt.Sprintf("UserStatus(%d)", s)
+	}
+}
+
 // MemberListSection represents a member list section. The section name's
 // content must be unique among other sections from the same list regardless of
 // the rich segments.
@@ -163,6 +269,10 @@ type MemberSection interface {
 	Namer
 	// Total returns the total member count.
 	Total() int
+
+	// Optionals.
+
+	AsMemberDynamicSection() MemberDynamicSection
 }
 
 // MemberListDynamicSection represents a dynamically loaded member list section.
@@ -172,9 +282,6 @@ type MemberSection interface {
 // LoadLess can be called by the client to mark chunks as stale, which the
 // server can then unsubscribe from.
 type MemberDynamicSection interface {
-	MemberSection
-	IsMemberDynamicSection() bool
-
 	// LoadMore is a method which the client can call to ask for more members.
 	// This method can do IO.
 	//
@@ -207,21 +314,17 @@ type MemberDynamicSection interface {
 //    - SendableMessageAttachments (optional): refer to ServerMessageAttachmentSender
 type SendableMessage interface {
 	Content() string
-}
 
-// NonceSender adds a nonce getter into the messages to be sent. The frontend
-// should implement this method in its messages to be sent if it checks incoming
-// messages for nonces (through MessageNonce).
-type NonceSender interface {
-	SendableMessage
-	Noncer
+	// Optionals.
+
+	AsNoncer() Noncer
+	AsAttachments() Attachments
 }
 
 // SendableMessageAttachments extends SendableMessage which adds attachments
 // into the message. Backends that can use this interface should implement
 // ServerMessageAttachmentSender.
 type Attachments interface {
-	SendableMessage
 	Attachments() []MessageAttachment
 }
 
