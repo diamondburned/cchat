@@ -15,11 +15,13 @@ func generateInterfaces(ifaces []repository.Interface) jen.Code {
 		}
 
 		stmt.Type().Id(iface.Name).InterfaceFunc(func(group *jen.Group) {
-			for _, embed := range iface.Embeds {
-				group.Id(embed.InterfaceName)
-			}
+			if len(iface.Embeds) > 0 {
+				for _, embed := range iface.Embeds {
+					group.Id(embed.InterfaceName)
+				}
 
-			group.Line()
+				group.Line()
+			}
 
 			for _, method := range iface.Methods {
 				var stmt = new(jen.Statement)
@@ -38,7 +40,7 @@ func generateInterfaces(ifaces []repository.Interface) jen.Code {
 					stmt.Params(generateFuncParams(method.Parameters, false)...)
 				case repository.IOMethod:
 					stmt.Params(generateFuncParams(method.Parameters, false)...)
-					stmt.Params(generateFuncParams(method.Parameters, false)...)
+					stmt.Params(generateFuncParamErr(method.ReturnValue, method.ReturnError)...)
 					stmt.Comment("// Blocking")
 				case repository.ContainerMethod:
 					stmt.Params(generateContainerFuncParams(method)...)
@@ -57,6 +59,24 @@ func generateInterfaces(ifaces []repository.Interface) jen.Code {
 
 		stmt.Line()
 		stmt.Line()
+	}
+
+	return stmt
+}
+
+func generateFuncParamErr(param repository.NamedType, genErr bool) []jen.Code {
+	stmt := make([]jen.Code, 0, 2)
+
+	if !param.IsZero() {
+		stmt = append(stmt, generateFuncParam(param))
+	}
+
+	if genErr {
+		if param.Name == "" {
+			stmt = append(stmt, jen.Error())
+		} else {
+			stmt = append(stmt, jen.Err().Error())
+		}
 	}
 
 	return stmt

@@ -495,7 +495,7 @@ var Main = Packages{
 				sent, that is when the SendMessage function returns. The backend
 				must not use the reader after that.
 			`},
-			Name: "MessageAttachments",
+			Name: "MessageAttachment",
 			Fields: []StructField{
 				{NamedType: NamedType{"", "io.Reader"}},
 				{NamedType: NamedType{"Name", "string"}},
@@ -922,7 +922,6 @@ var Main = Packages{
 				AsserterMethod{ChildType: "Editor"},
 				AsserterMethod{ChildType: "Actioner"},
 				AsserterMethod{ChildType: "Nicknamer"},
-				AsserterMethod{ChildType: "Backlogger"},
 				AsserterMethod{ChildType: "MemberLister"},
 				AsserterMethod{ChildType: "UnreadIndicator"},
 				AsserterMethod{ChildType: "TypingIndicator"},
@@ -1061,43 +1060,6 @@ var Main = Packages{
 					HasContext:    true,
 					ContainerType: "LabelContainer",
 					HasStopFn:     true,
-				},
-			},
-		}, {
-			Comment: Comment{`
-				Backlogger adds message history capabilities into a message
-				container. The frontend should typically call this method when
-				the user scrolls to the top.
-				
-				As there is no stop callback, if the backend needs to fetch
-				messages asynchronously, it is expected to use the context to
-				know when to cancel.
-				
-				The frontend should usually call this method when the user
-				scrolls to the top. It is expected to guarantee not to call
-				MessagesBefore more than once on the same ID. This can usually
-				be done by deactivating the UI.
-				
-				Note: Although backends might rely on this context, the frontend
-				is still expected to invalidate the given container when the
-				channel is changed.
-			`},
-			Name: "Backlogger",
-			Methods: []Method{
-				IOMethod{
-					method: method{
-						Comment: Comment{`
-							MessagesBefore fetches messages before the given
-							message ID into the MessagesContainer.
-						`},
-						Name: "MessagesBefore",
-					},
-					Parameters: []NamedType{
-						{Name: "ctx", Type: "context.Context"},
-						{Name: "before", Type: "ID"},
-						{Name: "c", Type: "MessagePrepender"},
-					},
-					ReturnError: true,
 				},
 			},
 		}, {
@@ -1327,7 +1289,6 @@ var Main = Packages{
 					method:     method{Name: "DeleteMessage"},
 					Parameters: []NamedType{{Type: "MessageDelete"}},
 				},
-				AsserterMethod{ChildType: "MessagePrepender"},
 			},
 		}, {
 			Comment: Comment{`
@@ -1649,11 +1610,11 @@ var Main = Packages{
 			},
 		}, {
 			Comment: Comment{`
-				MemberListSection represents a member list section. The section
+				MemberSection represents a member list section. The section
 				name's content must be unique among other sections from the same
 				list regardless of the rich segments.
 			`},
-			Name: "MemberListSection",
+			Name: "MemberSection",
 			Embeds: []EmbeddedInterface{
 				{InterfaceName: "Identifier"},
 				{InterfaceName: "Namer"},
@@ -1672,10 +1633,10 @@ var Main = Packages{
 			},
 		}, {
 			Comment: Comment{`
-				MemberDynamicSection represents a dynamically loaded member
-				list section. The section behaves similarly to
-				MemberListSection, except the information displayed will be
-				considered incomplete until LoadMore returns false.
+				MemberDynamicSection represents a dynamically loaded member list
+				section. The section behaves similarly to MemberSection, except
+				the information displayed will be considered incomplete until
+				LoadMore returns false.
 				
 				LoadLess can be called by the client to mark chunks as stale,
 				which the server can then unsubscribe from.
@@ -1701,16 +1662,17 @@ var Main = Packages{
 				IOMethod{
 					method: method{
 						Comment: Comment{`
-							LoadMore is a method which the client can call to
-							ask for more members. This method can do IO.
+							LoadLess is a method which the client must call
+							after it is done displaying entries that were added
+							from calling LoadMore.
 							
-							Clients may call this method on the last section in
-							the section slice; however, calling this method on
-							any section is allowed. Clients may not call this
-							method if the number of members in this section is
-							equal to Total.
+							The client can call this method exactly as many
+							times as it has called LoadMore. However, false
+							should be returned if the client should stop, and
+							future calls without LoadMore should still return
+							false.
 						`},
-						Name: "LoadMore",
+						Name: "LoadLess",
 					},
 					ReturnValue: NamedType{Type: "bool"},
 				},
@@ -1740,7 +1702,7 @@ var Main = Packages{
 			Comment: Comment{`
 				Attachments extends SendableMessage which adds attachments into
 				the message. Backends that can use this interface should
-				implement ServerMessageAttachmentSender.
+				implement AttachmentSender.
 			`},
 			Name: "Attachments",
 			Methods: []Method{

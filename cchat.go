@@ -1,3 +1,5 @@
+// DO NOT EDIT: THIS FILE IS GENERATED!
+
 // Package cchat is a set of stabilized interfaces for cchat implementations,
 // joining the backend and frontend together.
 //
@@ -126,7 +128,7 @@ type CompletionEntry struct {
 // MessageAttachment represents a single file attachment. If needed, the
 // frontend will close the reader after the message is sent, that is when the
 // SendMessage function returns. The backend must not use the reader after that.
-type MessageAttachments struct {
+type MessageAttachment struct {
 	io.Reader
 	Name string
 }
@@ -245,13 +247,12 @@ type Service interface {
 //    	break // success
 //    }
 type Authenticator interface {
-
 	// AuthenticateForm should return a list of authentication entries for the
 	// frontend to render.
 	AuthenticateForm() []AuthenticateEntry
 	// Authenticate will be called with a list of values with indices correspond to
 	// the returned slice of AuthenticateEntry.
-	Authenticate([]string) []string // Blocking
+	Authenticate([]string) (Session, error) // Blocking
 }
 
 // SessionRestorer extends Service and is called by the frontend to restore a
@@ -260,7 +261,7 @@ type Authenticator interface {
 //
 // To save a session, refer to SessionSaver.
 type SessionRestorer interface {
-	RestoreSession(map[string]string) map[string]string // Blocking
+	RestoreSession(map[string]string) (Session, error) // Blocking
 }
 
 // Configurator is an interface which the backend can implement for a primitive
@@ -268,8 +269,8 @@ type SessionRestorer interface {
 // to do IO. The frontend should handle this appropriately, including running
 // them asynchronously.
 type Configurator interface {
-	Configuration()                                       // Blocking
-	SetConfiguration(map[string]string) map[string]string // Blocking
+	Configuration() (map[string]string, error) // Blocking
+	SetConfiguration(map[string]string) error  // Blocking
 }
 
 // A session is returned after authentication on the service. Session implements
@@ -298,7 +299,7 @@ type Session interface {
 	// When this function fails, the frontend may display the error upfront.
 	// However, it will treat the session as actually disconnected. If needed, the
 	// backend must implement reconnection by itself.
-	Disconnect()                  // Blocking
+	Disconnect() error            // Blocking
 	AsCommander() Commander       // Optional
 	AsSessionSaver() SessionSaver // Optional
 }
@@ -323,7 +324,6 @@ type SessionSaver interface {
 // A very primitive use of this API would be to provide additional features that
 // are not in cchat through a very basic terminal interface.
 type Commander interface {
-
 	// RunCommand executes the given command, with the slice being already split
 	// arguments, similar to os.Args. The function could return an output stream, in
 	// which the frontend must display it live and close it on EOF.
@@ -333,8 +333,8 @@ type Commander interface {
 	// The client should make guarantees that an empty string (and thus a
 	// zero-length string slice) should be ignored. The backend should be able to
 	// assume that the argument slice is always length 1 or more.
-	RunCommand([]string, io.Writer) ([]string, io.Writer) // Blocking
-	AsCompleter() Completer                               // Optional
+	RunCommand([]string, io.Writer) error // Blocking
+	AsCompleter() Completer               // Optional
 }
 
 // Server is a single server-like entity that could translate to a guild, a
@@ -360,7 +360,6 @@ type Server interface {
 // The backend should call both the container and other icon and label
 // containers, if any.
 type Lister interface {
-
 	// Servers should call SetServers() on the given ServersContainer to render all
 	// servers. This function can do IO, and the frontend should run this in a
 	// goroutine.
@@ -370,7 +369,6 @@ type Lister interface {
 // Messenger is for servers that contain messages. This is similar to Discord or
 // IRC channels.
 type Messenger interface {
-
 	// JoinServer joins a server that's capable of receiving messages. The server
 	// may not necessarily support sending messages.
 	JoinServer(context.Context, MessagesContainer) (stop func(), err error)
@@ -378,7 +376,6 @@ type Messenger interface {
 	AsEditor() Editor                   // Optional
 	AsActioner() Actioner               // Optional
 	AsNicknamer() Nicknamer             // Optional
-	AsBacklogger() Backlogger           // Optional
 	AsMemberLister() MemberLister       // Optional
 	AsUnreadIndicator() UnreadIndicator // Optional
 	AsTypingIndicator() TypingIndicator // Optional
@@ -387,9 +384,8 @@ type Messenger interface {
 // Sender adds message sending to a messenger. Messengers that don't implement
 // MessageSender will be considered read-only.
 type Sender interface {
-
 	// Send is called by the frontend to send a message to this channel.
-	Send(SendableMessage) SendableMessage // Blocking
+	Send(SendableMessage) error // Blocking
 	// CanAttach returns whether or not the client is allowed to upload files.
 	CanAttach() bool
 	AsCompleter() Completer // Optional
@@ -397,7 +393,6 @@ type Sender interface {
 
 // Editor adds message editing to the messenger. Only EditMessage can do IO.
 type Editor interface {
-
 	// MessageEditable returns whether or not a message can be edited by the client.
 	// This method must not do IO.
 	MessageEditable(id ID) bool
@@ -406,13 +401,12 @@ type Editor interface {
 	RawMessageContent(id ID) (string, error)
 	// EditMessage edits the message with the given ID to the given content, which
 	// is the edited string from RawMessageContent. This method can do IO.
-	EditMessage(id ID, content string) (id ID, content string) // Blocking
+	EditMessage(id ID, content string) error // Blocking
 }
 
 // Actioner adds custom message actions into each message. Similarly to
 // ServerMessageEditor, some of these methods may do IO.
 type Actioner interface {
-
 	// MessageActions returns a list of possible actions in pretty strings that the
 	// frontend will use to directly display. This method must not do IO.
 	//
@@ -421,7 +415,7 @@ type Actioner interface {
 	// DoAction executes a message action on the given messageID, which would be
 	// taken from MessageHeader.ID(). This method is allowed to do IO; the frontend
 	// should take care of running it asynchronously.
-	DoAction(action string, id ID) (action string, id ID) // Blocking
+	DoAction(action string, id ID) error // Blocking
 }
 
 // Nicknamer adds the current user's nickname.
@@ -434,28 +428,8 @@ type Nicknamer interface {
 	Nickname(context.Context, LabelContainer) (stop func(), err error)
 }
 
-// Backlogger adds message history capabilities into a message container. The
-// frontend should typically call this method when the user scrolls to the top.
-//
-// As there is no stop callback, if the backend needs to fetch messages
-// asynchronously, it is expected to use the context to know when to cancel.
-//
-// The frontend should usually call this method when the user scrolls to the
-// top. It is expected to guarantee not to call MessagesBefore more than once on
-// the same ID. This can usually be done by deactivating the UI.
-//
-// Note: Although backends might rely on this context, the frontend is still
-// expected to invalidate the given container when the channel is changed.
-type Backlogger interface {
-
-	// MessagesBefore fetches messages before the given message ID into the
-	// MessagesContainer.
-	MessagesBefore(ctx context.Context, before ID, c MessagePrepender) (ctx context.Context, before ID, c MessagePrepender) // Blocking
-}
-
 // MemberLister adds a member list into a message server.
 type MemberLister interface {
-
 	// ListMembers assigns the given container to the channel's member list. The
 	// given context may be used to provide HTTP request cancellations, but
 	// frontends must not rely solely on this, as the general context rules applies.
@@ -466,7 +440,6 @@ type MemberLister interface {
 
 // UnreadIndicator adds an unread state API for frontends to use.
 type UnreadIndicator interface {
-
 	// UnreadIndicate subscribes the given unread indicator for unread and mention
 	// events. Examples include when a new message is arrived and the backend needs
 	// to indicate that it's unread.
@@ -484,12 +457,11 @@ type UnreadIndicator interface {
 // user ID, when RemoveTyper() is called by the backend or when the timeout
 // returned from TypingTimeout() has been reached.
 type TypingIndicator interface {
-
 	// Typing is called by the client to indicate that the user is typing. This
 	// function can do IO calls, and the client must take care of calling it in a
 	// goroutine (or an asynchronous queue) as well as throttling it to
 	// TypingTimeout.
-	Typing() // Blocking
+	Typing() error // Blocking
 	// TypingTimeout returns the interval between typing events sent by the client
 	// as well as the timeout before the client should remove the typer. Typically,
 	// a constant should be returned.
@@ -512,7 +484,6 @@ type TypingIndicator interface {
 // and index. This is the de-facto standard implementation for splitting words,
 // thus backends can rely on their behaviors.
 type Completer interface {
-
 	// Complete returns the list of possible completion entries for the given word
 	// list and the current word index. It takes in a list of whitespace-split slice
 	// of string as well as the position of the cursor relative to the given string
@@ -528,7 +499,6 @@ type Completer interface {
 // as servers can be infinitely nested. Frontends should also reset the entire
 // node and its children when SetServers is called again.
 type ServersContainer interface {
-
 	// SetServer is called by the backend service to request a reset of the server
 	// list. The frontend can choose to call Servers() on each of the given servers,
 	// or it can call that later. The backend should handle both cases.
@@ -551,14 +521,12 @@ type ServerUpdate interface {
 // allowed to have multiple views. This is usually done with tabs or splits, but
 // the backend should update them all nonetheless.
 type MessagesContainer interface {
-
 	// CreateMessage inserts a message into the container. The frontend must
 	// guarantee that the messages are in order based on what's returned from
 	// Time().
 	CreateMessage(MessageCreate)
 	UpdateMessage(MessageUpdate)
 	DeleteMessage(MessageDelete)
-	AsMessagePrepender() MessagePrepender // Optional
 }
 
 // MessageHeader implements the minimum interface for any message event.
@@ -631,7 +599,6 @@ type IconContainer interface {
 // session and service nodes are, however, implementation details, meaning that
 // this decision is up to the frontend to decide.
 type UnreadContainer interface {
-
 	// SetUnread sets the container's unread state to the given boolean. The
 	// frontend may choose how to represent this.
 	SetUnread(unread bool, mentioned bool)
@@ -644,7 +611,6 @@ type UnreadContainer interface {
 //
 // For more documentation, refer to TypingIndicator.
 type TypingContainer interface {
-
 	// AddTyper appends the typer into the frontend's list of typers, or it pushes
 	// this typer on top of others.
 	AddTyper(typer Typer)
@@ -685,7 +651,6 @@ type Typer interface {
 //    | | \__________________|
 //    \_\____________________/
 type MemberListContainer interface {
-
 	// SetSections (re)sets the list of sections to be the given slice. Members from
 	// the old section list should be transferred over to the new section entry if
 	// the section name's content is the same. Old sections that don't appear in the
@@ -721,10 +686,10 @@ type ListMember interface {
 	Secondary() text.Rich
 }
 
-// MemberListSection represents a member list section. The section name's
-// content must be unique among other sections from the same list regardless of
-// the rich segments.
-type MemberListSection interface {
+// MemberSection represents a member list section. The section name's content
+// must be unique among other sections from the same list regardless of the rich
+// segments.
+type MemberSection interface {
 	Identifier
 	Namer
 
@@ -734,27 +699,26 @@ type MemberListSection interface {
 }
 
 // MemberDynamicSection represents a dynamically loaded member list section. The
-// section behaves similarly to MemberListSection, except the information
-// displayed will be considered incomplete until LoadMore returns false.
+// section behaves similarly to MemberSection, except the information displayed
+// will be considered incomplete until LoadMore returns false.
 //
 // LoadLess can be called by the client to mark chunks as stale, which the
 // server can then unsubscribe from.
 type MemberDynamicSection interface {
-
 	// LoadMore is a method which the client can call to ask for more members. This
 	// method can do IO.
 	//
 	// Clients may call this method on the last section in the section slice;
 	// however, calling this method on any section is allowed. Clients may not call
 	// this method if the number of members in this section is equal to Total.
-	LoadMore() // Blocking
-	// LoadMore is a method which the client can call to ask for more members. This
-	// method can do IO.
+	LoadMore() bool // Blocking
+	// LoadLess is a method which the client must call after it is done displaying
+	// entries that were added from calling LoadMore.
 	//
-	// Clients may call this method on the last section in the section slice;
-	// however, calling this method on any section is allowed. Clients may not call
-	// this method if the number of members in this section is equal to Total.
-	LoadMore() // Blocking
+	// The client can call this method exactly as many times as it has called
+	// LoadMore. However, false should be returned if the client should stop, and
+	// future calls without LoadMore should still return false.
+	LoadLess() bool // Blocking
 }
 
 // SendableMessage is the bare minimum interface of a sendable message, that is,
@@ -772,8 +736,7 @@ type SendableMessage interface {
 }
 
 // Attachments extends SendableMessage which adds attachments into the message.
-// Backends that can use this interface should implement
-// ServerMessageAttachmentSender.
+// Backends that can use this interface should implement AttachmentSender.
 type Attachments interface {
 	Attachments() []MessageAttachment
 }

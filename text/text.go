@@ -1,3 +1,5 @@
+// DO NOT EDIT: THIS FILE IS GENERATED!
+
 // Package text provides a rich text API for cchat interfaces to use.
 package text
 
