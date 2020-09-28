@@ -1,28 +1,38 @@
+// Package text provides a rich text API for cchat interfaces to use.
 package text
+
+// Attribute is the type for basic rich text markup attributes.
+type Attribute uint32
+
+const (
+	// Normal is a zero-value attribute.
+	AttributeNormal Attribute = iota
+	// Bold represents bold text.
+	AttributeBold
+	// Italics represents italicized text.
+	AttributeItalics
+	// Underline represents underlined text.
+	AttributeUnderline
+	// Strikethrough represents struckthrough text.
+	AttributeStrikethrough
+	// Spoiler represents spoiler text, which usually looks blacked out until
+	// hovered or clicked on.
+	AttributeSpoiler
+	// Monospace represents monospaced text, typically for inline code.
+	AttributeMonospace
+	// Dimmed represents dimmed text, typically slightly less visible than other
+	// text.
+	AttributeDimmed
+)
+
+func (a Attribute) Is(is Attribute) bool {
+	return a == is
+}
 
 // Rich is a normal text wrapped with optional format segments.
 type Rich struct {
-	Content string
-	// Segments are optional rich-text segment markers.
+	Content  string
 	Segments []Segment
-}
-
-// Empty describes an empty rich text segment with no formatting.
-var Empty = Rich{}
-
-// Plain creates a rich text with no formatting.
-func Plain(text string) Rich {
-	return Rich{Content: text}
-}
-
-// Empty returns whether or not the rich text is considered empty.
-func (r Rich) Empty() bool {
-	return r.Content == ""
-}
-
-// String returns the content. This is used mainly for printing.
-func (r Rich) String() string {
-	return r.Content
 }
 
 // Segment is the minimum requirement for a format segment. Frontends will use
@@ -33,7 +43,7 @@ func (r Rich) String() string {
 // Note that a segment may implement multiple interfaces. For example, a
 // Mentioner may also implement Colorer.
 type Segment interface {
-	Bounds() (start, end int)
+	Bounds() (start int, end int)
 }
 
 // Linker is a hyperlink format that a segment could implement. This implies
@@ -41,6 +51,7 @@ type Segment interface {
 // tag with href being the URL and the inner text being the text string.
 type Linker interface {
 	Segment
+
 	Link() (url string)
 }
 
@@ -48,29 +59,29 @@ type Linker interface {
 // image. Only the starting bound matters, as images cannot substitute texts.
 type Imager interface {
 	Segment
+
 	// Image returns the URL for the image.
 	Image() (url string)
-	// ImageSize returns the requested dimension for the image. This function
-	// could return (0, 0), which the frontend should use the image's
-	// dimensions.
-	ImageSize() (w, h int)
-	// ImageText returns the underlying text of the image. Frontends could use
-	// this for hovering or displaying the text instead of the image.
+	// ImageSize returns the requested dimension for the image. This function could
+	// return (0, 0), which the frontend should use the image's dimensions.
+	ImageSize() (w int, h int)
+	// ImageText returns the underlying text of the image. Frontends could use this
+	// for hovering or displaying the text instead of the image.
 	ImageText() string
 }
 
-// Avatarer implies the segment should be replaced with a rounded-corners
-// image. This works similarly to Imager.
+// Avatarer implies the segment should be replaced with a rounded-corners image.
+// This works similarly to Imager.
 type Avatarer interface {
 	Segment
+
 	// Avatar returns the URL for the image.
 	Avatar() (url string)
-	// AvatarSize returns the requested dimension for the image. This function
-	// could return (0, 0), which the frontend should use the avatar's
-	// dimensions.
+	// AvatarSize returns the requested dimension for the image. This function could
+	// return (0, 0), which the frontend should use the avatar's dimensions.
 	AvatarSize() (size int)
-	// AvatarText returns the underlying text of the image. Frontends could use
-	// this for hovering or displaying the text instead of the image.
+	// AvatarText returns the underlying text of the image. Frontends could use this
+	// for hovering or displaying the text instead of the image.
 	AvatarText() string
 }
 
@@ -82,16 +93,18 @@ type Avatarer interface {
 // frontends to flexibly layout the labels.
 type Mentioner interface {
 	Segment
-	// MentionInfo returns the popup information of the mentioned segment. This
-	// is typically user information or something similar to that context.
+
+	// MentionInfo returns the popup information of the mentioned segment. This is
+	// typically user information or something similar to that context.
 	MentionInfo() Rich
 }
 
-// MentionerImage extends Mentioner to give the mentioned object an image.
-// This interface allows the frontend to be more flexible in layouting. A
-// Mentioner can only implement EITHER MentionedImage or MentionedAvatar.
+// MentionerImage extends Mentioner to give the mentioned object an image. This
+// interface allows the frontend to be more flexible in layouting. A Mentioner
+// can only implement EITHER MentionedImage or MentionedAvatar.
 type MentionerImage interface {
 	Mentioner
+
 	// Image returns the mentioned object's image URL.
 	Image() (url string)
 }
@@ -101,6 +114,7 @@ type MentionerImage interface {
 // Mentioner can only implement EITHER MentionedImage or MentionedAvatar.
 type MentionerAvatar interface {
 	Mentioner
+
 	// Avatar returns the mentioned object's avatar URL.
 	Avatar() (url string)
 }
@@ -108,43 +122,19 @@ type MentionerAvatar interface {
 // Colorer is a text color format that a segment could implement. This is to be
 // applied directly onto the text.
 type Colorer interface {
-	Segment
+	Mentioner
+
+	// Color returns a 24-bit RGB or 32-bit RGBA color.
 	Color() uint32
 }
 
 // Attributor is a rich text markup format that a segment could implement. This
 // is to be applied directly onto the text.
 type Attributor interface {
-	Segment
+	Mentioner
+
 	Attribute() Attribute
 }
-
-// Attribute is the type for basic rich text markup attributes.
-type Attribute uint16
-
-// HasAttr returns whether or not "attr" has "this" attribute.
-func (attr Attribute) Has(this Attribute) bool {
-	return (attr & this) == this
-}
-
-const (
-	// AttrBold represents bold text.
-	AttrBold Attribute = 1 << iota
-	// AttrItalics represents italicized text.
-	AttrItalics
-	// AttrUnderline represents underlined text.
-	AttrUnderline
-	// AttrStrikethrough represents strikethrough text.
-	AttrStrikethrough
-	// AttrSpoiler represents spoiler text, which usually looks blacked out
-	// until hovered or clicked on.
-	AttrSpoiler
-	// AttrMonospace represents monospaced text, typically for inline code.
-	AttrMonospace
-	// AttrDimmed represents dimmed text, typically slightly less visible than
-	// other text.
-	AttrDimmed
-)
 
 // Codeblocker is a codeblock that supports optional syntax highlighting using
 // the language given. Note that as this is a block, it will appear separately
@@ -153,7 +143,8 @@ const (
 // This interface is equivalent to Markdown's codeblock syntax.
 type Codeblocker interface {
 	Segment
-	CodeblockLanguage() string
+
+	CodeblockLanguage() (language string)
 }
 
 // Quoteblocker represents a quoteblock that behaves similarly to the blockquote
@@ -161,6 +152,9 @@ type Codeblocker interface {
 // or with green arrows prepended to each line.
 type Quoteblocker interface {
 	Segment
-	// Quote does nothing; it's only here to distinguish the interface.
-	Quote()
+
+	// QuotePrefix returns the prefix that every line the segment covers have. This
+	// is typically the greater-than sign ">" in Markdown. Frontends could use this
+	// information to format the quote properly.
+	QuotePrefix() (prefix string)
 }

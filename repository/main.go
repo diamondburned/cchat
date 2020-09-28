@@ -1,7 +1,14 @@
 package repository
 
-var Main = Repositories{
-	"text": {
+// RootPath is the root Go module path. This path is prefixed in every package
+// path.
+const RootPath = "github.com/diamondburned/cchat"
+
+var Main = Packages{
+	"github.com/diamondburned/cchat/text": {
+		Comment: Comment{`
+			Package text provides a rich text API for cchat interfaces to use.
+		`},
 		Enums: []Enumeration{{
 			Comment: Comment{`
 				Attribute is the type for basic rich text markup attributes.
@@ -73,7 +80,7 @@ var Main = Repositories{
 			Name: "Segment",
 			Methods: []Method{
 				GetterMethod{
-					RegularMethod: RegularMethod{Name: "Bounds"},
+					method: method{Name: "Bounds"},
 					Returns: []NamedType{
 						{Name: "start", Type: "int"},
 						{Name: "end", Type: "int"},
@@ -91,8 +98,8 @@ var Main = Repositories{
 			Embeds: []EmbeddedInterface{{InterfaceName: "Segment"}},
 			Methods: []Method{
 				GetterMethod{
-					RegularMethod: RegularMethod{Name: "Link"},
-					Returns:       []NamedType{{Name: "url", Type: "string"}},
+					method:  method{Name: "Link"},
+					Returns: []NamedType{{Name: "url", Type: "string"}},
 				},
 			},
 		}, {
@@ -105,7 +112,7 @@ var Main = Repositories{
 			Embeds: []EmbeddedInterface{{InterfaceName: "Segment"}},
 			Methods: []Method{
 				GetterMethod{
-					RegularMethod: RegularMethod{
+					method: method{
 						Comment: Comment{`
 							Image returns the URL for the image.
 						`},
@@ -114,7 +121,7 @@ var Main = Repositories{
 					Returns: []NamedType{{Name: "url", Type: "string"}},
 				},
 				GetterMethod{
-					RegularMethod: RegularMethod{
+					method: method{
 						Comment: Comment{`
 							ImageSize returns the requested dimension for the
 							image. This function could return (0, 0), which the
@@ -128,7 +135,7 @@ var Main = Repositories{
 					},
 				},
 				GetterMethod{
-					RegularMethod: RegularMethod{
+					method: method{
 						Comment: Comment{`
 							ImageText returns the underlying text of the image.
 							Frontends could use this for hovering or
@@ -148,7 +155,7 @@ var Main = Repositories{
 			Embeds: []EmbeddedInterface{{InterfaceName: "Segment"}},
 			Methods: []Method{
 				GetterMethod{
-					RegularMethod: RegularMethod{
+					method: method{
 						Comment: Comment{`
 							Avatar returns the URL for the image.
 						`},
@@ -157,7 +164,7 @@ var Main = Repositories{
 					Returns: []NamedType{{Name: "url", Type: "string"}},
 				},
 				GetterMethod{
-					RegularMethod: RegularMethod{
+					method: method{
 						Comment: Comment{`
 							AvatarSize returns the requested dimension for the
 							image. This function could return (0, 0), which the
@@ -168,7 +175,7 @@ var Main = Repositories{
 					Returns: []NamedType{{Name: "size", Type: "int"}},
 				},
 				GetterMethod{
-					RegularMethod: RegularMethod{
+					method: method{
 						Comment: Comment{`
 							AvatarText returns the underlying text of the image.
 							Frontends could use this for hovering or
@@ -194,7 +201,7 @@ var Main = Repositories{
 			Embeds: []EmbeddedInterface{{InterfaceName: "Segment"}},
 			Methods: []Method{
 				GetterMethod{
-					RegularMethod: RegularMethod{
+					method: method{
 						Comment: Comment{`
 							MentionInfo returns the popup information of the
 							mentioned segment. This is typically user
@@ -202,7 +209,9 @@ var Main = Repositories{
 						`},
 						Name: "MentionInfo",
 					},
-					Returns: []NamedType{{Type: "Rich"}},
+					Returns: []NamedType{{
+						Type: "(github.com/diamondburned/cchat/text).Rich",
+					}},
 				},
 			},
 		}, {
@@ -216,7 +225,7 @@ var Main = Repositories{
 			Embeds: []EmbeddedInterface{{InterfaceName: "Mentioner"}},
 			Methods: []Method{
 				GetterMethod{
-					RegularMethod: RegularMethod{
+					method: method{
 						Comment: Comment{`
 							Image returns the mentioned object's image URL.
 						`},
@@ -236,7 +245,7 @@ var Main = Repositories{
 			Embeds: []EmbeddedInterface{{InterfaceName: "Mentioner"}},
 			Methods: []Method{
 				GetterMethod{
-					RegularMethod: RegularMethod{
+					method: method{
 						Comment: Comment{`
 							Avatar returns the mentioned object's avatar URL.
 						`},
@@ -254,7 +263,7 @@ var Main = Repositories{
 			Embeds: []EmbeddedInterface{{InterfaceName: "Mentioner"}},
 			Methods: []Method{
 				GetterMethod{
-					RegularMethod: RegularMethod{
+					method: method{
 						Comment: Comment{`
 							Color returns a 24-bit RGB or 32-bit RGBA color.
 						`},
@@ -272,8 +281,8 @@ var Main = Repositories{
 			Embeds: []EmbeddedInterface{{InterfaceName: "Mentioner"}},
 			Methods: []Method{
 				GetterMethod{
-					RegularMethod: RegularMethod{Name: "Attribute"},
-					Returns:       []NamedType{{Type: "Attribute"}},
+					method:  method{Name: "Attribute"},
+					Returns: []NamedType{{Type: "Attribute"}},
 				},
 			},
 		}, {
@@ -288,7 +297,11 @@ var Main = Repositories{
 			Embeds: []EmbeddedInterface{{InterfaceName: "Segment"}},
 			Methods: []Method{
 				GetterMethod{
-					RegularMethod: RegularMethod{Name: "CodeblockLanguage"},
+					method: method{Name: "CodeblockLanguage"},
+					Returns: []NamedType{{
+						Name: "language",
+						Type: "string",
+					}},
 				},
 			},
 		}, {
@@ -302,7 +315,7 @@ var Main = Repositories{
 			Embeds: []EmbeddedInterface{{InterfaceName: "Segment"}},
 			Methods: []Method{
 				GetterMethod{
-					RegularMethod: RegularMethod{
+					method: method{
 						Comment: Comment{`
 							QuotePrefix returns the prefix that every line the
 							segment covers have. This is typically the
@@ -316,7 +329,83 @@ var Main = Repositories{
 			},
 		}},
 	},
-	"cchat": {
+	"github.com/diamondburned/cchat": {
+		Comment: Comment{`
+			Package cchat is a set of stabilized interfaces for cchat
+			implementations, joining the backend and frontend together.
+			
+			Backend
+			
+			Methods implemented by the backend that have frontend containers as
+			arguments can do IO. Frontends must NOT rely on individual backend
+			states and should always assume that they will block.
+			
+			Methods that do not return an error must NOT do any IO to prevent
+			blocking the main thread. As such, ID() and Name() must never do any
+			IO. Methods that do return an error may do IO, but they should be
+			documented per method.
+			
+			Backend implementations have certain conditions that should be
+			adhered to:
+			
+			   - Storing MessagesContainer and ServersContainer are advised
+			   against; however, they should be done if need be.
+			   - Other containers such as LabelContainer and IconContainer
+			   should also not be stored; however, the same rule as above
+			   applies.
+			   - For the server list, icon updates and such that happen after
+			   their calls should use SetServers().
+			   - For the nickname of the current server, the backend can store
+			   the state of the label container. It must, however, remove the
+			   container when the stop callback from JoinServer() is called.
+			   - Some methods that take in a container may take in a context as
+			   well.  Although implementations don't have to use this context,
+			   it should try to.
+			
+			Note: IO in most cases usually refer to networking, but they should
+			files and anything that is blocking, such as mutexes or semaphores.
+			
+			Note: As mentioned above, contexts are optional for both the
+			frontend and backend. The frontend may use it for cancellation, and
+			the backend may ignore it.
+			
+			Some interfaces can be extended. Interfaces that are extendable will
+			have methods starting with "As" and returns another interface type.
+			The implementation may or may not return the same struct as the
+			interface, but the caller should not have to type assert it to a
+			struct. They can also return nil, which should indicate the
+			backend that the feature is not implemented.
+			
+			To avoid confusing, when said "A implements B," it is mostly assumed
+			that A has a method named "AsB." It does not mean that A can be
+			type-asserted to B.
+			
+			For future references, these "As" methods will be called asserter
+			methods.
+			
+			Note: Backends must not do IO in the "As" methods. Most of the time,
+			it should only conditionally check the local state and return value
+			or nil.
+			
+			Below is an example of checking for an extended interface.
+			
+			   if backlogger := server.AsBacklogger(); backlogger != nil {
+			       println("Server implements Backlogger.")
+			   }
+			
+			Frontend
+			
+			Frontend contains all interfaces that a frontend can or must
+			implement. The backend may call these methods any time from any
+			goroutine. Thus, they should be thread-safe. They should also not
+			block the call by doing so, as backends may call these methods in
+			its own main thread.
+			
+			It is worth pointing out that frontend container interfaces will not
+			have an error handling API, as frontends can do that themselves.
+			Errors returned by backend methods will be errors from the
+			backend itself and never the frontend errors.
+		`},
 		Enums: []Enumeration{{
 			Comment: Comment{`
 				Status represents a user's status. This might be used by the
@@ -339,8 +428,7 @@ var Main = Repositories{
 				clarification and documentation purposes only. Implementations
 				could either use this type or a string type.
 			`},
-			Name: "ID",
-			Type: "string",
+			NamedType: NamedType{"ID", "string"},
 		}},
 		Structs: []Struct{{
 			Comment: Comment{`
@@ -372,14 +460,20 @@ var Main = Repositories{
 				Comment: Comment{`
 					Text is the label to be displayed.
 				`},
-				NamedType: NamedType{"Text", "text.Rich"},
+				NamedType: NamedType{
+					Name: "Text",
+					Type: "(github.com/diamondburned/cchat/text).Rich",
+				},
 			}, {
 				Comment: Comment{`
 					Secondary is the label to be displayed on the second line,
 					on the right of Text, or not displayed at all. This should
 					be optional. This text may be dimmed out as styling.
 				`},
-				NamedType: NamedType{"Secondary", "text.Rich"},
+				NamedType: NamedType{
+					Name: "Secondary",
+					Type: "(github.com/diamondburned/cchat/text).Rich",
+				},
 			}, {
 				Comment: Comment{`
 					IconURL is the URL to the icon that will be displayed on the
@@ -394,8 +488,20 @@ var Main = Repositories{
 				`},
 				NamedType: NamedType{"Image", "bool"},
 			}},
+		}, {
+			Comment: Comment{`
+				MessageAttachment represents a single file attachment. If
+				needed, the frontend will close the reader after the message is
+				sent, that is when the SendMessage function returns. The backend
+				must not use the reader after that.
+			`},
+			Name: "MessageAttachments",
+			Fields: []StructField{
+				{NamedType: NamedType{"", "io.Reader"}},
+				{NamedType: NamedType{"Name", "string"}},
+			},
 		}},
-		ErrorTypes: []ErrorType{{
+		ErrorStructs: []ErrorStruct{{
 			Struct: Struct{
 				Comment: Comment{`
 					ErrInvalidConfigAtField is the structure for an error at a
@@ -409,8 +515,8 @@ var Main = Repositories{
 				},
 			},
 			ErrorString: TmplString{
-				Receiver: "err",
-				Template: "Error at {err.Key}: {err.Err.Error()}",
+				Format: "Error at %s: %s",
+				Fields: []string{"Key", "Err.Error()"},
 			},
 		}},
 		Interfaces: []Interface{{
@@ -424,8 +530,8 @@ var Main = Repositories{
 			Name: "Identifier",
 			Methods: []Method{
 				GetterMethod{
-					RegularMethod: RegularMethod{Name: "ID"},
-					Returns:       []NamedType{{Type: "ID"}},
+					method:  method{Name: "ID"},
+					Returns: []NamedType{{Type: "ID"}},
 				},
 			},
 		}, {
@@ -437,8 +543,10 @@ var Main = Repositories{
 			Name: "Namer",
 			Methods: []Method{
 				GetterMethod{
-					RegularMethod: RegularMethod{Name: "Name"},
-					Returns:       []NamedType{{Type: "text.Rich"}},
+					method: method{Name: "Name"},
+					Returns: []NamedType{{
+						Type: "(github.com/diamondburned/cchat/text).Rich",
+					}},
 				},
 				AsserterMethod{
 					ChildType: "Iconer",
@@ -457,7 +565,7 @@ var Main = Repositories{
 			Name: "Iconer",
 			Methods: []Method{
 				ContainerMethod{
-					RegularMethod: RegularMethod{Name: "Icon"},
+					method:        method{Name: "Icon"},
 					HasContext:    true,
 					ContainerType: "IconContainer",
 					HasStopFn:     true,
@@ -483,8 +591,8 @@ var Main = Repositories{
 			Name: "Noncer",
 			Methods: []Method{
 				GetterMethod{
-					RegularMethod: RegularMethod{Name: "Nonce"},
-					Returns:       []NamedType{{Type: "string"}},
+					method:  method{Name: "Nonce"},
+					Returns: []NamedType{{Type: "string"}},
 				},
 			},
 		}, {
@@ -531,8 +639,8 @@ var Main = Repositories{
 			}},
 			Methods: []Method{
 				GetterMethod{
-					RegularMethod: RegularMethod{Name: "Authenticate"},
-					Returns:       []NamedType{{Type: "Authenticator"}},
+					method:  method{Name: "Authenticate"},
+					Returns: []NamedType{{Type: "Authenticator"}},
 				},
 				AsserterMethod{
 					ChildType: "Configurator",
@@ -568,7 +676,7 @@ var Main = Repositories{
 			Name: "Authenticator",
 			Methods: []Method{
 				GetterMethod{
-					RegularMethod: RegularMethod{
+					method: method{
 						Comment: Comment{`
 							AuthenticateForm should return a list of
 							authentication entries for the frontend to render.
@@ -578,7 +686,7 @@ var Main = Repositories{
 					Returns: []NamedType{{Type: "[]AuthenticateEntry"}},
 				},
 				IOMethod{
-					RegularMethod: RegularMethod{
+					method: method{
 						Comment: Comment{`
 							Authenticate will be called with a list of values
 							with indices correspond to the returned slice of
@@ -602,10 +710,10 @@ var Main = Repositories{
 			Name: "SessionRestorer",
 			Methods: []Method{
 				IOMethod{
-					RegularMethod: RegularMethod{Name: "RestoreSession"},
-					Parameters:    []NamedType{{Type: "map[string]string"}},
-					ReturnValue:   NamedType{Type: "Session"},
-					ReturnError:   true,
+					method:      method{Name: "RestoreSession"},
+					Parameters:  []NamedType{{Type: "map[string]string"}},
+					ReturnValue: NamedType{Type: "Session"},
+					ReturnError: true,
 				},
 			},
 		}, {
@@ -618,14 +726,14 @@ var Main = Repositories{
 			Name: "Configurator",
 			Methods: []Method{
 				IOMethod{
-					RegularMethod: RegularMethod{Name: "Configuration"},
-					ReturnValue:   NamedType{Type: "map[string]string"},
-					ReturnError:   true,
+					method:      method{Name: "Configuration"},
+					ReturnValue: NamedType{Type: "map[string]string"},
+					ReturnError: true,
 				},
 				IOMethod{
-					RegularMethod: RegularMethod{Name: "SetConfiguration"},
-					Parameters:    []NamedType{{Type: "map[string]string"}},
-					ReturnError:   true,
+					method:      method{Name: "SetConfiguration"},
+					Parameters:  []NamedType{{Type: "map[string]string"}},
+					ReturnError: true,
 				},
 			},
 		}, {
@@ -659,7 +767,7 @@ var Main = Repositories{
 			}},
 			Methods: []Method{
 				IOMethod{
-					RegularMethod: RegularMethod{
+					method: method{
 						Comment: Comment{`
 							Disconnect asks the service to disconnect. It does
 							not necessarily mean removing the service.
@@ -700,8 +808,8 @@ var Main = Repositories{
 			Name: "SessionSaver",
 			Methods: []Method{
 				GetterMethod{
-					RegularMethod: RegularMethod{Name: "SaveSession"},
-					Returns:       []NamedType{{Type: "map[string]string"}},
+					method:  method{Name: "SaveSession"},
+					Returns: []NamedType{{Type: "map[string]string"}},
 				},
 			},
 		}, {
@@ -718,7 +826,7 @@ var Main = Repositories{
 			Name: "Commander",
 			Methods: []Method{
 				IOMethod{
-					RegularMethod: RegularMethod{
+					method: method{
 						Comment: Comment{`
 							RunCommand executes the given command, with the
 							slice being already split arguments, similar to
@@ -778,7 +886,7 @@ var Main = Repositories{
 			Name: "Lister",
 			Methods: []Method{
 				ContainerMethod{
-					RegularMethod: RegularMethod{
+					method: method{
 						Comment: Comment{`
 							Servers should call SetServers() on the given
 							ServersContainer to render all servers. This
@@ -798,7 +906,7 @@ var Main = Repositories{
 			Name: "Messenger",
 			Methods: []Method{
 				ContainerMethod{
-					RegularMethod: RegularMethod{
+					method: method{
 						Comment: Comment{`
 							JoinServer joins a server that's capable of
 							receiving messages. The server may not necessarily
@@ -827,7 +935,7 @@ var Main = Repositories{
 			Name: "Sender",
 			Methods: []Method{
 				IOMethod{
-					RegularMethod: RegularMethod{
+					method: method{
 						Comment: Comment{`
 							Send is called by the frontend to send a message to
 							this channel.
@@ -840,7 +948,7 @@ var Main = Repositories{
 					ReturnError: true,
 				},
 				GetterMethod{
-					RegularMethod: RegularMethod{
+					method: method{
 						Comment: Comment{`
 							CanAttach returns whether or not the client is
 							allowed to upload files.
@@ -859,7 +967,7 @@ var Main = Repositories{
 			Name: "Editor",
 			Methods: []Method{
 				GetterMethod{
-					RegularMethod: RegularMethod{
+					method: method{
 						Comment: Comment{`
 							MessageEditable returns whether or not a message can
 							be edited by the client. This method must not do IO.
@@ -870,7 +978,7 @@ var Main = Repositories{
 					Returns:    []NamedType{{Type: "bool"}},
 				},
 				GetterMethod{
-					RegularMethod: RegularMethod{
+					method: method{
 						Comment: Comment{`
 							RawMessageContent gets the original message text for
 							editing. This method must not do IO.
@@ -882,7 +990,7 @@ var Main = Repositories{
 					ReturnError: true,
 				},
 				IOMethod{
-					RegularMethod: RegularMethod{
+					method: method{
 						Comment: Comment{`
 							EditMessage edits the message with the given ID to
 							the given content, which is the edited string from
@@ -906,7 +1014,7 @@ var Main = Repositories{
 			Name: "Actioner",
 			Methods: []Method{
 				GetterMethod{
-					RegularMethod: RegularMethod{
+					method: method{
 						Comment: Comment{`
 							MessageActions returns a list of possible actions in
 							pretty strings that the frontend will use to
@@ -919,7 +1027,7 @@ var Main = Repositories{
 					Returns: []NamedType{{Type: "[]string"}},
 				},
 				IOMethod{
-					RegularMethod: RegularMethod{
+					method: method{
 						Comment: Comment{`
 							DoAction executes a message action on the given
 							messageID, which would be taken from
@@ -949,7 +1057,7 @@ var Main = Repositories{
 			Name: "Nicknamer",
 			Methods: []Method{
 				ContainerMethod{
-					RegularMethod: RegularMethod{Name: "Nickname"},
+					method:        method{Name: "Nickname"},
 					HasContext:    true,
 					ContainerType: "LabelContainer",
 					HasStopFn:     true,
@@ -977,7 +1085,7 @@ var Main = Repositories{
 			Name: "Backlogger",
 			Methods: []Method{
 				IOMethod{
-					RegularMethod: RegularMethod{
+					method: method{
 						Comment: Comment{`
 							MessagesBefore fetches messages before the given
 							message ID into the MessagesContainer.
@@ -999,7 +1107,7 @@ var Main = Repositories{
 			Name: "MemberLister",
 			Methods: []Method{
 				ContainerMethod{
-					RegularMethod: RegularMethod{
+					method: method{
 						Comment: Comment{`
 							ListMembers assigns the given container to the
 							channel's member list.  The given context may be
@@ -1024,7 +1132,7 @@ var Main = Repositories{
 			Name: "UnreadIndicator",
 			Methods: []Method{
 				ContainerMethod{
-					RegularMethod: RegularMethod{
+					method: method{
 						Comment: Comment{`
 							UnreadIndicate subscribes the given unread indicator
 							for unread and mention events. Examples include when
@@ -1054,7 +1162,7 @@ var Main = Repositories{
 			Name: "TypingIndicator",
 			Methods: []Method{
 				IOMethod{
-					RegularMethod: RegularMethod{
+					method: method{
 						Comment: Comment{`
 							Typing is called by the client to indicate that the
 							user is typing. This function can do IO calls, and
@@ -1067,7 +1175,7 @@ var Main = Repositories{
 					ReturnError: true,
 				},
 				GetterMethod{
-					RegularMethod: RegularMethod{
+					method: method{
 						Comment: Comment{`
 							TypingTimeout returns the interval between typing
 							events sent by the client as well as the timeout
@@ -1079,7 +1187,7 @@ var Main = Repositories{
 					Returns: []NamedType{{Type: "time.Duration"}},
 				},
 				ContainerMethod{
-					RegularMethod: RegularMethod{
+					method: method{
 						Comment: Comment{`
 							TypingSubscribe subscribes the given indicator to
 							typing events sent by the backend. The added event
@@ -1111,7 +1219,7 @@ var Main = Repositories{
 			Name: "Completer",
 			Methods: []Method{
 				GetterMethod{
-					RegularMethod: RegularMethod{
+					method: method{
 						Comment: Comment{`
 							Complete returns the list of possible completion
 							entries for the given word list and the current word
@@ -1145,7 +1253,7 @@ var Main = Repositories{
 			Name: "ServersContainer",
 			Methods: []Method{
 				SetterMethod{
-					RegularMethod: RegularMethod{
+					method: method{
 						Comment: Comment{`
 							SetServer is called by the backend service to
 							request a reset of the server list. The frontend can
@@ -1158,8 +1266,8 @@ var Main = Repositories{
 					Parameters: []NamedType{{Type: "[]Server"}},
 				},
 				SetterMethod{
-					RegularMethod: RegularMethod{Name: "UpdateServer"},
-					Parameters:    []NamedType{{Type: "ServerUpdate"}},
+					method:     method{Name: "UpdateServer"},
+					Parameters: []NamedType{{Type: "ServerUpdate"}},
 				},
 			},
 		}, {
@@ -1176,7 +1284,7 @@ var Main = Repositories{
 			}},
 			Methods: []Method{
 				GetterMethod{
-					RegularMethod: RegularMethod{
+					method: method{
 						Comment: Comment{`
 							PreviousID returns the ID of the item before this
 							server.
@@ -1200,7 +1308,446 @@ var Main = Repositories{
 			`},
 			Name: "MessagesContainer",
 			Methods: []Method{
-				SetterMethod{},
+				SetterMethod{
+					method: method{
+						Comment: Comment{`
+							CreateMessage inserts a message into the container.
+							The frontend must guarantee that the messages are
+							in order based on what's returned from Time().
+						`},
+						Name: "CreateMessage",
+					},
+					Parameters: []NamedType{{Type: "MessageCreate"}},
+				},
+				SetterMethod{
+					method:     method{Name: "UpdateMessage"},
+					Parameters: []NamedType{{Type: "MessageUpdate"}},
+				},
+				SetterMethod{
+					method:     method{Name: "DeleteMessage"},
+					Parameters: []NamedType{{Type: "MessageDelete"}},
+				},
+				AsserterMethod{ChildType: "MessagePrepender"},
+			},
+		}, {
+			Comment: Comment{`
+				MessageHeader implements the minimum interface for any message
+				event.
+			`},
+			Name:   "MessageHeader",
+			Embeds: []EmbeddedInterface{{InterfaceName: "Identifier"}},
+			Methods: []Method{
+				GetterMethod{
+					method:  method{Name: "Time"},
+					Returns: []NamedType{{Type: "time.Time"}},
+				},
+			},
+		}, {
+			Comment: Comment{`
+				MessageCreate is the interface for an incoming message.
+			`},
+			Name: "MessageCreate",
+			Embeds: []EmbeddedInterface{
+				{Comment{""}, "MessageHeader"},
+				{Comment{"Noncer is optional."}, "Noncer"},
+			},
+			Methods: []Method{
+				GetterMethod{
+					method:  method{Name: "Author"},
+					Returns: []NamedType{{Type: "Author"}},
+				},
+				GetterMethod{
+					method: method{Name: "Content"},
+					Returns: []NamedType{{
+						Type: "(github.com/diamondburned/cchat/text).Rich",
+					}},
+				},
+				GetterMethod{
+					method: method{
+						Comment: Comment{`
+							Mentioned returns whether or not the message
+							mentions the current user. If a backend does not
+							implement mentioning, then false can be returned.
+						`},
+						Name: "Mentioned",
+					},
+				},
+			},
+		}, {
+			Comment: Comment{`
+				MessageUpdate is the interface for a message update (or edit)
+				event. If the returned text.Rich returns true for Empty(), then
+				the element shouldn't be changed.
+			`},
+			Name:   "MessageUpdate",
+			Embeds: []EmbeddedInterface{{InterfaceName: "MessageHeader"}},
+			Methods: []Method{
+				GetterMethod{
+					method:  method{Name: "Author"},
+					Returns: []NamedType{{Type: "Author"}},
+				},
+				GetterMethod{
+					method: method{Name: "Content"},
+					Returns: []NamedType{{
+						Type: "(github.com/diamondburned/cchat/text).Rich",
+					}},
+				},
+			},
+		}, {
+			Comment: Comment{`
+				MessageDelete is the interface for a message delete event.
+			`},
+			Name:   "MessageDelete",
+			Embeds: []EmbeddedInterface{{InterfaceName: "MessageHeader"}},
+		}, {
+			Comment: Comment{`
+				LabelContainer is a generic interface for any container that can
+				hold texts. It's typically used for rich text labelling for
+				usernames and server names.
+				
+				Methods that takes in a LabelContainer typically holds it in the
+				state and may call SetLabel any time it wants. Thus, the
+				frontend should synchronize calls with the main thread if
+				needed.
+			`},
+			Name: "LabelContainer",
+			Methods: []Method{
+				SetterMethod{
+					method: method{Name: "SetLabel"},
+					Parameters: []NamedType{{
+						Type: "(github.com/diamondburned/cchat/text).Rich",
+					}},
+				},
+			},
+		}, {
+			Comment: Comment{`
+				IconContainer is a generic interface for any container that can
+				hold an image. It's typically used for icons that can update
+				itself. Frontends should round these icons. For images that
+				shouldn't be rounded, use ImageContainer.
+				
+				Methods may call SetIcon at any time in its main thread, so the
+				frontend must do any I/O (including downloading the image) in
+				another goroutine to avoid blocking the backend.
+			`},
+			Name: "IconContainer",
+			Methods: []Method{
+				SetterMethod{
+					method:     method{Name: "SetImage"},
+					Parameters: []NamedType{{Name: "url", Type: "string"}},
+				},
+			},
+		}, {
+			Comment: Comment{`
+				UnreadContainer is an interface that a single server container
+				(such as a button or a tree node) can implement if it's capable
+				of indicating the read and mentioned status for that channel.
+				
+				Server containers that implement this has to implement both
+				SetUnread and SetMentioned, and they should also represent those
+				statuses differently. For example, a mentioned channel could
+				have a red outline, while an unread channel could appear
+				brighter.
+				
+				Server containers are expected to represent this information in
+				their parent nodes as well. For example, if a server is unread,
+				then its parent servers as well as the session node should
+				indicate the same status. Highlighting the session and service
+				nodes are, however, implementation details, meaning that this
+				decision is up to the frontend to decide.
+			`},
+			Name: "UnreadContainer",
+			Methods: []Method{
+				SetterMethod{
+					method: method{
+						Comment: Comment{`
+							SetUnread sets the container's unread state to the
+							given boolean. The frontend may choose how to
+							represent this.
+						`},
+						Name: "SetUnread",
+					},
+					Parameters: []NamedType{
+						{"unread", "bool"},
+						{"mentioned", "bool"},
+					},
+				},
+			},
+		}, {
+			Comment: Comment{`
+				TypingContainer is a generic interface for any container that can display
+				users typing in the current chatbox. The typing indicator must adhere to the
+				TypingTimeout returned from ServerMessageTypingIndicator. The backend should
+				assume that to be the case and send events appropriately.
+				
+				For more documentation, refer to TypingIndicator.
+			`},
+			Name: "TypingContainer",
+			Methods: []Method{
+				SetterMethod{
+					method: method{
+						Comment: Comment{`
+							AddTyper appends the typer into the frontend's list
+							of typers, or it pushes this typer on top of others.
+						`},
+						Name: "AddTyper",
+					},
+					Parameters: []NamedType{{Name: "typer", Type: "Typer"}},
+				},
+				SetterMethod{
+					method: method{
+						Comment: Comment{`
+							RemoveTyper explicitly removes the typer with the
+							given user ID from the list of typers. This function
+							is usually not needed, as the client will take care
+							of removing them after TypingTimeout has been
+							reached or other conditions listed in
+							ServerMessageTypingIndicator are met.
+						`},
+						Name: "RemoveTyper",
+					},
+					Parameters: []NamedType{{Name: "typerID", Type: "ID"}},
+				},
+			},
+		}, {
+			Comment: Comment{`
+				Typer is an individual user that's typing. This interface is
+				used interchangably in TypingIndicator and thus
+				ServerMessageTypingIndicator as well.
+			`},
+			Name:   "Typer",
+			Embeds: []EmbeddedInterface{{InterfaceName: "Author"}},
+			Methods: []Method{
+				GetterMethod{
+					method:  method{Name: "Time"},
+					Returns: []NamedType{{Type: "time.Time"}},
+				},
+			},
+		}, {
+			Comment: Comment{`
+				MemberListContainer is a generic interface for any container
+				that can display a member list. This is similar to Discord's
+				right-side member list or IRC's users list. Below is a visual
+				representation of a typical member list container:
+				
+				   +-MemberList-----------\
+				   | +-Section------------|
+				   | |                    |
+				   | | Header - Total     |
+				   | |                    |
+				   | | +-Member-----------|
+				   | | | Name             |
+				   | | |   Secondary      |
+				   | | \__________________|
+				   | |                    |
+				   | | +-Member-----------|
+				   | | | Name             |
+				   | | |   Secondary      |
+				   | | \__________________|
+				   \_\____________________/
+			`},
+			Name: "MemberListContainer",
+			Methods: []Method{
+				SetterMethod{
+					method: method{
+						Comment: Comment{`
+							SetSections (re)sets the list of sections to be the
+							given slice. Members from the old section list
+							should be transferred over to the new section entry
+							if the section name's content is the same. Old
+							sections that don't appear in the new slice should
+							be removed.
+						`},
+						Name: "SetSections",
+					},
+					Parameters: []NamedType{
+						{Name: "sections", Type: "[]MemberSection"},
+					},
+				},
+				SetterMethod{
+					method: method{
+						Comment: Comment{`
+							SetMember adds or updates (or upsert) a member into
+							a section. This operation must not change the
+							section's member count. As such, changes should be
+							done separately in SetSection. If the section does
+							not exist, then the client should ignore this
+							member. As such, backends must call SetSections
+							first before SetMember on a new section.
+						`},
+						Name: "SetMember",
+					},
+					Parameters: []NamedType{
+						{"sectionID", "ID"},
+						{"member", "ListMember"},
+					},
+				},
+				SetterMethod{
+					method: method{
+						Comment: Comment{`
+							RemoveMember removes a member from a section. If
+							neither the member nor the section exists, then the
+							client should ignore it.
+						`},
+						Name: "RemoveMember",
+					},
+					Parameters: []NamedType{
+						{"sectionID", "ID"},
+						{"memberID", "ID"},
+					},
+				},
+			},
+		}, {
+			Comment: Comment{`
+				ListMember represents a single member in the member list. This
+				is a base interface that may implement more interfaces, such as
+				Iconer for the user's avatar.
+				
+				Note that the frontend may give everyone an avatar regardless,
+				or it may not show any avatars at all.
+			`},
+			Name: "ListMember",
+			Embeds: []EmbeddedInterface{{
+				Comment: Comment{`
+					Identifier identifies the individual member. This works
+					similarly to MessageAuthor.
+				`},
+				InterfaceName: "Identifier",
+			}, {
+				Comment: Comment{`
+					Namer returns the name of the member. This works similarly
+					to a MessageAuthor.
+				`},
+				InterfaceName: "Namer",
+			}},
+			Methods: []Method{
+				GetterMethod{
+					method: method{
+						Comment: Comment{`
+							Status returns the status of the member. The backend
+							does not have to show offline members with the
+							offline status if it doesn't want to show offline
+							menbers at all.
+						`},
+						Name: "Status",
+					},
+					Returns: []NamedType{{Type: "Status"}},
+				},
+				GetterMethod{
+					method: method{
+						Comment: Comment{`
+							Secondary returns the subtext of this member. This
+							could be anything, such as a user's custom status or
+							away reason.
+						`},
+						Name: "Secondary",
+					},
+					Returns: []NamedType{{
+						Type: "(github.com/diamondburned/cchat/text).Rich",
+					}},
+				},
+			},
+		}, {
+			Comment: Comment{`
+				MemberListSection represents a member list section. The section
+				name's content must be unique among other sections from the same
+				list regardless of the rich segments.
+			`},
+			Name: "MemberListSection",
+			Embeds: []EmbeddedInterface{
+				{InterfaceName: "Identifier"},
+				{InterfaceName: "Namer"},
+			},
+			Methods: []Method{
+				GetterMethod{
+					method: method{
+						Comment: Comment{`
+							Total returns the total member count.
+						`},
+						Name: "Total",
+					},
+					Returns: []NamedType{{Type: "int"}},
+				},
+				AsserterMethod{ChildType: "MemberDynamicSection"},
+			},
+		}, {
+			Comment: Comment{`
+				MemberDynamicSection represents a dynamically loaded member
+				list section. The section behaves similarly to
+				MemberListSection, except the information displayed will be
+				considered incomplete until LoadMore returns false.
+				
+				LoadLess can be called by the client to mark chunks as stale,
+				which the server can then unsubscribe from.
+			`},
+			Name: "MemberDynamicSection",
+			Methods: []Method{
+				IOMethod{
+					method: method{
+						Comment: Comment{`
+							LoadMore is a method which the client can call to
+							ask for more members. This method can do IO.
+							
+							Clients may call this method on the last section in
+							the section slice; however, calling this method on
+							any section is allowed. Clients may not call this
+							method if the number of members in this section is
+							equal to Total.
+						`},
+						Name: "LoadMore",
+					},
+					ReturnValue: NamedType{Type: "bool"},
+				},
+				IOMethod{
+					method: method{
+						Comment: Comment{`
+							LoadMore is a method which the client can call to
+							ask for more members. This method can do IO.
+							
+							Clients may call this method on the last section in
+							the section slice; however, calling this method on
+							any section is allowed. Clients may not call this
+							method if the number of members in this section is
+							equal to Total.
+						`},
+						Name: "LoadMore",
+					},
+					ReturnValue: NamedType{Type: "bool"},
+				},
+			},
+		}, {
+			Comment: Comment{`
+				SendableMessage is the bare minimum interface of a sendable
+				message, that is, a message that can be sent with SendMessage().
+				This allows the frontend to implement its own message data
+				implementation.
+				
+				An example of extending this interface is MessageNonce, which is
+				similar to IRCv3's labeled response extension or Discord's
+				nonces. The frontend could implement this interface and check if
+				incoming MessageCreate events implement the same interface.
+			`},
+			Name: "SendableMessage",
+			Methods: []Method{
+				GetterMethod{
+					method:  method{Name: "Content"},
+					Returns: []NamedType{{Type: "string"}},
+				},
+				AsserterMethod{ChildType: "Noncer"},
+				AsserterMethod{ChildType: "Attachments"},
+			},
+		}, {
+			Comment: Comment{`
+				Attachments extends SendableMessage which adds attachments into
+				the message. Backends that can use this interface should
+				implement ServerMessageAttachmentSender.
+			`},
+			Name: "Attachments",
+			Methods: []Method{
+				GetterMethod{
+					method:  method{Name: "Attachments"},
+					Returns: []NamedType{{Type: "[]MessageAttachment"}},
+				},
 			},
 		}},
 	},

@@ -13,29 +13,61 @@ var (
 	commentTrimSurrounding = regexp.MustCompile(`(^\n)|(\n\t+$)`)
 )
 
+// TabWidth is used to format comments.
+var TabWidth = 4
+
 // Comment represents a raw comment string. Most use cases should use GoString()
 // to get the comment's content.
 type Comment struct {
-	RawText string
+	Raw string
 }
 
-// GoString formats the documentation string in 80 columns wide paragraphs.
-func (c Comment) GoString() string {
-	return c.WrapText(80)
+// IsEmpty returns true if the comment is empty.
+func (c Comment) IsEmpty() bool {
+	return c.Raw == ""
+}
+
+// GoString formats the documentation string in 80 columns wide paragraphs and
+// prefix each line with "// ". The ident argument controls the nested level. If
+// less than or equal to zero, then it is changed to 1, which is the top level.
+func (c Comment) GoString(ident int) string {
+	if ident < 1 {
+		ident = 1
+	}
+
+	ident-- // 0th-indexed
+	ident *= TabWidth
+
+	var lines = strings.Split(c.WrapText(80-len("// ")-ident), "\n")
+	for i, line := range lines {
+		lines[i] = "// " + line
+	}
+
+	return strings.Join(lines, "\n")
 }
 
 // WrapText wraps the raw text in n columns wide paragraphs.
 func (c Comment) WrapText(column int) string {
-	var buf bytes.Buffer
-	doc.ToText(&buf, c.Unindent(), "", "\t", column)
-	return buf.String()
+	var txt = c.Unindent()
+	if txt == "" {
+		return ""
+	}
+
+	buf := bytes.Buffer{}
+	doc.ToText(&buf, txt, "", strings.Repeat(" ", TabWidth-1), column)
+
+	return strings.TrimRight(buf.String(), "\n")
 }
 
 // Unindent removes the indentations that were there for the sake of syntax in
 // RawText. It gets the lowest indentation level from each line and trim it.
 func (c Comment) Unindent() string {
+	if c.IsEmpty() {
+		return ""
+	}
+
 	// Trim new lines.
-	txt := commentTrimSurrounding.ReplaceAllString(c.RawText, "")
+	txt := commentTrimSurrounding.ReplaceAllString(c.Raw, "")
 
 	// Split the lines and rejoin them later to trim the indentation.
 	var lines = strings.Split(txt, "\n")
