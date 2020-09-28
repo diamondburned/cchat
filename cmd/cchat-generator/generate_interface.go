@@ -1,11 +1,17 @@
 package main
 
 import (
+	"sort"
+
 	"github.com/dave/jennifer/jen"
 	"github.com/diamondburned/cchat/repository"
 )
 
 func generateInterfaces(ifaces []repository.Interface) jen.Code {
+	sort.Slice(ifaces, func(i, j int) bool {
+		return ifaces[i].Name < ifaces[j].Name
+	})
+
 	var stmt = new(jen.Statement)
 
 	for _, iface := range ifaces {
@@ -23,7 +29,25 @@ func generateInterfaces(ifaces []repository.Interface) jen.Code {
 				group.Line()
 			}
 
+			// Put Asserter methods last.
+			sort.SliceStable(iface.Methods, func(i, j int) bool {
+				_, assert := iface.Methods[i].(repository.AsserterMethod)
+				return !assert
+			})
+
+			// Boolean to only write the Asserter comment once.
+			var writtenComment bool
+
 			for _, method := range iface.Methods {
+				if !writtenComment {
+					if _, ok := method.(repository.AsserterMethod); ok {
+						group.Line()
+						group.Comment("// Asserters.")
+						group.Line()
+						writtenComment = true
+					}
+				}
+
 				var stmt = new(jen.Statement)
 				if comment := method.UnderlyingComment(); !comment.IsEmpty() {
 					stmt.Comment(comment.GoString(1))

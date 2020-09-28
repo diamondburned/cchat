@@ -37,15 +37,62 @@ type Rich struct {
 	Segments []Segment
 }
 
-// Segment is the minimum requirement for a format segment. Frontends will use
-// this to determine when the format starts and ends. They will also assert this
-// interface to any other formatting interface, including Linker, Colorer and
-// Attributor.
+// Attributor is a rich text markup format that a segment could implement. This
+// is to be applied directly onto the text.
+type Attributor interface {
+	Mentioner
+
+	Attribute() Attribute
+}
+
+// Avatarer implies the segment should be replaced with a rounded-corners image.
+// This works similarly to Imager.
+type Avatarer interface {
+	Segment
+
+	// AvatarText returns the underlying text of the image. Frontends could use this
+	// for hovering or displaying the text instead of the image.
+	AvatarText() string
+	// AvatarSize returns the requested dimension for the image. This function could
+	// return (0, 0), which the frontend should use the avatar's dimensions.
+	AvatarSize() (size int)
+	// Avatar returns the URL for the image.
+	Avatar() (url string)
+}
+
+// Codeblocker is a codeblock that supports optional syntax highlighting using
+// the language given. Note that as this is a block, it will appear separately
+// from the rest of the paragraph.
 //
-// Note that a segment may implement multiple interfaces. For example, a
-// Mentioner may also implement Colorer.
-type Segment interface {
-	Bounds() (start int, end int)
+// This interface is equivalent to Markdown's codeblock syntax.
+type Codeblocker interface {
+	Segment
+
+	CodeblockLanguage() (language string)
+}
+
+// Colorer is a text color format that a segment could implement. This is to be
+// applied directly onto the text.
+type Colorer interface {
+	Mentioner
+
+	// Color returns a 24-bit RGB or 32-bit RGBA color.
+	Color() uint32
+}
+
+// Imager implies the segment should be replaced with a (possibly inlined)
+// image. Only the starting bound matters, as images cannot substitute texts.
+type Imager interface {
+	Segment
+
+	// ImageText returns the underlying text of the image. Frontends could use this
+	// for hovering or displaying the text instead of the image.
+	ImageText() string
+	// ImageSize returns the requested dimension for the image. This function could
+	// return (0, 0), which the frontend should use the image's dimensions.
+	ImageSize() (w int, h int)
+	// Image returns the URL for the image.
+	Image() (url string)
 }
 
 // Linker is a hyperlink format that a segment could implement. This implies
@@ -55,36 +102,6 @@ type Linker interface {
 	Segment
 
 	Link() (url string)
-}
-
-// Imager implies the segment should be replaced with a (possibly inlined)
-// image. Only the starting bound matters, as images cannot substitute texts.
-type Imager interface {
-	Segment
-
-	// Image returns the URL for the image.
-	Image() (url string)
-	// ImageSize returns the requested dimension for the image. This function could
-	// return (0, 0), which the frontend should use the image's dimensions.
-	ImageSize() (w int, h int)
-	// ImageText returns the underlying text of the image. Frontends could use this
-	// for hovering or displaying the text instead of the image.
-	ImageText() string
-}
-
-// Avatarer implies the segment should be replaced with a rounded-corners image.
-// This works similarly to Imager.
-type Avatarer interface {
-	Segment
-
-	// Avatar returns the URL for the image.
-	Avatar() (url string)
-	// AvatarSize returns the requested dimension for the image. This function could
-	// return (0, 0), which the frontend should use the avatar's dimensions.
-	AvatarSize() (size int)
-	// AvatarText returns the underlying text of the image. Frontends could use this
-	// for hovering or displaying the text instead of the image.
-	AvatarText() string
 }
 
 // Mentioner implies that the segment can be clickable, and when clicked it
@@ -101,16 +118,6 @@ type Mentioner interface {
 	MentionInfo() Rich
 }
 
-// MentionerImage extends Mentioner to give the mentioned object an image. This
-// interface allows the frontend to be more flexible in layouting. A Mentioner
-// can only implement EITHER MentionedImage or MentionedAvatar.
-type MentionerImage interface {
-	Mentioner
-
-	// Image returns the mentioned object's image URL.
-	Image() (url string)
-}
-
 // MentionerAvatar extends Mentioner to give the mentioned object an avatar.
 // This interface allows the frontend to be more flexible in layouting. A
 // Mentioner can only implement EITHER MentionedImage or MentionedAvatar.
@@ -121,32 +128,14 @@ type MentionerAvatar interface {
 	Avatar() (url string)
 }
 
-// Colorer is a text color format that a segment could implement. This is to be
-// applied directly onto the text.
-type Colorer interface {
+// MentionerImage extends Mentioner to give the mentioned object an image. This
+// interface allows the frontend to be more flexible in layouting. A Mentioner
+// can only implement EITHER MentionedImage or MentionedAvatar.
+type MentionerImage interface {
 	Mentioner
 
-	// Color returns a 24-bit RGB or 32-bit RGBA color.
-	Color() uint32
-}
-
-// Attributor is a rich text markup format that a segment could implement. This
-// is to be applied directly onto the text.
-type Attributor interface {
-	Mentioner
-
-	Attribute() Attribute
-}
-
-// Codeblocker is a codeblock that supports optional syntax highlighting using
-// the language given. Note that as this is a block, it will appear separately
-// from the rest of the paragraph.
-//
-// This interface is equivalent to Markdown's codeblock syntax.
-type Codeblocker interface {
-	Segment
-
-	CodeblockLanguage() (language string)
+	// Image returns the mentioned object's image URL.
+	Image() (url string)
 }
 
 // Quoteblocker represents a quoteblock that behaves similarly to the blockquote
@@ -159,4 +148,15 @@ type Quoteblocker interface {
 	// is typically the greater-than sign ">" in Markdown. Frontends could use this
 	// information to format the quote properly.
 	QuotePrefix() (prefix string)
+}
+
+// Segment is the minimum requirement for a format segment. Frontends will use
+// this to determine when the format starts and ends. They will also assert this
+// interface to any other formatting interface, including Linker, Colorer and
+// Attributor.
+//
+// Note that a segment may implement multiple interfaces. For example, a
+// Mentioner may also implement Colorer.
+type Segment interface {
+	Bounds() (start int, end int)
 }

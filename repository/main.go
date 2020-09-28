@@ -191,7 +191,7 @@ var Main = Packages{
 				Mentioner implies that the segment can be clickable, and when
 				clicked it should open up a dialog containing information from
 				MentionInfo().
-				
+
 				It is worth mentioning that frontends should assume whatever
 				segment that Mentioner highlighted to be the display name of
 				that user. This would allow frontends to flexibly layout the
@@ -290,7 +290,7 @@ var Main = Packages{
 				Codeblocker is a codeblock that supports optional syntax
 				highlighting using the language given. Note that as this is a
 				block, it will appear separately from the rest of the paragraph.
-				
+
 				This interface is equivalent to Markdown's codeblock syntax.
 			`},
 			Name:   "Codeblocker",
@@ -333,21 +333,21 @@ var Main = Packages{
 		Comment: Comment{`
 			Package cchat is a set of stabilized interfaces for cchat
 			implementations, joining the backend and frontend together.
-			
+
 			Backend
-			
+
 			Methods implemented by the backend that have frontend containers as
 			arguments can do IO. Frontends must NOT rely on individual backend
 			states and should always assume that they will block.
-			
+
 			Methods that do not return an error must NOT do any IO to prevent
 			blocking the main thread. As such, ID() and Name() must never do any
 			IO. Methods that do return an error may do IO, but they should be
 			documented per method.
-			
+
 			Backend implementations have certain conditions that should be
 			adhered to:
-			
+
 			   - Storing MessagesContainer and ServersContainer are advised
 			   against; however, they should be done if need be.
 			   - Other containers such as LabelContainer and IconContainer
@@ -361,46 +361,46 @@ var Main = Packages{
 			   - Some methods that take in a container may take in a context as
 			   well.  Although implementations don't have to use this context,
 			   it should try to.
-			
+
 			Note: IO in most cases usually refer to networking, but they should
 			files and anything that is blocking, such as mutexes or semaphores.
-			
+
 			Note: As mentioned above, contexts are optional for both the
 			frontend and backend. The frontend may use it for cancellation, and
 			the backend may ignore it.
-			
+
 			Some interfaces can be extended. Interfaces that are extendable will
 			have methods starting with "As" and returns another interface type.
 			The implementation may or may not return the same struct as the
 			interface, but the caller should not have to type assert it to a
 			struct. They can also return nil, which should indicate the
 			backend that the feature is not implemented.
-			
+
 			To avoid confusing, when said "A implements B," it is mostly assumed
 			that A has a method named "AsB." It does not mean that A can be
 			type-asserted to B.
-			
+
 			For future references, these "As" methods will be called asserter
 			methods.
-			
+
 			Note: Backends must not do IO in the "As" methods. Most of the time,
 			it should only conditionally check the local state and return value
 			or nil.
-			
+
 			Below is an example of checking for an extended interface.
-			
-			   if backlogger := server.AsBacklogger(); backlogger != nil {
-			       println("Server implements Backlogger.")
+
+			   if iconer := server.AsIconer(); iconer != nil {
+			       println("Server implements Iconer.")
 			   }
-			
+
 			Frontend
-			
+
 			Frontend contains all interfaces that a frontend can or must
 			implement. The backend may call these methods any time from any
 			goroutine. Thus, they should be thread-safe. They should also not
 			block the call by doing so, as backends may call these methods in
 			its own main thread.
-			
+
 			It is worth pointing out that frontend container interfaces will not
 			have an error handling API, as frontends can do that themselves.
 			Errors returned by backend methods will be errors from the
@@ -558,7 +558,7 @@ var Main = Packages{
 				by other interfaces. Typically, Service would return the service
 				logo, Session would return the user's avatar, and Server would
 				return the server icon.
-				
+
 				For session, the avatar should be the same as the one returned
 				by messages sent by the current user.
 			`},
@@ -576,15 +576,15 @@ var Main = Packages{
 				Noncer adds nonce support. A nonce is defined in this context as
 				a unique identifier from the frontend. This interface defines
 				the common nonce getter.
-				
+
 				Nonces are useful for frontends to know if an incoming event is
 				a reply from the server backend. As such, nonces should be
 				roundtripped through the server. For example, IRC would use
 				labeled responses.
-				
+
 				The Nonce method can return an empty string. This indicates that
 				either the frontend or backend (or neither) supports nonces.
-				
+
 				Contrary to other interfaces that extend with an "Is" method,
 				the Nonce method could return an empty string here.
 			`},
@@ -599,12 +599,12 @@ var Main = Packages{
 			Comment: Comment{`
 				Author is the interface for an identifiable author. The
 				interface defines that an author always have an ID and a name.
-				
+
 				An example of where this interface is used would be in
 				MessageCreate's Author method or embedded in Typer. The returned
 				ID may or may not be used by the frontend, but backends must
 				guarantee that the Author's ID is in fact a user ID.
-				
+
 				The frontend may use the ID to squash messages with the same
 				author together.
 			`},
@@ -618,12 +618,12 @@ var Main = Packages{
 				A service is a complete service that's capable of multiple
 				sessions. It has to implement the Authenticate() method, which
 				returns an implementation of Authenticator.
-				
+
 				A service can implement SessionRestorer, which would indicate
 				the frontend that it can restore past sessions. Sessions are
 				saved using the SessionSaver interface that Session can
 				implement.
-				
+
 				A service can also implement Configurator if it has additional
 				configurations. The current API is a flat key-value map, which
 				can be parsed by the backend itself into more meaningful data
@@ -704,7 +704,7 @@ var Main = Packages{
 				SessionRestorer extends Service and is called by the frontend to
 				restore a saved session. The frontend may call this at any time,
 				but it's usually on startup.
-				
+
 				To save a session, refer to SessionSaver.
 			`},
 			Name: "SessionRestorer",
@@ -743,7 +743,7 @@ var Main = Packages{
 				most of the time. It also implements ID(), which might be
 				used by frontends to check against MessageAuthor.ID() and
 				other things.
-				
+
 				A session can implement SessionSaver, which would allow the
 				frontend to save the session into its keyring at any time.
 				Whether the keyring is completely secure or not is up to the
@@ -771,14 +771,14 @@ var Main = Packages{
 						Comment: Comment{`
 							Disconnect asks the service to disconnect. It does
 							not necessarily mean removing the service.
-							
+
 							The frontend must cancel the active ServerMessage
 							before disconnecting. The backend can rely on this
 							behavior.
-							
+
 							The frontend will reuse the stored session data from
 							SessionSaver to reconnect.
-							
+
 							When this function fails, the frontend may display
 							the error upfront. However, it will treat the
 							session as actually disconnected. If needed, the
@@ -797,10 +797,10 @@ var Main = Packages{
 				save the current session. This is typically called right after
 				authentication, but a frontend may call this any time, including
 				when it's closing.
-				
+
 				The frontend can ask to restore a session using SessionRestorer,
 				which extends Service.
-				
+
 				The SaveSession method must not do IO; if there are any reasons
 				that cause SaveSession to fail, then a nil map should be
 				returned.
@@ -818,7 +818,7 @@ var Main = Packages{
 				implement for command support. This is different from just
 				intercepting the SendMessage() API, as this extends globally to
 				the entire session.
-				
+
 				A very primitive use of this API would be to provide additional
 				features that are not in cchat through a very basic terminal
 				interface.
@@ -833,10 +833,10 @@ var Main = Packages{
 							os.Args. The function could return an output stream,
 							in which the frontend must display it live and close
 							it on EOF.
-							
+
 							The function can do IO, and outputs should be
 							written to the given io.Writer.
-							
+
 							The client should make guarantees that an empty
 							string (and thus a zero-length string slice) should
 							be ignored.  The backend should be able to assume
@@ -875,11 +875,11 @@ var Main = Packages{
 				Lister is for servers that contain children servers. This is
 				similar to guilds containing channels in Discord, or IRC servers
 				containing channels.
-				
+
 				There isn't a similar stop callback API unlike other interfaces
 				because all servers are expected to be listed. However, they
 				could be hidden, such as collapsing a tree.
-				
+
 				The backend should call both the container and other icon and
 				label containers, if any.
 			`},
@@ -922,6 +922,7 @@ var Main = Packages{
 				AsserterMethod{ChildType: "Editor"},
 				AsserterMethod{ChildType: "Actioner"},
 				AsserterMethod{ChildType: "Nicknamer"},
+				AsserterMethod{ChildType: "Backlogger"},
 				AsserterMethod{ChildType: "MemberLister"},
 				AsserterMethod{ChildType: "UnreadIndicator"},
 				AsserterMethod{ChildType: "TypingIndicator"},
@@ -1018,7 +1019,7 @@ var Main = Packages{
 							MessageActions returns a list of possible actions in
 							pretty strings that the frontend will use to
 							directly display. This method must not do IO.
-							
+
 							The string slice returned can be nil or empty.
 						`},
 						Name: "Actions",
@@ -1046,7 +1047,7 @@ var Main = Packages{
 		}, {
 			Comment: Comment{`
 				Nicknamer adds the current user's nickname.
-				
+
 				The frontend will not traverse up the server tree, meaning the
 				backend must handle nickname inheritance. This also means that
 				servers that don't implement ServerMessage also don't need to
@@ -1064,6 +1065,51 @@ var Main = Packages{
 			},
 		}, {
 			Comment: Comment{`
+				Backlogger adds message history capabilities into a message
+				container. The backend should send old messages using the
+				MessageCreate method of the MessageContainer, and the frontend
+				should automatically sort messages based on the timestamp.
+
+				As there is no stop callback, if the backend needs to fetch
+				messages asynchronously, it is expected to use the context to
+				know when to cancel.
+
+				The frontend should usually call this method when the user
+				scrolls to the top. It is expected to guarantee not to call
+				MessagesBefore more than once on the same ID. This can usually
+				be done by deactivating the UI.
+
+				Note that the optional usage of contexts also apply here. The
+				frontend should deactivate the UI when the backend is working.
+				However, the frontend can accomodate this by not deactivating
+				until another event is triggered, then freeze the UI until the
+				method is cancelled. This works even when the backend does not
+				use the context.
+			`},
+			Name: "Backlogger",
+			Methods: []Method{
+				IOMethod{ // technically a ContainerMethod.
+					method: method{
+						Comment: Comment{`
+							MessagesBefore fetches messages before the given
+							message ID into the MessagesContainer.
+
+							This method is technically a ContainerMethod, but
+							is listed as an IOMethod because of the additional
+							message ID parameter.
+						`},
+						Name: "MessagesBefore",
+					},
+					Parameters: []NamedType{
+						{"ctx", "context.Context"},
+						{"before", "ID"},
+						{"msgc", "MessagesContainer"},
+					},
+					ReturnError: true,
+				},
+			},
+		}, {
+			Comment: Comment{`
 				MemberLister adds a member list into a message server.
 			`},
 			Name: "MemberLister",
@@ -1076,7 +1122,7 @@ var Main = Packages{
 							used to provide HTTP request cancellations, but
 							frontends must not rely solely on this, as the
 							general context rules applies.
-							
+
 							Further behavioral documentations may be in
 							Messenger's JoinServer method.
 						`},
@@ -1100,7 +1146,7 @@ var Main = Packages{
 							for unread and mention events. Examples include when
 							a new message is arrived and the backend needs to
 							indicate that it's unread.
-							
+
 							This function must provide a way to remove
 							callbacks, as clients must call this when the old
 							server is destroyed, such as when Servers is called.
@@ -1116,7 +1162,7 @@ var Main = Packages{
 				TypingIndicator optionally extends ServerMessage to provide
 				bidirectional typing indicating capabilities. This is similar to
 				typing events on Discord and typing client tags on IRCv3.
-				
+
 				The client should remove a typer when a message is received with
 				the same user ID, when RemoveTyper() is called by the backend or
 				when the timeout returned from TypingTimeout() has been reached.
@@ -1155,7 +1201,7 @@ var Main = Packages{
 							typing events sent by the backend. The added event
 							handlers have to be removed by the backend when the
 							stop() callback is called.
-							
+
 							This method does not take in a context, as it's
 							supposed to only use event handlers and not do any
 							IO calls.  Nonetheless, the client must treat it
@@ -1172,7 +1218,7 @@ var Main = Packages{
 				Completer adds autocompletion into the message composer. IO is
 				not allowed, and the backend should do that only in goroutines
 				and update its state for future calls.
-				
+
 				Frontends could utilize the split package inside utils for
 				splitting words and index. This is the de-facto standard
 				implementation for splitting words, thus backends can rely on
@@ -1206,7 +1252,7 @@ var Main = Packages{
 				servers. It should implement a SetServers([]Server) that the
 				backend could use to call anytime the server list changes (at
 				all).
-				
+
 				Typically, most frontends should implement this interface onto a
 				tree node, as servers can be infinitely nested. Frontends should
 				also reset the entire node and its children when SetServers is
@@ -1262,7 +1308,7 @@ var Main = Packages{
 				of messages live. This implements the 3 most common message
 				events: CreateMessage, UpdateMessage and DeleteMessage. The
 				frontend must handle all 3.
-				
+
 				Since this container interface extends a single Server, the
 				frontend is allowed to have multiple views. This is usually done
 				with tabs or splits, but the backend should update them all
@@ -1365,7 +1411,7 @@ var Main = Packages{
 				LabelContainer is a generic interface for any container that can
 				hold texts. It's typically used for rich text labelling for
 				usernames and server names.
-				
+
 				Methods that takes in a LabelContainer typically holds it in the
 				state and may call SetLabel any time it wants. Thus, the
 				frontend should synchronize calls with the main thread if
@@ -1386,7 +1432,7 @@ var Main = Packages{
 				hold an image. It's typically used for icons that can update
 				itself. Frontends should round these icons. For images that
 				shouldn't be rounded, use ImageContainer.
-				
+
 				Methods may call SetIcon at any time in its main thread, so the
 				frontend must do any I/O (including downloading the image) in
 				another goroutine to avoid blocking the backend.
@@ -1403,13 +1449,13 @@ var Main = Packages{
 				UnreadContainer is an interface that a single server container
 				(such as a button or a tree node) can implement if it's capable
 				of indicating the read and mentioned status for that channel.
-				
+
 				Server containers that implement this has to implement both
 				SetUnread and SetMentioned, and they should also represent those
 				statuses differently. For example, a mentioned channel could
 				have a red outline, while an unread channel could appear
 				brighter.
-				
+
 				Server containers are expected to represent this information in
 				their parent nodes as well. For example, if a server is unread,
 				then its parent servers as well as the session node should
@@ -1440,7 +1486,7 @@ var Main = Packages{
 				users typing in the current chatbox. The typing indicator must adhere to the
 				TypingTimeout returned from ServerMessageTypingIndicator. The backend should
 				assume that to be the case and send events appropriately.
-				
+
 				For more documentation, refer to TypingIndicator.
 			`},
 			Name: "TypingContainer",
@@ -1490,7 +1536,7 @@ var Main = Packages{
 				that can display a member list. This is similar to Discord's
 				right-side member list or IRC's users list. Below is a visual
 				representation of a typical member list container:
-				
+
 				   +-MemberList-----------\
 				   | +-Section------------|
 				   | |                    |
@@ -1563,7 +1609,7 @@ var Main = Packages{
 				ListMember represents a single member in the member list. This
 				is a base interface that may implement more interfaces, such as
 				Iconer for the user's avatar.
-				
+
 				Note that the frontend may give everyone an avatar regardless,
 				or it may not show any avatars at all.
 			`},
@@ -1637,7 +1683,7 @@ var Main = Packages{
 				section. The section behaves similarly to MemberSection, except
 				the information displayed will be considered incomplete until
 				LoadMore returns false.
-				
+
 				LoadLess can be called by the client to mark chunks as stale,
 				which the server can then unsubscribe from.
 			`},
@@ -1648,7 +1694,7 @@ var Main = Packages{
 						Comment: Comment{`
 							LoadMore is a method which the client can call to
 							ask for more members. This method can do IO.
-							
+
 							Clients may call this method on the last section in
 							the section slice; however, calling this method on
 							any section is allowed. Clients may not call this
@@ -1665,7 +1711,7 @@ var Main = Packages{
 							LoadLess is a method which the client must call
 							after it is done displaying entries that were added
 							from calling LoadMore.
-							
+
 							The client can call this method exactly as many
 							times as it has called LoadMore. However, false
 							should be returned if the client should stop, and
@@ -1683,7 +1729,7 @@ var Main = Packages{
 				message, that is, a message that can be sent with SendMessage().
 				This allows the frontend to implement its own message data
 				implementation.
-				
+
 				An example of extending this interface is MessageNonce, which is
 				similar to IRCv3's labeled response extension or Discord's
 				nonces. The frontend could implement this interface and check if

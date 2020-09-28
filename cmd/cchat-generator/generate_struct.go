@@ -1,11 +1,17 @@
 package main
 
 import (
+	"sort"
+
 	"github.com/dave/jennifer/jen"
 	"github.com/diamondburned/cchat/repository"
 )
 
 func generateStructs(structs []repository.Struct) jen.Code {
+	sort.Slice(structs, func(i, j int) bool {
+		return structs[i].Name < structs[j].Name
+	})
+
 	var stmt = new(jen.Statement)
 
 	for _, s := range structs {
@@ -18,6 +24,10 @@ func generateStructs(structs []repository.Struct) jen.Code {
 }
 
 func generateErrorStructs(errStructs []repository.ErrorStruct) jen.Code {
+	sort.Slice(errStructs, func(i, j int) bool {
+		return errStructs[i].Name < errStructs[j].Name
+	})
+
 	var stmt = new(jen.Statement)
 
 	for _, errStruct := range errStructs {

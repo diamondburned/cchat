@@ -1,11 +1,17 @@
 package main
 
 import (
+	"sort"
+
 	"github.com/dave/jennifer/jen"
 	"github.com/diamondburned/cchat/repository"
 )
 
 func generateTypeAlises(aliases []repository.TypeAlias) jen.Code {
+	sort.Slice(aliases, func(i, j int) bool {
+		return aliases[i].Name < aliases[j].Name
+	})
+
 	var stmt = new(jen.Statement)
 
 	for _, alias := range aliases {

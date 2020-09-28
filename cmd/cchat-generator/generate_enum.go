@@ -1,11 +1,17 @@
 package main
 
 import (
+	"sort"
+
 	"github.com/dave/jennifer/jen"
 	"github.com/diamondburned/cchat/repository"
 )
 
 func generateEnums(enums []repository.Enumeration) jen.Code {
+	sort.Slice(enums, func(i, j int) bool {
+		return enums[i].Name < enums[j].Name
+	})
+
 	var stmt = new(jen.Statement)
 
 	for _, enum := range enums {
