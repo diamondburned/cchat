@@ -8,6 +8,13 @@ var Main = Packages{
 	MakePath("text"): {
 		Comment: Comment{`
 			Package text provides a rich text API for cchat interfaces to use.
+
+			Asserting
+
+			Although interfaces here contain asserter methods similarly to
+			cchat, the backend should take care to not implement multiple
+			interfaces that may seem conflicting. For example, if Avatarer is
+			already implemented, then Imager shouldn't be.
 		`},
 		Enums: []Enumeration{{
 			Comment: Comment{`
@@ -86,6 +93,14 @@ var Main = Packages{
 						{Name: "end", Type: "int"},
 					},
 				},
+				AsserterMethod{ChildType: "Colorer"},
+				AsserterMethod{ChildType: "Linker"},
+				AsserterMethod{ChildType: "Imager"},
+				AsserterMethod{ChildType: "Avatarer"},
+				AsserterMethod{ChildType: "Mentioner"},
+				AsserterMethod{ChildType: "Attributor"},
+				AsserterMethod{ChildType: "Codeblocker"},
+				AsserterMethod{ChildType: "Quoteblocker"},
 			},
 		}, {
 			Comment: Comment{`
@@ -94,8 +109,7 @@ var Main = Packages{
 				hyperlink, similarly to the anchor tag with href being the URL
 				and the inner text being the text string.
 			`},
-			Name:   "Linker",
-			Embeds: []EmbeddedInterface{{InterfaceName: "Segment"}},
+			Name: "Linker",
 			Methods: []Method{
 				GetterMethod{
 					method:  method{Name: "Link"},
@@ -107,9 +121,11 @@ var Main = Packages{
 				Imager implies the segment should be replaced with a (possibly
 				inlined) image. Only the starting bound matters, as images
 				cannot substitute texts.
+
+				For segments that also implement mentioner, the image should be
+				treated as a square avatar.
 			`},
-			Name:   "Imager",
-			Embeds: []EmbeddedInterface{{InterfaceName: "Segment"}},
+			Name: "Imager",
 			Methods: []Method{
 				GetterMethod{
 					method: method{
@@ -150,9 +166,11 @@ var Main = Packages{
 			Comment: Comment{`
 				Avatarer implies the segment should be replaced with a
 				rounded-corners image. This works similarly to Imager.
+
+				For segments that also implement mentioner, the image should be
+				treated as a round avatar.
 			`},
-			Name:   "Avatarer",
-			Embeds: []EmbeddedInterface{{InterfaceName: "Segment"}},
+			Name: "Avatarer",
 			Methods: []Method{
 				GetterMethod{
 					method: method{
@@ -188,6 +206,28 @@ var Main = Packages{
 			},
 		}, {
 			Comment: Comment{`
+				Colorer is a text color format that a segment could implement.
+				This is to be applied directly onto the text.
+
+				The Color method must return a valid 32-bit RGBA color. That
+				is, if the text color is solid, then the alpha value must be
+				0xFF. Frontends that support 32-bit colors must render alpha
+				accordingly without any edge cases.
+			`},
+			Name: "Colorer",
+			Methods: []Method{
+				GetterMethod{
+					method: method{
+						Comment: Comment{`
+							Color returns a 32-bit RGBA color.
+						`},
+						Name: "Color",
+					},
+					Returns: []NamedType{{Type: "uint32"}},
+				},
+			},
+		}, {
+			Comment: Comment{`
 				Mentioner implies that the segment can be clickable, and when
 				clicked it should open up a dialog containing information from
 				MentionInfo().
@@ -197,8 +237,7 @@ var Main = Packages{
 				that user. This would allow frontends to flexibly layout the
 				labels.
 			`},
-			Name:   "Mentioner",
-			Embeds: []EmbeddedInterface{{InterfaceName: "Segment"}},
+			Name: "Mentioner",
 			Methods: []Method{
 				GetterMethod{
 					method: method{
@@ -216,69 +255,10 @@ var Main = Packages{
 			},
 		}, {
 			Comment: Comment{`
-				MentionerImage extends Mentioner to give the mentioned object an
-				image. This interface allows the frontend to be more flexible
-				in layouting. A Mentioner can only implement EITHER
-				MentionedImage or MentionedAvatar.
-			`},
-			Name:   "MentionerImage",
-			Embeds: []EmbeddedInterface{{InterfaceName: "Mentioner"}},
-			Methods: []Method{
-				GetterMethod{
-					method: method{
-						Comment: Comment{`
-							Image returns the mentioned object's image URL.
-						`},
-						Name: "Image",
-					},
-					Returns: []NamedType{{Name: "url", Type: "string"}},
-				},
-			},
-		}, {
-			Comment: Comment{`
-				MentionerAvatar extends Mentioner to give the mentioned object
-				an avatar.  This interface allows the frontend to be more
-				flexible in layouting. A Mentioner can only implement EITHER
-				MentionedImage or MentionedAvatar.
-			`},
-			Name:   "MentionerAvatar",
-			Embeds: []EmbeddedInterface{{InterfaceName: "Mentioner"}},
-			Methods: []Method{
-				GetterMethod{
-					method: method{
-						Comment: Comment{`
-							Avatar returns the mentioned object's avatar URL.
-						`},
-						Name: "Avatar",
-					},
-					Returns: []NamedType{{Name: "url", Type: "string"}},
-				},
-			},
-		}, {
-			Comment: Comment{`
-				Colorer is a text color format that a segment could implement.
-				This is to be applied directly onto the text.
-			`},
-			Name:   "Colorer",
-			Embeds: []EmbeddedInterface{{InterfaceName: "Mentioner"}},
-			Methods: []Method{
-				GetterMethod{
-					method: method{
-						Comment: Comment{`
-							Color returns a 24-bit RGB or 32-bit RGBA color.
-						`},
-						Name: "Color",
-					},
-					Returns: []NamedType{{Type: "uint32"}},
-				},
-			},
-		}, {
-			Comment: Comment{`
 				Attributor is a rich text markup format that a segment could
 				implement. This is to be applied directly onto the text.
 			`},
-			Name:   "Attributor",
-			Embeds: []EmbeddedInterface{{InterfaceName: "Mentioner"}},
+			Name: "Attributor",
 			Methods: []Method{
 				GetterMethod{
 					method:  method{Name: "Attribute"},
@@ -293,8 +273,7 @@ var Main = Packages{
 
 				This interface is equivalent to Markdown's codeblock syntax.
 			`},
-			Name:   "Codeblocker",
-			Embeds: []EmbeddedInterface{{InterfaceName: "Segment"}},
+			Name: "Codeblocker",
 			Methods: []Method{
 				GetterMethod{
 					method: method{Name: "CodeblockLanguage"},
@@ -311,8 +290,7 @@ var Main = Packages{
 				typically by an actaul quoteblock or with green arrows prepended
 				to each line.
 			`},
-			Name:   "Quoteblocker",
-			Embeds: []EmbeddedInterface{{InterfaceName: "Segment"}},
+			Name: "Quoteblocker",
 			Methods: []Method{
 				GetterMethod{
 					method: method{

@@ -1,6 +1,14 @@
 // DO NOT EDIT: THIS FILE IS GENERATED!
 
 // Package text provides a rich text API for cchat interfaces to use.
+//
+//
+// Asserting
+//
+// Although interfaces here contain asserter methods similarly to cchat, the
+// backend should take care to not implement multiple interfaces that may seem
+// conflicting. For example, if Avatarer is already implemented, then Imager
+// shouldn't be.
 package text
 
 // Attribute is the type for basic rich text markup attributes.
@@ -40,16 +48,15 @@ type Rich struct {
 // Attributor is a rich text markup format that a segment could implement. This
 // is to be applied directly onto the text.
 type Attributor interface {
-	Mentioner
-
 	Attribute() Attribute
 }
 
 // Avatarer implies the segment should be replaced with a rounded-corners image.
 // This works similarly to Imager.
+//
+// For segments that also implement mentioner, the image should be treated as a
+// round avatar.
 type Avatarer interface {
-	Segment
-
 	// AvatarText returns the underlying text of the image. Frontends could use this
 	// for hovering or displaying the text instead of the image.
 	AvatarText() string
@@ -66,25 +73,26 @@ type Avatarer interface {
 //
 // This interface is equivalent to Markdown's codeblock syntax.
 type Codeblocker interface {
-	Segment
-
 	CodeblockLanguage() (language string)
 }
 
 // Colorer is a text color format that a segment could implement. This is to be
 // applied directly onto the text.
+//
+// The Color method must return a valid 32-bit RGBA color. That is, if the text
+// color is solid, then the alpha value must be 0xFF. Frontends that support
+// 32-bit colors must render alpha accordingly without any edge cases.
 type Colorer interface {
-	Mentioner
-
-	// Color returns a 24-bit RGB or 32-bit RGBA color.
+	// Color returns a 32-bit RGBA color.
 	Color() uint32
 }
 
 // Imager implies the segment should be replaced with a (possibly inlined)
 // image. Only the starting bound matters, as images cannot substitute texts.
+//
+// For segments that also implement mentioner, the image should be treated as a
+// square avatar.
 type Imager interface {
-	Segment
-
 	// ImageText returns the underlying text of the image. Frontends could use this
 	// for hovering or displaying the text instead of the image.
 	ImageText() string
@@ -99,8 +107,6 @@ type Imager interface {
 // that the segment should be replaced with a hyperlink, similarly to the anchor
 // tag with href being the URL and the inner text being the text string.
 type Linker interface {
-	Segment
-
 	Link() (url string)
 }
 
@@ -111,39 +117,15 @@ type Linker interface {
 // Mentioner highlighted to be the display name of that user. This would allow
 // frontends to flexibly layout the labels.
 type Mentioner interface {
-	Segment
-
 	// MentionInfo returns the popup information of the mentioned segment. This is
 	// typically user information or something similar to that context.
 	MentionInfo() Rich
-}
-
-// MentionerAvatar extends Mentioner to give the mentioned object an avatar.
-// This interface allows the frontend to be more flexible in layouting. A
-// Mentioner can only implement EITHER MentionedImage or MentionedAvatar.
-type MentionerAvatar interface {
-	Mentioner
-
-	// Avatar returns the mentioned object's avatar URL.
-	Avatar() (url string)
-}
-
-// MentionerImage extends Mentioner to give the mentioned object an image. This
-// interface allows the frontend to be more flexible in layouting. A Mentioner
-// can only implement EITHER MentionedImage or MentionedAvatar.
-type MentionerImage interface {
-	Mentioner
-
-	// Image returns the mentioned object's image URL.
-	Image() (url string)
 }
 
 // Quoteblocker represents a quoteblock that behaves similarly to the blockquote
 // HTML tag. The quoteblock may be represented typically by an actaul quoteblock
 // or with green arrows prepended to each line.
 type Quoteblocker interface {
-	Segment
-
 	// QuotePrefix returns the prefix that every line the segment covers have. This
 	// is typically the greater-than sign ">" in Markdown. Frontends could use this
 	// information to format the quote properly.
@@ -159,4 +141,15 @@ type Quoteblocker interface {
 // Mentioner may also implement Colorer.
 type Segment interface {
 	Bounds() (start int, end int)
+
+	// Asserters.
+
+	AsColorer() Colorer           // Optional
+	AsLinker() Linker             // Optional
+	AsImager() Imager             // Optional
+	AsAvatarer() Avatarer         // Optional
+	AsMentioner() Mentioner       // Optional
+	AsAttributor() Attributor     // Optional
+	AsCodeblocker() Codeblocker   // Optional
+	AsQuoteblocker() Quoteblocker // Optional
 }
