@@ -4,6 +4,7 @@ import (
 	"sort"
 
 	"github.com/dave/jennifer/jen"
+	"github.com/diamondburned/cchat/cmd/internal/cchat-generator/genutils"
 	"github.com/diamondburned/cchat/repository"
 )
 
@@ -35,7 +36,7 @@ func generateErrorStructs(errStructs []repository.ErrorStruct) jen.Code {
 		stmt.Line()
 		stmt.Line()
 
-		var recv = recvName(errStruct.Name)
+		var recv = genutils.RecvName(errStruct.Name)
 
 		stmt.Func()
 		stmt.Params(jen.Id(recv).Id(errStruct.Name))
@@ -81,7 +82,7 @@ func generateStruct(s repository.Struct) jen.Code {
 			if field.Name != "" {
 				stmt.Id(field.Name)
 			}
-			stmt.Add(generateType(field))
+			stmt.Add(genutils.GenerateType(field))
 			group.Add(stmt)
 		}
 	})

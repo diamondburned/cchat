@@ -1,8 +1,21 @@
 package repository
 
 import (
+	"fmt"
+	"path"
 	"strings"
 )
+
+// MakePath returns RootPath joined with relPath.
+func MakePath(relPath string) string {
+	return path.Join(RootPath, relPath)
+}
+
+// MakeQual returns a qualified identifier that is the full path and name of
+// something.
+func MakeQual(relPath, name string) string {
+	return fmt.Sprintf("(%s).%s", MakePath(relPath), name)
+}
 
 // Packages maps Go module paths to packages.
 type Packages map[string]Package

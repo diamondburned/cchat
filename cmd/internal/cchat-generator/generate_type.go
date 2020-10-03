@@ -4,6 +4,7 @@ import (
 	"sort"
 
 	"github.com/dave/jennifer/jen"
+	"github.com/diamondburned/cchat/cmd/internal/cchat-generator/genutils"
 	"github.com/diamondburned/cchat/repository"
 )
 
@@ -20,22 +21,10 @@ func generateTypeAlises(aliases []repository.TypeAlias) jen.Code {
 			stmt.Line()
 		}
 
-		stmt.Type().Id(alias.Name).Op("=").Add(generateType(alias))
+		stmt.Type().Id(alias.Name).Op("=").Add(genutils.GenerateType(alias))
 		stmt.Line()
 		stmt.Line()
 	}
 
 	return stmt
-}
-
-type qualer interface {
-	Qual() (path, name string)
-}
-
-func generateType(t qualer) jen.Code {
-	path, name := t.Qual()
-	if path == "" {
-		return jen.Id(name)
-	}
-	return jen.Qual(path, name)
 }

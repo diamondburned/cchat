@@ -5,7 +5,7 @@ package repository
 const RootPath = "github.com/diamondburned/cchat"
 
 var Main = Packages{
-	"github.com/diamondburned/cchat/text": {
+	MakePath("text"): {
 		Comment: Comment{`
 			Package text provides a rich text API for cchat interfaces to use.
 		`},
@@ -210,7 +210,7 @@ var Main = Packages{
 						Name: "MentionInfo",
 					},
 					Returns: []NamedType{{
-						Type: "(github.com/diamondburned/cchat/text).Rich",
+						Type: MakeQual("text", "Rich"),
 					}},
 				},
 			},
@@ -462,7 +462,7 @@ var Main = Packages{
 				`},
 				NamedType: NamedType{
 					Name: "Text",
-					Type: "(github.com/diamondburned/cchat/text).Rich",
+					Type: MakeQual("text", "Rich"),
 				},
 			}, {
 				Comment: Comment{`
@@ -472,7 +472,7 @@ var Main = Packages{
 				`},
 				NamedType: NamedType{
 					Name: "Secondary",
-					Type: "(github.com/diamondburned/cchat/text).Rich",
+					Type: MakeQual("text", "Rich"),
 				},
 			}, {
 				Comment: Comment{`
@@ -545,7 +545,7 @@ var Main = Packages{
 				GetterMethod{
 					method: method{Name: "Name"},
 					Returns: []NamedType{{
-						Type: "(github.com/diamondburned/cchat/text).Rich",
+						Type: MakeQual("text", "Rich"),
 					}},
 				},
 				AsserterMethod{
@@ -1366,7 +1366,7 @@ var Main = Packages{
 				GetterMethod{
 					method: method{Name: "Content"},
 					Returns: []NamedType{{
-						Type: "(github.com/diamondburned/cchat/text).Rich",
+						Type: MakeQual("text", "Rich"),
 					}},
 				},
 				GetterMethod{
@@ -1396,7 +1396,7 @@ var Main = Packages{
 				GetterMethod{
 					method: method{Name: "Content"},
 					Returns: []NamedType{{
-						Type: "(github.com/diamondburned/cchat/text).Rich",
+						Type: MakeQual("text", "Rich"),
 					}},
 				},
 			},
@@ -1422,7 +1422,7 @@ var Main = Packages{
 				SetterMethod{
 					method: method{Name: "SetLabel"},
 					Parameters: []NamedType{{
-						Type: "(github.com/diamondburned/cchat/text).Rich",
+						Type: MakeQual("text", "Rich"),
 					}},
 				},
 			},
@@ -1650,7 +1650,7 @@ var Main = Packages{
 						Name: "Secondary",
 					},
 					Returns: []NamedType{{
-						Type: "(github.com/diamondburned/cchat/text).Rich",
+						Type: MakeQual("text", "Rich"),
 					}},
 				},
 			},

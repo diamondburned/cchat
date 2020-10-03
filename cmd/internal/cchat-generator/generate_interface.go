@@ -4,6 +4,7 @@ import (
 	"sort"
 
 	"github.com/dave/jennifer/jen"
+	"github.com/diamondburned/cchat/cmd/internal/cchat-generator/genutils"
 	"github.com/diamondburned/cchat/repository"
 )
 
@@ -71,7 +72,7 @@ func generateInterfaces(ifaces []repository.Interface) jen.Code {
 					stmt.Params(generateContainerFuncReturns(method)...)
 				case repository.AsserterMethod:
 					stmt.Params()
-					stmt.Params(generateType(method))
+					stmt.Params(genutils.GenerateType(method))
 					stmt.Comment("// Optional")
 				default:
 					continue
@@ -108,9 +109,9 @@ func generateFuncParamErr(param repository.NamedType, genErr bool) []jen.Code {
 
 func generateFuncParam(param repository.NamedType) jen.Code {
 	if param.Name == "" {
-		return generateType(param)
+		return genutils.GenerateType(param)
 	}
-	return jen.Id(param.Name).Add(generateType(param))
+	return jen.Id(param.Name).Add(genutils.GenerateType(param))
 }
 
 func generateFuncParams(params []repository.NamedType, withError bool) []jen.Code {
@@ -151,7 +152,7 @@ func generateContainerFuncParams(method repository.ContainerMethod) []jen.Code {
 	if method.HasContext {
 		stmt.Qual("context", "Context")
 	}
-	stmt.Add(generateType(method))
+	stmt.Add(genutils.GenerateType(method))
 
 	return stmt
 }

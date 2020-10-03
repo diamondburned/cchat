@@ -1,3 +1,3 @@
 package cchat
 
-//go:generate go run ./cmd/cchat-generator
+//go:generate go run ./cmd/internal/cchat-generator

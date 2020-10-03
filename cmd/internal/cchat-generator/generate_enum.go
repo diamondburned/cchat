@@ -4,6 +4,7 @@ import (
 	"sort"
 
 	"github.com/dave/jennifer/jen"
+	"github.com/diamondburned/cchat/cmd/internal/cchat-generator/genutils"
 	"github.com/diamondburned/cchat/repository"
 )
 
@@ -45,7 +46,7 @@ func generateEnums(enums []repository.Enumeration) jen.Code {
 		stmt.Line()
 		stmt.Line()
 
-		var recv = recvName(enum.Name)
+		var recv = genutils.RecvName(enum.Name)
 
 		if enum.Bitwise {
 			fn := stmt.Func()

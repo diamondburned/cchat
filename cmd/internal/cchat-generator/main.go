@@ -5,7 +5,6 @@ import (
 	"os"
 	"path/filepath"
 	"strings"
-	"unicode"
 
 	"github.com/dave/jennifer/jen"
 	"github.com/diamondburned/cchat/repository"
@@ -46,12 +45,6 @@ func main() {
 
 func trimPrefix(rootPrefix, path string) string {
 	return strings.Trim(strings.TrimPrefix(path, rootPrefix), "/")
-}
-
-// recvName is used to get the receiver variable name. It returns the first
-// letter lower-cased. It does NOT do length checking. It only works with ASCII.
-func recvName(name string) string {
-	return string(unicode.ToLower(rune(name[0])))
 }
 
 func generate(pkgPath string, repo repository.Package) *jen.File {
