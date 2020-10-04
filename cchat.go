@@ -480,7 +480,7 @@ type MessageCreate interface {
 
 	// Mentioned returns whether or not the message mentions the current user. If a
 	// backend does not implement mentioning, then false can be returned.
-	Mentioned()
+	Mentioned() bool
 	Content() text.Rich
 	Author() Author
 }

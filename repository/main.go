@@ -1374,6 +1374,7 @@ var Main = Packages{
 						`},
 						Name: "Mentioned",
 					},
+					Returns: []NamedType{{Type: "bool"}},
 				},
 			},
 		}, {
