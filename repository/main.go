@@ -589,7 +589,14 @@ var Main = Packages{
 			Name: "Author",
 			Embeds: []EmbeddedInterface{
 				{InterfaceName: "Identifier"},
-				{InterfaceName: "Namer"},
+			},
+			Methods: []Method{
+				GetterMethod{
+					method: method{Name: "Name"},
+					Returns: []NamedType{{
+						Type: MakeQual("text", "Rich"),
+					}},
+				},
 			},
 		}, {
 			Comment: Comment{`

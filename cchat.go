@@ -210,7 +210,8 @@ type Authenticator interface {
 // The frontend may use the ID to squash messages with the same author together.
 type Author interface {
 	Identifier
-	Namer
+
+	Name() text.Rich
 }
 
 // Backlogger adds message history capabilities into a message container. The
