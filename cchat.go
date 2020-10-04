@@ -156,11 +156,12 @@ type Actioner interface {
 	// taken from MessageHeader.ID(). This method is allowed to do IO; the frontend
 	// should take care of running it asynchronously.
 	DoAction(action string, id ID) error // Blocking
-	// MessageActions returns a list of possible actions in pretty strings that the
-	// frontend will use to directly display. This method must not do IO.
+	// MessageActions returns a list of possible actions to a message in pretty
+	// strings that the frontend will use to directly display. This method must not
+	// do IO.
 	//
 	// The string slice returned can be nil or empty.
-	Actions() []string
+	Actions(id ID) []string
 }
 
 // Attachments extends SendableMessage which adds attachments into the message.

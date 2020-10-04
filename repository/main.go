@@ -1024,15 +1024,16 @@ var Main = Packages{
 				GetterMethod{
 					method: method{
 						Comment: Comment{`
-							MessageActions returns a list of possible actions in
-							pretty strings that the frontend will use to
-							directly display. This method must not do IO.
+							MessageActions returns a list of possible actions to
+							a message in pretty strings that the frontend will
+							use to directly display. This method must not do IO.
 
 							The string slice returned can be nil or empty.
 						`},
 						Name: "Actions",
 					},
-					Returns: []NamedType{{Type: "[]string"}},
+					Parameters: []NamedType{{Name: "id", Type: "ID"}},
+					Returns:    []NamedType{{Type: "[]string"}},
 				},
 				IOMethod{
 					method: method{
