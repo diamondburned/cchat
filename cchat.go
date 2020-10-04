@@ -782,10 +782,9 @@ type TypingIndicator interface {
 // button or a tree node) can implement if it's capable of indicating the read
 // and mentioned status for that channel.
 //
-// Server containers that implement this has to implement both SetUnread and
-// SetMentioned, and they should also represent those statuses differently. For
-// example, a mentioned channel could have a red outline, while an unread
-// channel could appear brighter.
+// Server containers that implement this has to represent unread and mentioned
+// differently. For example, a mentioned channel could have a red outline, while
+// an unread channel could appear brighter.
 //
 // Server containers are expected to represent this information in their parent
 // nodes as well. For example, if a server is unread, then its parent servers as

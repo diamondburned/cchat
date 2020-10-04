@@ -9,6 +9,33 @@ import (
 	"github.com/diamondburned/cchat/text"
 )
 
+// TextSegment provides no-op asserters for cchat.TextSegment.
+type TextSegment struct{}
+
+// AsColorer returns nil.
+func (TextSegment) AsColorer() text.Colorer { return nil }
+
+// AsLinker returns nil.
+func (TextSegment) AsLinker() text.Linker { return nil }
+
+// AsImager returns nil.
+func (TextSegment) AsImager() text.Imager { return nil }
+
+// AsAvatarer returns nil.
+func (TextSegment) AsAvatarer() text.Avatarer { return nil }
+
+// AsMentioner returns nil.
+func (TextSegment) AsMentioner() text.Mentioner { return nil }
+
+// AsAttributor returns nil.
+func (TextSegment) AsAttributor() text.Attributor { return nil }
+
+// AsCodeblocker returns nil.
+func (TextSegment) AsCodeblocker() text.Codeblocker { return nil }
+
+// AsQuoteblocker returns nil.
+func (TextSegment) AsQuoteblocker() text.Quoteblocker { return nil }
+
 // Namer provides no-op asserters for cchat.Namer.
 type Namer struct{}
 
@@ -113,30 +140,3 @@ func (SendableMessage) AsNoncer() cchat.Noncer { return nil }
 
 // AsAttachments returns nil.
 func (SendableMessage) AsAttachments() cchat.Attachments { return nil }
-
-// TextSegment provides no-op asserters for cchat.TextSegment.
-type TextSegment struct{}
-
-// AsColorer returns nil.
-func (TextSegment) AsColorer() text.Colorer { return nil }
-
-// AsLinker returns nil.
-func (TextSegment) AsLinker() text.Linker { return nil }
-
-// AsImager returns nil.
-func (TextSegment) AsImager() text.Imager { return nil }
-
-// AsAvatarer returns nil.
-func (TextSegment) AsAvatarer() text.Avatarer { return nil }
-
-// AsMentioner returns nil.
-func (TextSegment) AsMentioner() text.Mentioner { return nil }
-
-// AsAttributor returns nil.
-func (TextSegment) AsAttributor() text.Attributor { return nil }
-
-// AsCodeblocker returns nil.
-func (TextSegment) AsCodeblocker() text.Codeblocker { return nil }
-
-// AsQuoteblocker returns nil.
-func (TextSegment) AsQuoteblocker() text.Quoteblocker { return nil }
