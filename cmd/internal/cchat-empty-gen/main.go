@@ -5,6 +5,7 @@ import (
 	"log"
 	"os"
 	"path"
+	"sort"
 	"strings"
 
 	"github.com/dave/jennifer/jen"
@@ -23,33 +24,52 @@ var comment = repository.Comment{Raw: `
 	in cchat's root and text packages.
 `}
 
+type Package struct {
+	Path string
+	repository.Package
+}
+
 func main() {
 	gen := jen.NewFile("empty")
 	gen.HeaderComment("DO NOT EDIT: THIS FILE IS GENERATED!")
 	gen.PackageComment(comment.GoString(1))
 
-	for pkgpath, pk := range repository.Main {
-		gen.ImportName(pkgpath, path.Base(pkgpath))
+	// Sort.
+	var packages = make([]Package, 0, len(repository.Main))
 
-		for _, iface := range pk.Interfaces {
+	for pkgpath, pk := range repository.Main {
+		packages = append(packages, Package{
+			Path:    pkgpath,
+			Package: pk,
+		})
+	}
+
+	sort.Slice(packages, func(i, j int) bool {
+		return packages[i].Path < packages[j].Path
+	})
+
+	for _, pkg := range packages {
+		gen.ImportName(pkg.Path, path.Base(pkg.Path))
+
+		for _, iface := range pkg.Interfaces {
 			// Skip structs without asserter methods.
 			if !hasAsserter(iface) {
 				continue
 			}
 
-			var ifaceName = newIfaceName(pkgpath, iface)
+			var ifaceName = newIfaceName(pkg.Path, iface)
 
 			gen.Commentf("%[1]s provides no-op asserters for cchat.%[1]s.", ifaceName)
 			gen.Type().Id(ifaceName).Struct()
 			gen.Line()
 
 			for _, embed := range iface.Embeds {
-				if iface := pk.Interface(embed.InterfaceName); iface != nil {
-					genIfaceMethods(gen, *iface, ifaceName, pkgpath)
+				if iface := pkg.Interface(embed.InterfaceName); iface != nil {
+					genIfaceMethods(gen, *iface, ifaceName, pkg.Path)
 				}
 			}
 
-			genIfaceMethods(gen, iface, ifaceName, pkgpath)
+			genIfaceMethods(gen, iface, ifaceName, pkg.Path)
 
 			gen.Line()
 		}
