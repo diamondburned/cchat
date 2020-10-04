@@ -30,8 +30,7 @@ type Package struct {
 }
 
 func main() {
-	gen := jen.NewFile("empty")
-	gen.HeaderComment("DO NOT EDIT: THIS FILE IS GENERATED!")
+	gen := genutils.NewFile("empty")
 	gen.PackageComment(comment.GoString(1))
 
 	// Sort.

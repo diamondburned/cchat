@@ -7,6 +7,7 @@ import (
 	"strings"
 
 	"github.com/dave/jennifer/jen"
+	"github.com/diamondburned/cchat/cmd/internal/cchat-generator/genutils"
 	"github.com/diamondburned/cchat/repository"
 )
 
@@ -48,8 +49,7 @@ func trimPrefix(rootPrefix, path string) string {
 }
 
 func generate(pkgPath string, repo repository.Package) *jen.File {
-	gen := jen.NewFilePath(pkgPath)
-	gen.HeaderComment("DO NOT EDIT: THIS FILE IS GENERATED!")
+	gen := genutils.NewFilePath(pkgPath)
 	gen.PackageComment(repo.Comment.GoString(1))
 	gen.Add(generateTypeAlises(repo.TypeAliases))
 	gen.Line()
