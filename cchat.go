@@ -307,7 +307,7 @@ type Editor interface {
 // do any I/O (including downloading the image) in another goroutine to avoid
 // blocking the backend.
 type IconContainer interface {
-	SetImage(url string)
+	SetIcon(url string)
 }
 
 // Iconer adds icon support into Namer, which in turn is returned by other
@@ -326,6 +326,17 @@ type Iconer interface {
 // the program or maybe even forever.
 type Identifier interface {
 	ID() ID
+}
+
+// ImageContainer is a generic interface for any container that can hold an
+// image. It's typically used for icons that can update itself. Frontends should
+// not round these icons. For images that should be rounded, use IconContainer.
+//
+// Methods may call SetIcon at any time in its main thread, so the frontend must
+// do any I/O (including downloading the image) in another goroutine to avoid
+// blocking the backend.
+type ImageContainer interface {
+	SetImage(url string)
 }
 
 // LabelContainer is a generic interface for any container that can hold texts.

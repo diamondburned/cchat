@@ -1418,6 +1418,24 @@ var Main = Packages{
 			Name: "IconContainer",
 			Methods: []Method{
 				SetterMethod{
+					method:     method{Name: "SetIcon"},
+					Parameters: []NamedType{{Name: "url", Type: "string"}},
+				},
+			},
+		}, {
+			Comment: Comment{`
+				ImageContainer is a generic interface for any container that can
+				hold an image. It's typically used for icons that can update
+				itself. Frontends should not round these icons. For images that
+				should be rounded, use IconContainer.
+
+				Methods may call SetIcon at any time in its main thread, so the
+				frontend must do any I/O (including downloading the image) in
+				another goroutine to avoid blocking the backend.
+			`},
+			Name: "ImageContainer",
+			Methods: []Method{
+				SetterMethod{
 					method:     method{Name: "SetImage"},
 					Parameters: []NamedType{{Name: "url", Type: "string"}},
 				},
