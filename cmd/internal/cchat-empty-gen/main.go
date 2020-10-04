@@ -37,35 +37,19 @@ func main() {
 				continue
 			}
 
-			var ifaceName string
-			if pkgpath == repository.RootPath {
-				ifaceName = iface.Name
-			} else {
-				ifaceName = strings.Title(repository.TrimRoot(pkgpath)) + iface.Name
-			}
+			var ifaceName = newIfaceName(pkgpath, iface)
 
 			gen.Commentf("%[1]s provides no-op asserters for cchat.%[1]s.", ifaceName)
 			gen.Type().Id(ifaceName).Struct()
 			gen.Line()
 
-			for _, method := range iface.Methods {
-				am, ok := method.(repository.AsserterMethod)
-				if !ok {
-					continue
+			for _, embed := range iface.Embeds {
+				if iface := pk.Interface(embed.InterfaceName); iface != nil {
+					genIfaceMethods(gen, *iface, ifaceName, pkgpath)
 				}
-
-				name := fmt.Sprintf("As%s", am.ChildType)
-				gen.Comment(fmt.Sprintf("%s returns nil.", name))
-
-				stmt := jen.Func()
-				stmt.Parens(jen.Id(ifaceName))
-				stmt.Id(fmt.Sprintf("As%s", am.ChildType))
-				stmt.Params()
-				stmt.Add(genutils.GenerateExternType(pkgpath, am))
-				stmt.Values(jen.Return(jen.Nil()))
-
-				gen.Add(stmt)
 			}
+
+			genIfaceMethods(gen, iface, ifaceName, pkgpath)
 
 			gen.Line()
 		}
@@ -79,6 +63,35 @@ func main() {
 
 	if err := gen.Render(f); err != nil {
 		log.Fatalln("Failed to render output:", err)
+	}
+}
+
+func newIfaceName(pkgpath string, iface repository.Interface) string {
+	if pkgpath == repository.RootPath {
+		return iface.Name
+	} else {
+		return strings.Title(repository.TrimRoot(pkgpath)) + iface.Name
+	}
+}
+
+func genIfaceMethods(gen *jen.File, iface repository.Interface, ifaceName, pkgpath string) {
+	for _, method := range iface.Methods {
+		am, ok := method.(repository.AsserterMethod)
+		if !ok {
+			continue
+		}
+
+		name := fmt.Sprintf("As%s", am.ChildType)
+		gen.Comment(fmt.Sprintf("%s returns nil.", name))
+
+		stmt := jen.Func()
+		stmt.Parens(jen.Id(ifaceName))
+		stmt.Id(name)
+		stmt.Params()
+		stmt.Add(genutils.GenerateExternType(pkgpath, am))
+		stmt.Values(jen.Return(jen.Nil()))
+
+		gen.Add(stmt)
 	}
 }
 
