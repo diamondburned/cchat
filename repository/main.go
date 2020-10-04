@@ -64,14 +64,26 @@ var Main = Packages{
 				Rich is a normal text wrapped with optional format segments.
 			`},
 			Name: "Rich",
-			Fields: []StructField{{
-				NamedType: NamedType{"Content", "string"},
-			}, {
+			Fields: []StructField{
+				{
+					NamedType: NamedType{"Content", "string"},
+				},
+				{
+					Comment: Comment{`
+						Segments are optional rich-text segment markers.
+					`},
+					NamedType: NamedType{"Segments", "[]Segment"},
+				},
+			},
+			Stringer: Stringer{
 				Comment: Comment{`
-					Segments are optional rich-text segment markers.
+					String returns the Content in plain text.
 				`},
-				NamedType: NamedType{"Segments", "[]Segment"},
-			}},
+				TmplString: TmplString{
+					Format: "%s",
+					Fields: []string{"Content"},
+				},
+			},
 		}},
 		Interfaces: []Interface{{
 			Comment: Comment{`

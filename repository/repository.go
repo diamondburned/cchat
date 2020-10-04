@@ -97,3 +97,8 @@ type TmplString struct {
 	Format string   // printf format syntax
 	Fields []string // list of struct fields
 }
+
+// IsEmpty returns true if TmplString is zero.
+func (s TmplString) IsEmpty() bool {
+	return s.Format == ""
+}

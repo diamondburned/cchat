@@ -45,6 +45,11 @@ type Rich struct {
 	Segments []Segment
 }
 
+// String returns the Content in plain text.
+func (r Rich) String() string {
+	return r.Content
+}
+
 // Attributor is a rich text markup format that a segment could implement. This
 // is to be applied directly onto the text.
 type Attributor interface {

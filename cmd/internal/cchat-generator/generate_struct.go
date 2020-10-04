@@ -41,15 +41,7 @@ func generateErrorStructs(errStructs []repository.ErrorStruct) jen.Code {
 		stmt.Func()
 		stmt.Params(jen.Id(recv).Id(errStruct.Name))
 		stmt.Id("Error").Params().String()
-		stmt.BlockFunc(func(g *jen.Group) {
-			g.Return(jen.Qual("fmt", "Sprintf").CallFunc(func(g *jen.Group) {
-				g.Lit(errStruct.ErrorString.Format)
-
-				for _, field := range errStruct.ErrorString.Fields {
-					g.Add(jen.Id(recv).Dot(field))
-				}
-			}))
-		})
+		stmt.Block(jen.Return(generateTmplString(errStruct.ErrorString, recv)))
 
 		stmt.Line()
 		stmt.Line()
@@ -58,9 +50,7 @@ func generateErrorStructs(errStructs []repository.ErrorStruct) jen.Code {
 			stmt.Func()
 			stmt.Params(jen.Id(recv).Id(errStruct.Name))
 			stmt.Id("Unwrap").Params().Error()
-			stmt.BlockFunc(func(g *jen.Group) {
-				g.Return(jen.Id(recv).Dot(wrap))
-			})
+			stmt.Block(jen.Return(jen.Id(recv).Dot(wrap)))
 			stmt.Line()
 			stmt.Line()
 		}
@@ -87,5 +77,39 @@ func generateStruct(s repository.Struct) jen.Code {
 		}
 	})
 
+	if !s.Stringer.IsEmpty() {
+		stmt.Line()
+		stmt.Line()
+
+		var recv = genutils.RecvName(s.Name)
+
+		if !s.Stringer.Comment.IsEmpty() {
+			stmt.Comment(s.Stringer.Comment.GoString(1))
+			stmt.Line()
+		}
+
+		stmt.Func()
+		stmt.Params(jen.Id(recv).Id(s.Name))
+		stmt.Id("String").Params().String()
+		stmt.BlockFunc(func(g *jen.Group) {
+			if s.Stringer.Format == "%s" {
+				g.Return(jen.Id(recv).Dot(s.Stringer.Fields[0]))
+				return
+			}
+
+			g.Return(generateTmplString(s.Stringer.TmplString, recv))
+		})
+	}
+
 	return stmt
+}
+
+func generateTmplString(tmpl repository.TmplString, recv string) jen.Code {
+	return jen.Qual("fmt", "Sprintf").CallFunc(func(g *jen.Group) {
+		g.Lit(tmpl.Format)
+
+		for _, field := range tmpl.Fields {
+			g.Add(jen.Id(recv).Dot(field))
+		}
+	})
 }
