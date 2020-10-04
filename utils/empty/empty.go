@@ -1,10 +1,40 @@
 // DO NOT EDIT: THIS FILE IS GENERATED!
 
 // Package empty provides no-op asserter method implementations of interfaces in
-// cchat.
+// cchat's root and text packages.
 package empty
 
-import cchat "github.com/diamondburned/cchat"
+import (
+	"github.com/diamondburned/cchat"
+	"github.com/diamondburned/cchat/text"
+)
+
+// TextSegment provides no-op asserters for cchat.TextSegment.
+type TextSegment struct{}
+
+// AsColorer returns nil.
+func (TextSegment) AsColorer() text.Colorer { return nil }
+
+// AsLinker returns nil.
+func (TextSegment) AsLinker() text.Linker { return nil }
+
+// AsImager returns nil.
+func (TextSegment) AsImager() text.Imager { return nil }
+
+// AsAvatarer returns nil.
+func (TextSegment) AsAvatarer() text.Avatarer { return nil }
+
+// AsMentioner returns nil.
+func (TextSegment) AsMentioner() text.Mentioner { return nil }
+
+// AsAttributor returns nil.
+func (TextSegment) AsAttributor() text.Attributor { return nil }
+
+// AsCodeblocker returns nil.
+func (TextSegment) AsCodeblocker() text.Codeblocker { return nil }
+
+// AsQuoteblocker returns nil.
+func (TextSegment) AsQuoteblocker() text.Quoteblocker { return nil }
 
 // Namer provides no-op asserters for cchat.Namer.
 type Namer struct{}

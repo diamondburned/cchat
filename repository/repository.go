@@ -17,6 +17,11 @@ func MakeQual(relPath, name string) string {
 	return fmt.Sprintf("(%s).%s", MakePath(relPath), name)
 }
 
+// TrimRoot trims the root path and returns the path relative to root.
+func TrimRoot(fullPath string) string {
+	return strings.TrimPrefix(strings.TrimPrefix(fullPath, RootPath), "/")
+}
+
 // Packages maps Go module paths to packages.
 type Packages map[string]Package
 

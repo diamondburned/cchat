@@ -4,6 +4,8 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"path"
+	"strings"
 
 	"github.com/dave/jennifer/jen"
 	"github.com/diamondburned/cchat/cmd/internal/cchat-generator/genutils"
@@ -18,49 +20,55 @@ func init() {
 
 var comment = repository.Comment{Raw: `
 	Package empty provides no-op asserter method implementations of interfaces
-	in cchat.
+	in cchat's root and text packages.
 `}
 
 func main() {
-	pk, ok := repository.Main[repository.RootPath]
-	if !ok {
-		log.Fatalf("Failed to find main namespace %q\n", repository.RootPath)
-	}
-
 	gen := jen.NewFile("empty")
 	gen.HeaderComment("DO NOT EDIT: THIS FILE IS GENERATED!")
 	gen.PackageComment(comment.GoString(1))
 
-	for _, iface := range pk.Interfaces {
-		// Skip structs without asserter methods.
-		if !hasAsserter(iface) {
-			continue
-		}
+	for pkgpath, pk := range repository.Main {
+		gen.ImportName(pkgpath, path.Base(pkgpath))
 
-		gen.Commentf("%[1]s provides no-op asserters for cchat.%[1]s.", iface.Name)
-		gen.Type().Id(iface.Name).Struct()
-		gen.Line()
-
-		for _, method := range iface.Methods {
-			am, ok := method.(repository.AsserterMethod)
-			if !ok {
+		for _, iface := range pk.Interfaces {
+			// Skip structs without asserter methods.
+			if !hasAsserter(iface) {
 				continue
 			}
 
-			name := fmt.Sprintf("As%s", am.ChildType)
-			gen.Comment(fmt.Sprintf("%s returns nil.", name))
+			var ifaceName string
+			if pkgpath == repository.RootPath {
+				ifaceName = iface.Name
+			} else {
+				ifaceName = strings.Title(repository.TrimRoot(pkgpath)) + iface.Name
+			}
 
-			stmt := jen.Func()
-			stmt.Parens(jen.Id(iface.Name))
-			stmt.Id(fmt.Sprintf("As%s", am.ChildType))
-			stmt.Params()
-			stmt.Add(genutils.GenerateExternType(am))
-			stmt.Values(jen.Return(jen.Nil()))
+			gen.Commentf("%[1]s provides no-op asserters for cchat.%[1]s.", ifaceName)
+			gen.Type().Id(ifaceName).Struct()
+			gen.Line()
 
-			gen.Add(stmt)
+			for _, method := range iface.Methods {
+				am, ok := method.(repository.AsserterMethod)
+				if !ok {
+					continue
+				}
+
+				name := fmt.Sprintf("As%s", am.ChildType)
+				gen.Comment(fmt.Sprintf("%s returns nil.", name))
+
+				stmt := jen.Func()
+				stmt.Parens(jen.Id(ifaceName))
+				stmt.Id(fmt.Sprintf("As%s", am.ChildType))
+				stmt.Params()
+				stmt.Add(genutils.GenerateExternType(pkgpath, am))
+				stmt.Values(jen.Return(jen.Nil()))
+
+				gen.Add(stmt)
+			}
+
+			gen.Line()
 		}
-
-		gen.Line()
 	}
 
 	f, err := os.Create("empty.go")

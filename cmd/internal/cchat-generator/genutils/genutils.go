@@ -4,7 +4,6 @@ import (
 	"unicode"
 
 	"github.com/dave/jennifer/jen"
-	"github.com/diamondburned/cchat/repository"
 )
 
 type Qualer interface {
@@ -21,11 +20,11 @@ func GenerateType(t Qualer) jen.Code {
 }
 
 // GenerateExternType generates a jen.Qual from the given Qualer, except if
-// the path is empty, RootPath is used instead.
-func GenerateExternType(t Qualer) jen.Code {
+// the path is empty, root is used instead.
+func GenerateExternType(root string, t Qualer) jen.Code {
 	path, name := t.Qual()
 	if path == "" {
-		return jen.Qual(repository.RootPath, name)
+		return jen.Qual(root, name)
 	}
 	return jen.Qual(path, name)
 }
