@@ -211,6 +211,9 @@ type Authenticator interface {
 type Author interface {
 	Identifier
 
+	// Avatar returns the URL to the user's avatar or an empty string if they have
+	// no avatar or the service does not have any avatars.
+	Avatar() (url string)
 	Name() text.Rich
 }
 

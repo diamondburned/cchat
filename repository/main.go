@@ -597,6 +597,17 @@ var Main = Packages{
 						Type: MakeQual("text", "Rich"),
 					}},
 				},
+				GetterMethod{
+					method: method{
+						Comment: Comment{`
+							Avatar returns the URL to the user's avatar or an
+							empty string if they have no avatar or the service
+							does not have any avatars.
+						`},
+						Name: "Avatar",
+					},
+					Returns: []NamedType{{Name: "url", Type: "string"}},
+				},
 			},
 		}, {
 			Comment: Comment{`
