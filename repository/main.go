@@ -131,8 +131,11 @@ var Main = Packages{
 		}, {
 			Comment: Comment{`
 				Imager implies the segment should be replaced with a (possibly
-				inlined) image. Only the starting bound matters, as images
-				cannot substitute texts.
+				inlined) image. Unless the Imager segment covers something
+				meaningful, only the starting bound should matter, as images
+				must not substitute texts and only complement them. An example
+				of this would be having Imager cover the entire chunk that
+				Mentioner does.
 
 				For segments that also implement mentioner, the image should be
 				treated as a square avatar.
