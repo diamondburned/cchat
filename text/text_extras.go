@@ -10,3 +10,8 @@ func Plain(text string) Rich {
 func SolidColor(rgb uint32) uint32 {
 	return rgb | (0xFF << 24)
 }
+
+// IsEmpty returns true if the given rich segment's content is empty.
+func (r Rich) IsEmpty() bool {
+	return r.Content == ""
+}
