@@ -152,10 +152,10 @@ func (e ErrInvalidConfigAtField) Unwrap() error {
 // Actioner adds custom message actions into each message. Similarly to
 // ServerMessageEditor, some of these methods may do IO.
 type Actioner interface {
-	// DoAction executes a message action on the given messageID, which would be
-	// taken from MessageHeader.ID(). This method is allowed to do IO; the frontend
-	// should take care of running it asynchronously.
-	DoAction(action string, id ID) error // Blocking
+	// Do executes a message action on the given messageID, which would be taken
+	// from MessageHeader.ID(). This method is allowed to do IO; the frontend should
+	// take care of running it asynchronously.
+	Do(action string, id ID) error // Blocking
 	// MessageActions returns a list of possible actions to a message in pretty
 	// strings that the frontend will use to directly display. This method must not
 	// do IO.
@@ -227,8 +227,8 @@ type Author interface {
 // asynchronously, it is expected to use the context to know when to cancel.
 //
 // The frontend should usually call this method when the user scrolls to the
-// top. It is expected to guarantee not to call MessagesBefore more than once on
-// the same ID. This can usually be done by deactivating the UI.
+// top. It is expected to guarantee not to call Backlogger more than once on the
+// same ID. This can usually be done by deactivating the UI.
 //
 // Note that the optional usage of contexts also apply here. The frontend should
 // deactivate the UI when the backend is working. However, the frontend can
@@ -236,12 +236,12 @@ type Author interface {
 // freeze the UI until the method is cancelled. This works even when the backend
 // does not use the context.
 type Backlogger interface {
-	// MessagesBefore fetches messages before the given message ID into the
+	// Backlogger fetches messages before the given message ID into the
 	// MessagesContainer.
 	//
 	// This method is technically a ContainerMethod, but is listed as an IOMethod
 	// because of the additional message ID parameter.
-	MessagesBefore(ctx context.Context, before ID, msgc MessagesContainer) error // Blocking
+	Backlogger(ctx context.Context, before ID, msgc MessagesContainer) error // Blocking
 }
 
 // Commander is an optional interface that a session could implement for command
@@ -251,16 +251,16 @@ type Backlogger interface {
 // A very primitive use of this API would be to provide additional features that
 // are not in cchat through a very basic terminal interface.
 type Commander interface {
-	// RunCommand executes the given command, with the slice being already split
-	// arguments, similar to os.Args. The function could return an output stream, in
-	// which the frontend must display it live and close it on EOF.
+	// Run executes the given command, with the slice being already split arguments,
+	// similar to os.Args. The function could return an output stream, in which the
+	// frontend must display it live and close it on EOF.
 	//
 	// The function can do IO, and outputs should be written to the given io.Writer.
 	//
 	// The client should make guarantees that an empty string (and thus a
 	// zero-length string slice) should be ignored. The backend should be able to
 	// assume that the argument slice is always length 1 or more.
-	RunCommand([]string, io.Writer) error // Blocking
+	Run([]string, io.Writer) error // Blocking
 
 	// Asserters.
 
@@ -293,15 +293,15 @@ type Configurator interface {
 
 // Editor adds message editing to the messenger. Only EditMessage can do IO.
 type Editor interface {
-	// EditMessage edits the message with the given ID to the given content, which
-	// is the edited string from RawMessageContent. This method can do IO.
-	EditMessage(id ID, content string) error // Blocking
-	// RawMessageContent gets the original message text for editing. This method
-	// must not do IO.
-	RawMessageContent(id ID) (string, error)
-	// MessageEditable returns whether or not a message can be edited by the client.
-	// This method must not do IO.
-	MessageEditable(id ID) bool
+	// Edit edits the message with the given ID to the given content, which is the
+	// edited string from RawMessageContent. This method can do IO.
+	Edit(id ID, content string) error // Blocking
+	// RawContent gets the original message text for editing. This method must not
+	// do IO.
+	RawContent(id ID) (string, error)
+	// IsEditable returns whether or not a message can be edited by the client. This
+	// method must not do IO.
+	IsEditable(id ID) bool
 }
 
 // IconContainer is a generic interface for any container that can hold an

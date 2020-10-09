@@ -839,11 +839,10 @@ var Main = Packages{
 				IOMethod{
 					method: method{
 						Comment: Comment{`
-							RunCommand executes the given command, with the
-							slice being already split arguments, similar to
-							os.Args. The function could return an output stream,
-							in which the frontend must display it live and close
-							it on EOF.
+							Run executes the given command, with the slice being
+							already split arguments, similar to os.Args. The
+							function could return an output stream, in which the
+							frontend must display it live and close it on EOF.
 
 							The function can do IO, and outputs should be
 							written to the given io.Writer.
@@ -853,7 +852,7 @@ var Main = Packages{
 							be ignored.  The backend should be able to assume
 							that the argument slice is always length 1 or more.
 						`},
-						Name: "RunCommand",
+						Name: "Run",
 					},
 					Parameters: []NamedType{
 						{Type: "[]string"},
@@ -980,10 +979,10 @@ var Main = Packages{
 				GetterMethod{
 					method: method{
 						Comment: Comment{`
-							MessageEditable returns whether or not a message can
-							be edited by the client. This method must not do IO.
+							IsEditable returns whether or not a message can be
+							edited by the client. This method must not do IO.
 						`},
-						Name: "MessageEditable",
+						Name: "IsEditable",
 					},
 					Parameters: []NamedType{{Name: "id", Type: "ID"}},
 					Returns:    []NamedType{{Type: "bool"}},
@@ -991,10 +990,10 @@ var Main = Packages{
 				GetterMethod{
 					method: method{
 						Comment: Comment{`
-							RawMessageContent gets the original message text for
+							RawContent gets the original message text for
 							editing. This method must not do IO.
 						`},
-						Name: "RawMessageContent",
+						Name: "RawContent",
 					},
 					Parameters:  []NamedType{{Name: "id", Type: "ID"}},
 					Returns:     []NamedType{{Type: "string"}},
@@ -1003,11 +1002,11 @@ var Main = Packages{
 				IOMethod{
 					method: method{
 						Comment: Comment{`
-							EditMessage edits the message with the given ID to
-							the given content, which is the edited string from
+							Edit edits the message with the given ID to the
+							given content, which is the edited string from
 							RawMessageContent. This method can do IO.
 						`},
-						Name: "EditMessage",
+						Name: "Edit",
 					},
 					Parameters: []NamedType{
 						{Name: "id", Type: "ID"},
@@ -1041,13 +1040,12 @@ var Main = Packages{
 				IOMethod{
 					method: method{
 						Comment: Comment{`
-							DoAction executes a message action on the given
-							messageID, which would be taken from
-							MessageHeader.ID(). This method is allowed to do
-							IO; the frontend should take care of running it
-							asynchronously.
+							Do executes a message action on the given messageID,
+							which would be taken from MessageHeader.ID(). This
+							method is allowed to do IO; the frontend should take
+							care of running it asynchronously.
 						`},
-						Name: "DoAction",
+						Name: "Do",
 					},
 					Parameters: []NamedType{
 						{Name: "action", Type: "string"},
@@ -1088,8 +1086,8 @@ var Main = Packages{
 
 				The frontend should usually call this method when the user
 				scrolls to the top. It is expected to guarantee not to call
-				MessagesBefore more than once on the same ID. This can usually
-				be done by deactivating the UI.
+				Backlogger more than once on the same ID. This can usually be
+				done by deactivating the UI.
 
 				Note that the optional usage of contexts also apply here. The
 				frontend should deactivate the UI when the backend is working.
@@ -1103,14 +1101,14 @@ var Main = Packages{
 				IOMethod{ // technically a ContainerMethod.
 					method: method{
 						Comment: Comment{`
-							MessagesBefore fetches messages before the given
-							message ID into the MessagesContainer.
+							Backlogger fetches messages before the given message
+							ID into the MessagesContainer.
 
-							This method is technically a ContainerMethod, but
-							is listed as an IOMethod because of the additional
+							This method is technically a ContainerMethod, but is
+							listed as an IOMethod because of the additional
 							message ID parameter.
 						`},
-						Name: "MessagesBefore",
+						Name: "Backlogger",
 					},
 					Parameters: []NamedType{
 						{"ctx", "context.Context"},
