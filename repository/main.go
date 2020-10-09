@@ -1307,15 +1307,26 @@ var Main = Packages{
 				GetterMethod{
 					method: method{
 						Comment: Comment{`
-							PreviousID returns the ID of the item before this
-							server. If the returned ID is empty, then the server
-							should replace the one with the same ID. If the
-							returned ID is NOT empty, then the server should be
-							inserted after that ID.
+							PreviousID returns the ID of the item, either to be
+							replaced or to be inserted in front of.
+
+							If replace is true, then the returned ID is the ID
+							of the item to be replaced, and the frontend should
+							only try to use the ID as-is to find the old server
+							and replace.
+
+							If replace is false, then the returned ID will be
+							the ID of the item in front of the embedded server.
+							If the ID is empty or the frontend cannot find the
+							server from this ID, then it should assume and
+							prepend the server to the start.
 						`},
 						Name: "PreviousID",
 					},
-					Returns: []NamedType{{Type: "ID"}},
+					Returns: []NamedType{
+						{Name: "serverID", Type: "ID"},
+						{Name: "replace", Type: "bool"},
+					},
 				},
 			},
 		}, {
