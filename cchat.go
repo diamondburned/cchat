@@ -361,7 +361,11 @@ type LabelContainer interface {
 // Note that the frontend may give everyone an avatar regardless, or it may not
 // show any avatars at all.
 type ListMember interface {
+	// Identifier identifies the individual member. This works similarly to
+	// MessageAuthor.
 	Identifier
+	// Namer returns the name of the member. This works similarly to a
+	// MessageAuthor.
 	Namer
 
 	// Secondary returns the subtext of this member. This could be anything, such as
@@ -477,6 +481,7 @@ type MemberSection interface {
 // MessageCreate is the interface for an incoming message.
 type MessageCreate interface {
 	MessageHeader
+	// Noncer is optional.
 	Noncer
 
 	// Mentioned returns whether or not the message mentions the current user. If a
@@ -624,10 +629,17 @@ type Server interface {
 	AsConfigurator() Configurator // Optional
 }
 
+// ServerUpdate represents a server update event.
 type ServerUpdate interface {
+	// Server embeds a complete server. Unlike MessageUpdate, which only returns
+	// data on methods that are changed, ServerUpdate's methods must return the
+	// complete data even if they stay the same. As such, zero-value returns are
+	// treated as not updated, including the name.
 	Server
 
-	// PreviousID returns the ID of the item before this server.
+	// PreviousID returns the ID of the item before this server. If the returned ID
+	// is empty, then the server should replace the one with the same ID. If the
+	// returned ID is NOT empty, then the server should be inserted after that ID.
 	PreviousID() ID
 }
 
@@ -660,6 +672,7 @@ type ServersContainer interface {
 // configurations must be optional, as frontends may not implement a
 // configurator UI.
 type Service interface {
+	// Namer returns the name of the service.
 	Namer
 
 	Authenticate() Authenticator
@@ -680,7 +693,9 @@ type Service interface {
 // secure or not is up to the frontend. For a Gtk client, that would be using
 // the GNOME Keyring daemon.
 type Session interface {
+	// Identifier should typically return the user ID.
 	Identifier
+	// Namer gives the name of the session, which is typically the username.
 	Namer
 	Lister
 

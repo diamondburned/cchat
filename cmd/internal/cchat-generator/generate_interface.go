@@ -24,6 +24,9 @@ func generateInterfaces(ifaces []repository.Interface) jen.Code {
 		stmt.Type().Id(iface.Name).InterfaceFunc(func(group *jen.Group) {
 			if len(iface.Embeds) > 0 {
 				for _, embed := range iface.Embeds {
+					if !embed.Comment.IsEmpty() {
+						group.Comment(embed.Comment.GoString(1))
+					}
 					group.Id(embed.InterfaceName)
 				}
 

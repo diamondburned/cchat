@@ -1289,6 +1289,9 @@ var Main = Packages{
 				},
 			},
 		}, {
+			Comment: Comment{`
+				ServerUpdate represents a server update event.
+			`},
 			Name: "ServerUpdate",
 			Embeds: []EmbeddedInterface{{
 				Comment: Comment{`
@@ -1305,7 +1308,10 @@ var Main = Packages{
 					method: method{
 						Comment: Comment{`
 							PreviousID returns the ID of the item before this
-							server.
+							server. If the returned ID is empty, then the server
+							should replace the one with the same ID. If the
+							returned ID is NOT empty, then the server should be
+							inserted after that ID.
 						`},
 						Name: "PreviousID",
 					},
