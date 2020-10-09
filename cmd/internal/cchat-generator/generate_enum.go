@@ -51,20 +51,20 @@ func generateEnums(enums []repository.Enumeration) jen.Code {
 		if enum.Bitwise {
 			fn := stmt.Func()
 			fn.Params(jen.Id(recv).Id(enum.Name))
-			fn.Id("Is")
-			fn.Params(jen.Id("is").Id(enum.Name))
-			fn.Bool()
-			fn.BlockFunc(func(g *jen.Group) {
-				g.Return(jen.Id(recv).Id("==").Id("is"))
-			})
-		} else {
-			fn := stmt.Func()
-			fn.Params(jen.Id(recv).Id(enum.Name))
 			fn.Id("Has")
 			fn.Params(jen.Id("has").Id(enum.Name))
 			fn.Bool()
 			fn.BlockFunc(func(g *jen.Group) {
 				g.Return(jen.Id(recv).Op("&").Id("has").Op("==").Id("has"))
+			})
+		} else {
+			fn := stmt.Func()
+			fn.Params(jen.Id(recv).Id(enum.Name))
+			fn.Id("Is")
+			fn.Params(jen.Id("is").Id(enum.Name))
+			fn.Bool()
+			fn.BlockFunc(func(g *jen.Group) {
+				g.Return(jen.Id(recv).Id("==").Id("is"))
 			})
 		}
 

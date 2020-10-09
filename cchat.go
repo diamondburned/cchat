@@ -100,8 +100,8 @@ const (
 	StatusInvisible
 )
 
-func (s Status) Has(has Status) bool {
-	return s&has == has
+func (s Status) Is(is Status) bool {
+	return s == is
 }
 
 // AuthenticateEntry represents a single authentication entry, usually an email

@@ -35,8 +35,8 @@ const (
 	AttributeDimmed
 )
 
-func (a Attribute) Is(is Attribute) bool {
-	return a == is
+func (a Attribute) Has(has Attribute) bool {
+	return a&has == has
 }
 
 // Rich is a normal text wrapped with optional format segments.
