@@ -35,8 +35,16 @@ func generateEnums(enums []repository.Enumeration) jen.Code {
 
 				c.Id(enum.Name + value.Name)
 
-				if i == 0 {
+				switch {
+				// Regular.
+				case i == 0 && !enum.Bitwise:
 					c.Id(enum.Name).Op("=").Iota()
+
+				// Bitwise.
+				case i == 0 && enum.Bitwise:
+					c.Id(enum.Name).Op("=").Lit(0)
+				case i == 1 && enum.Bitwise:
+					c.Id(enum.Name).Op("=").Lit(1).Op("<<").Iota()
 				}
 
 				group.Add(&c)

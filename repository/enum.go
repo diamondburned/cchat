@@ -1,10 +1,15 @@
 package repository
 
+// Enumeration returns a Go enumeration.
 type Enumeration struct {
 	Comment Comment
 	Name    string
 	Values  []EnumValue
-	Bitwise bool // uint32 if true, uint8 otherwise
+
+	// Bitwise is true if the enumeration is a bitwise one. The type would then
+	// be uint32 instead of uint8, allowing for 32 constants. As usual, the
+	// first value of enum must be 0.
+	Bitwise bool
 }
 
 // GoType returns uint8 for a normal enum and uint32 for a bitwise enum. It

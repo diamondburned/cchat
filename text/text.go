@@ -16,9 +16,9 @@ type Attribute uint32
 
 const (
 	// Normal is a zero-value attribute.
-	AttributeNormal Attribute = iota
+	AttributeNormal Attribute = 0
 	// Bold represents bold text.
-	AttributeBold
+	AttributeBold Attribute = 1 << iota
 	// Italics represents italicized text.
 	AttributeItalics
 	// Underline represents underlined text.
