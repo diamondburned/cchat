@@ -12,17 +12,17 @@ var asciiSpace = [256]uint8{'\t': 1, '\n': 1, '\v': 1, '\f': 1, '\r': 1, ' ': 1}
 // SpaceIndexed returns a splitted string with the current index that
 // CompleteMessage wants. The text is the entire input string and the offset is
 // where the cursor currently is.
-func SpaceIndexed(text string, offset int) ([]string, int) {
+func SpaceIndexed(text string, offset int64) ([]string, int64) {
 	// First count the fields.
 	// This is an exact count if s is ASCII, otherwise it is an approximation.
-	n := 0
-	wasSpace := 1
+	n := int64(0)
+	wasSpace := int64(1)
 	// setBits is used to track which bits are set in the bytes of s.
 	setBits := uint8(0)
 	for i := 0; i < len(text); i++ {
 		r := text[i]
 		setBits |= r
-		isSpace := int(asciiSpace[r])
+		isSpace := int64(asciiSpace[r])
 		n += wasSpace & ^isSpace
 		wasSpace = isSpace
 	}
@@ -34,19 +34,19 @@ func SpaceIndexed(text string, offset int) ([]string, int) {
 
 	// ASCII fast path
 	a := make([]string, n)
-	na := 0
-	fieldStart := 0
-	i := 0
+	na := int64(0)
+	fieldStart := int64(0)
+	i := int64(0)
 	j := n - 1 // last by default
 
 	// Skip spaces in the front of the input.
-	for i < len(text) && asciiSpace[text[i]] != 0 {
+	for i < int64(len(text)) && asciiSpace[text[i]] != 0 {
 		i++
 	}
 
 	fieldStart = i
 
-	for i < len(text) {
+	for i < int64(len(text)) {
 		if asciiSpace[text[i]] == 0 {
 			i++
 			continue
@@ -61,37 +61,37 @@ func SpaceIndexed(text string, offset int) ([]string, int) {
 		i++
 
 		// Skip spaces in between fields.
-		for i < len(text) && asciiSpace[text[i]] != 0 {
+		for i < int64(len(text)) && asciiSpace[text[i]] != 0 {
 			i++
 		}
 		fieldStart = i
 	}
-	if fieldStart < len(text) { // Last field might end at EOF.
+	if fieldStart < int64(len(text)) { // Last field might end at EOF.
 		a[na] = text[fieldStart:]
 	}
 
 	return a, j
 }
 
-func spaceIndexedRunes(runes []rune, offset int) ([]string, int) {
+func spaceIndexedRunes(runes []rune, offset int64) ([]string, int64) {
 	// A span is used to record a slice of s of the form s[start:end].
 	// The start index is inclusive and the end index is exclusive.
-	type span struct{ start, end int }
+	type span struct{ start, end int64 }
 
 	spans := make([]span, 0, 16)
 
 	// Find the field start and end indices.
 	wasField := false
-	fromIndex := 0
+	fromIndex := int64(0)
 	for i, rune := range runes {
 		if unicode.IsSpace(rune) {
 			if wasField {
-				spans = append(spans, span{start: fromIndex, end: i})
+				spans = append(spans, span{start: fromIndex, end: int64(i)})
 				wasField = false
 			}
 		} else {
 			if !wasField {
-				fromIndex = i
+				fromIndex = int64(i)
 				wasField = true
 			}
 		}
@@ -99,18 +99,18 @@ func spaceIndexedRunes(runes []rune, offset int) ([]string, int) {
 
 	// Last field might end at EOF.
 	if wasField {
-		spans = append(spans, span{fromIndex, len(runes)})
+		spans = append(spans, span{fromIndex, int64(len(runes))})
 	}
 
 	// Create strings from recorded field indices.
 	a := make([]string, 0, len(spans))
-	j := len(spans) - 1 // assume last
+	j := int64(len(spans)) - 1 // assume last
 
 	for i, span := range spans {
 		a = append(a, string(runes[span.start:span.end]))
 
 		if span.start <= offset && offset <= span.end {
-			j = i
+			j = int64(i)
 		}
 	}
 

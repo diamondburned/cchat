@@ -5,9 +5,9 @@ import "testing"
 func TestSpaceIndexed(t *testing.T) {
 	var tests = []struct {
 		input  string
-		offset int
+		offset int64
 		output []string
-		index  int
+		index  int64
 	}{{
 		input:  "bruhemus momentus lorem ipsum",
 		offset: 13, //       ^
@@ -23,7 +23,7 @@ func TestSpaceIndexed(t *testing.T) {
 		index: 6,
 	}, {
 		input:  "sorry, what were you typing?",
-		offset: len("sorry, what were you typing?") - 1,
+		offset: int64(len("sorry, what were you typing?")) - 1,
 		output: []string{"sorry,", "what", "were", "you", "typing?"},
 		index:  4,
 	}, {
