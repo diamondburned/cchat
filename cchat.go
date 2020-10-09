@@ -236,12 +236,12 @@ type Author interface {
 // freeze the UI until the method is cancelled. This works even when the backend
 // does not use the context.
 type Backlogger interface {
-	// Backlogger fetches messages before the given message ID into the
+	// Backlog fetches messages before the given message ID into the
 	// MessagesContainer.
 	//
 	// This method is technically a ContainerMethod, but is listed as an IOMethod
 	// because of the additional message ID parameter.
-	Backlogger(ctx context.Context, before ID, msgc MessagesContainer) error // Blocking
+	Backlog(ctx context.Context, before ID, msgc MessagesContainer) error // Blocking
 }
 
 // Commander is an optional interface that a session could implement for command

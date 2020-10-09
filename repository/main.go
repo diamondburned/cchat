@@ -1101,14 +1101,14 @@ var Main = Packages{
 				IOMethod{ // technically a ContainerMethod.
 					method: method{
 						Comment: Comment{`
-							Backlogger fetches messages before the given message
-							ID into the MessagesContainer.
+							Backlog fetches messages before the given message ID
+							into the MessagesContainer.
 
 							This method is technically a ContainerMethod, but is
 							listed as an IOMethod because of the additional
 							message ID parameter.
 						`},
-						Name: "Backlogger",
+						Name: "Backlog",
 					},
 					Parameters: []NamedType{
 						{"ctx", "context.Context"},
