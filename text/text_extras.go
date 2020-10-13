@@ -8,7 +8,7 @@ func Plain(text string) Rich {
 // SolidColor takes in a 24-bit RGB color and overrides the alpha bits with
 // 0xFF, making the color solid.
 func SolidColor(rgb uint32) uint32 {
-	return rgb | (0xFF << 24)
+	return (rgb << 8) | 0xFF
 }
 
 // IsEmpty returns true if the given rich segment's content is empty.
