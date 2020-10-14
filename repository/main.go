@@ -851,23 +851,23 @@ var Main = Packages{
 						Comment: Comment{`
 							Run executes the given command, with the slice being
 							already split arguments, similar to os.Args. The
-							function could return an output stream, in which the
-							frontend must display it live and close it on EOF.
+							function can return both a []byte and an error
+							value. The frontend should render the byte slice's
+							value first, then display the error.
 
-							The function can do IO, and outputs should be
-							written to the given io.Writer.
+							This function can do IO.
 
 							The client should make guarantees that an empty
 							string (and thus a zero-length string slice) should
-							be ignored.  The backend should be able to assume
+							be ignored. The backend should be able to assume
 							that the argument slice is always length 1 or more.
 						`},
 						Name: "Run",
 					},
 					Parameters: []NamedType{
-						{Type: "[]string"},
-						{Type: "io.Writer"},
+						{Name: "words", Type: "[]string"},
 					},
+					ReturnValue: NamedType{Type: "[]byte"},
 					ReturnError: true,
 				},
 				AsserterMethod{ChildType: "Completer"},
