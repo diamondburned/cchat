@@ -93,10 +93,18 @@ type Colorer interface {
 }
 
 // Imager implies the segment should be replaced with a (possibly inlined)
-// image. Unless the Imager segment covers something meaningful, only the
-// starting bound should matter, as images must not substitute texts and only
-// complement them. An example of this would be having Imager cover the entire
-// chunk that Mentioner does.
+// image.
+//
+// The Imager segment must return a bound of length zero, that is, the start and
+// end bounds must be the same, unless the Imager segment covers something
+// meaningful, as images must not substitute texts and only complement them.
+//
+// An example of the start and end bounds being the same would be any inline
+// image, and an Imager that belongs to a Mentioner segment should have its
+// bounds overlap. Normally, implementations with separated Mentioner and Imager
+// implementations don't have to bother about this, since with Mentioner, the
+// same Bounds will be shared, and with Imager, the Bounds method can easily
+// return the same variable for start and end.
 //
 // For segments that also implement mentioner, the image should be treated as a
 // square avatar.
