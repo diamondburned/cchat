@@ -1,6 +1,8 @@
 package split
 
-import "bytes"
+import (
+	"bytes"
+)
 
 // The original shellwords implementation belongs to mattn. This version alters
 // some code along with some trivial optimizations.
@@ -32,8 +34,20 @@ func ArgsIndexed(text string, offset int64) (args []string, argIndex int64) {
 
 		switch {
 		case escaped:
-			buf.WriteByte(r)
+			got = true
 			escaped = false
+
+			if doubleQuoted {
+				switch r {
+				case 'n':
+					buf.WriteByte('\n')
+					continue
+				case 't':
+					buf.WriteByte('\t')
+					continue
+				}
+			}
+			buf.WriteByte(r)
 			continue
 
 		case isSpace(r):
@@ -81,8 +95,8 @@ func ArgsIndexed(text string, offset int64) (args []string, argIndex int64) {
 		buf.WriteByte(r)
 	}
 
-	if got {
-		if argIndex == -1 {
+	if got || escaped || singleQuoted || doubleQuoted {
+		if argIndex < 0 {
 			argIndex = int64(len(args))
 		}
 

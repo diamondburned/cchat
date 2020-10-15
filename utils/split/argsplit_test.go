@@ -48,6 +48,36 @@ var argsSplitTests = []testEntry{
 		output: []string{"echo", `this "quote" is a regular test`},
 		index:  0,
 	},
+	{
+		input:  `echo "`,
+		offset: 6,
+		output: []string{"echo", ""},
+		index:  1,
+	},
+	{
+		input:  `info \n`,
+		offset: 7,
+		output: []string{"info", "n"},
+		index:  1,
+	},
+	{
+		input:  `info "\n"`,
+		offset: 7,
+		output: []string{"info", "\n"},
+		index:  1,
+	},
+	{
+		input:  `info '\nnot a new line!'`,
+		offset: 15,
+		output: []string{"info", `\nnot a new line!`},
+		index:  1,
+	},
+	{
+		input:  `info \\n`,
+		offset: 7,
+		output: []string{"info", "\\n"},
+		index:  1,
+	},
 }
 
 func TestArgsIndexed(t *testing.T) {
