@@ -4,6 +4,15 @@ package split
 
 import "unicode/utf8"
 
+// SplitFunc is the type that describes the two splitter functions, SpaceIndexed
+// and ArgsIndexed.
+type SplitFunc = func(text string, offset int64) ([]string, int64)
+
+var (
+	_ SplitFunc = SpaceIndexed
+	_ SplitFunc = ArgsIndexed
+)
+
 // just helper functions here
 
 var asciiSpace = [256]uint8{'\t': 1, '\n': 1, '\v': 1, '\f': 1, '\r': 1, ' ': 1}
