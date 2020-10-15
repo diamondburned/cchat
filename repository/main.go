@@ -861,6 +861,32 @@ var Main = Packages{
 							string (and thus a zero-length string slice) should
 							be ignored. The backend should be able to assume
 							that the argument slice is always length 1 or more.
+
+							Words
+
+							This interface and everything else inside this
+							interface must abide by shell rules when splitting
+							words. This is in contrary to the default behavior
+							elsewhere, such as in Sender's Completer, where
+							words are split by whitespace without care for
+							quotes.
+
+							For example, provided this string:
+
+								echo "This is a string"
+
+							This is the correct output:
+
+								[]string{"echo", "This is a string"}
+
+							This is the incorrect output:
+
+								[]string{"echo", "\"This", "is", "a", "string\""}
+
+							A helper function for this kind of behavior is
+							available in package split, under the ArgsIndexed
+							function. This implementation also provides the
+							rough specifications.
 						`},
 						Name: "Run",
 					},
