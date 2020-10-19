@@ -47,7 +47,10 @@ func (m method) UnderlyingComment() Comment { return m.Comment }
 func (m method) internalMethod()            {}
 
 // GetterMethod is a method that returns a regular value. These methods must not
-// do any IO. An example of one would be ID() returning ID.
+// do any IO. An example of one would be ID() returning ID. For methods that
+// don't take in any parameters, The return values  must be constant throughout
+// the lifespan of the program. As such, the frontend can assume that the return
+// values will never change and store them.
 type GetterMethod struct {
 	method
 
