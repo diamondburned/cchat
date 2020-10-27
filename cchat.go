@@ -202,10 +202,6 @@ type Attachments interface {
 //    	break // success
 //    }
 type Authenticator interface {
-	// Namer returns a short and concise name of this Authenticator method. The name
-	// should not include the name of the Service.
-	Namer
-
 	// Authenticate will be called with a list of values with indices correspond to
 	// the returned slice of AuthenticateEntry.
 	Authenticate([]string) (Session, error) // Blocking
@@ -214,6 +210,9 @@ type Authenticator interface {
 	AuthenticateForm() []AuthenticateEntry
 	// Description returns the description of this authenticator method.
 	Description() text.Rich
+	// Name returns a short and concise name of this Authenticator method. The name
+	// should not include the name of the Service.
+	Name() text.Rich
 }
 
 // Author is the interface for an identifiable author. The interface defines
