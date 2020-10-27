@@ -332,7 +332,7 @@ var Main = Packages{
 			},
 		}},
 	},
-	"github.com/diamondburned/cchat": {
+	RootPath: {
 		Comment: Comment{`
 			Package cchat is a set of stabilized interfaces for cchat
 			implementations, joining the backend and frontend together.
@@ -683,27 +683,53 @@ var Main = Packages{
 			},
 		}, {
 			Comment: Comment{`
+				AuthenticateError is the error returned when authenticating.
+				This error interface extends the normal error to allow backends
+				to implement multi-stage authentication if needed in a clean way
+				without needing any loops.
+
+				This interface satisfies the error interface.
+			`},
+			Name: "AuthenticateError",
+			Methods: []Method{
+				GetterMethod{
+					method: method{
+						Comment: Comment{`
+							Error returns the error as a string. This method
+							makes AuthenticateError satisfy the built-in error
+							interface.
+						`},
+						Name: "Error",
+					},
+					Returns: []NamedType{{Type: "string"}},
+				},
+				GetterMethod{
+					method: method{
+						Comment: Comment{`
+							NextStage optionally returns a slice of
+							Authenticator interfaces if the authentication
+							process requires another stage. It works similarly
+							to Service's Authenticate method, both of which
+							returns a slice of Authenticators.
+
+							If the error returned is an actual error, and that
+							the user should retry any of the authentication
+							fields, then NextStage could return nil to signify
+							the error. The frontend could reliably check nil on
+							this field to determine whether or not it should
+							recreate the authentication fields.
+						`},
+						Name: "NextStage",
+					},
+					Returns: []NamedType{{Type: "[]Authenticator"}},
+				},
+			},
+		}, {
+			Comment: Comment{`
 				The authenticator interface allows for a multistage initial
 				authentication API that the backend could use. Multistage is
-				done by calling AuthenticateForm then Authenticate again forever
-				until no errors are returned.
-
-					var s *cchat.Session
-					var err error
-
-					for {
-						// Pseudo-function to render the form and return the results of those
-						// forms when the user confirms it.
-						outputs := renderAuthForm(svc.AuthenticateForm())
-
-						s, err = svc.Authenticate(outputs)
-						if err != nil {
-							renderError(errors.Wrap(err, "Error while authenticating"))
-							continue // retry
-						}
-
-						break // success
-					}
+				done by calling Authenticate and check for AuthenticateError's
+				NextStage method.
 			`},
 			Name: "Authenticator",
 			Methods: []Method{
@@ -753,7 +779,7 @@ var Main = Packages{
 					},
 					Parameters:  []NamedType{{Type: "[]string"}},
 					ReturnValue: NamedType{Type: "Session"},
-					ReturnError: true,
+					ErrorType:   "AuthenticateError",
 				},
 			},
 		}, {
@@ -770,7 +796,7 @@ var Main = Packages{
 					method:      method{Name: "RestoreSession"},
 					Parameters:  []NamedType{{Type: "map[string]string"}},
 					ReturnValue: NamedType{Type: "Session"},
-					ReturnError: true,
+					ErrorType:   "error",
 				},
 			},
 		}, {
@@ -785,12 +811,12 @@ var Main = Packages{
 				IOMethod{
 					method:      method{Name: "Configuration"},
 					ReturnValue: NamedType{Type: "map[string]string"},
-					ReturnError: true,
+					ErrorType:   "error",
 				},
 				IOMethod{
-					method:      method{Name: "SetConfiguration"},
-					Parameters:  []NamedType{{Type: "map[string]string"}},
-					ReturnError: true,
+					method:     method{Name: "SetConfiguration"},
+					Parameters: []NamedType{{Type: "map[string]string"}},
+					ErrorType:  "error",
 				},
 			},
 		}, {
@@ -843,7 +869,7 @@ var Main = Packages{
 						`},
 						Name: "Disconnect",
 					},
-					ReturnError: true,
+					ErrorType: "error",
 				},
 				AsserterMethod{ChildType: "Commander"},
 				AsserterMethod{ChildType: "SessionSaver"},
@@ -930,7 +956,7 @@ var Main = Packages{
 						{Name: "words", Type: "[]string"},
 					},
 					ReturnValue: NamedType{Type: "[]byte"},
-					ReturnError: true,
+					ErrorType:   "error",
 				},
 				AsserterMethod{ChildType: "Completer"},
 			},
@@ -1027,7 +1053,7 @@ var Main = Packages{
 					Parameters: []NamedType{
 						{Type: "SendableMessage"},
 					},
-					ReturnError: true,
+					ErrorType: "error",
 				},
 				GetterMethod{
 					method: method{
@@ -1067,9 +1093,9 @@ var Main = Packages{
 						`},
 						Name: "RawContent",
 					},
-					Parameters:  []NamedType{{Name: "id", Type: "ID"}},
-					Returns:     []NamedType{{Type: "string"}},
-					ReturnError: true,
+					Parameters: []NamedType{{Name: "id", Type: "ID"}},
+					Returns:    []NamedType{{Type: "string"}},
+					ErrorType:  "error",
 				},
 				IOMethod{
 					method: method{
@@ -1084,7 +1110,7 @@ var Main = Packages{
 						{Name: "id", Type: "ID"},
 						{Name: "content", Type: "string"},
 					},
-					ReturnError: true,
+					ErrorType: "error",
 				},
 			},
 		}, {
@@ -1123,7 +1149,7 @@ var Main = Packages{
 						{Name: "action", Type: "string"},
 						{Name: "id", Type: "ID"},
 					},
-					ReturnError: true,
+					ErrorType: "error",
 				},
 			},
 		}, {
@@ -1187,7 +1213,7 @@ var Main = Packages{
 						{"before", "ID"},
 						{"msgc", "MessagesContainer"},
 					},
-					ReturnError: true,
+					ErrorType: "error",
 				},
 			},
 		}, {
@@ -1262,7 +1288,7 @@ var Main = Packages{
 						`},
 						Name: "Typing",
 					},
-					ReturnError: true,
+					ErrorType: "error",
 				},
 				GetterMethod{
 					method: method{

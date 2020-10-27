@@ -55,9 +55,15 @@ type GetterMethod struct {
 	Parameters []NamedType
 	// Returns is the list of named types returned from the function.
 	Returns []NamedType
-	// ReturnError is true if the function returns an error at the end of
-	// returns.
-	ReturnError bool
+	// ErrorType is non-empty if the function returns an error at the end of
+	// returns. For the most part, this field should be "error" if that is the
+	// case, but some methods may choose to extend the error base type.
+	ErrorType string
+}
+
+// ReturnError returns true if the method can error out.
+func (m GetterMethod) ReturnError() bool {
+	return m.ErrorType != ""
 }
 
 // SetterMethod is a method that sets values. These methods must not do IO, and
@@ -80,12 +86,19 @@ type IOMethod struct {
 	Parameters []NamedType
 	// ReturnValue is the return value in the function.
 	ReturnValue NamedType
-	// ReturnError is true if the function returns an error at the end of
-	// returns.
-	ReturnError bool
+	// ErrorType is non-empty if the function returns an error at the end of
+	// returns. For the most part, this field should be "error" if that is the
+	// case, but some methods may choose to extend the error base type.
+	ErrorType string
 }
 
-// ContainerMethod is a method that uses a Container. These methods can do IO.
+// ReturnError returns true if the method can error out.
+func (m IOMethod) ReturnError() bool {
+	return m.ErrorType != ""
+}
+
+// ContainerMethod is a method that uses a Container. These methods can do IO
+// and always return an error.
 type ContainerMethod struct {
 	method
 

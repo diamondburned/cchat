@@ -17,7 +17,7 @@ func TestGob(t *testing.T) {
 
 	t.Log("Marshaled; total bytes:", buf.Len())
 
-	var unmarshaled Repositories
+	var unmarshaled Packages
 
 	if err := gob.NewDecoder(&buf).Decode(&unmarshaled); err != nil {
 		t.Fatal("Failed to gob decode:", err)

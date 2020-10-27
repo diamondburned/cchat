@@ -180,31 +180,34 @@ type Attachments interface {
 	Attachments() []MessageAttachment
 }
 
+// AuthenticateError is the error returned when authenticating. This error
+// interface extends the normal error to allow backends to implement multi-stage
+// authentication if needed in a clean way without needing any loops.
+//
+// This interface satisfies the error interface.
+type AuthenticateError interface {
+	// NextStage optionally returns a slice of Authenticator interfaces if the
+	// authentication process requires another stage. It works similarly to
+	// Service's Authenticate method, both of which returns a slice of
+	// Authenticators.
+	//
+	// If the error returned is an actual error, and that the user should retry any
+	// of the authentication fields, then NextStage could return nil to signify the
+	// error. The frontend could reliably check nil on this field to determine
+	// whether or not it should recreate the authentication fields.
+	NextStage() []Authenticator
+	// Error returns the error as a string. This method makes AuthenticateError
+	// satisfy the built-in error interface.
+	Error() string
+}
+
 // The authenticator interface allows for a multistage initial authentication
-// API that the backend could use. Multistage is done by calling
-// AuthenticateForm then Authenticate again forever until no errors are
-// returned.
-//
-//    var s *cchat.Session
-//    var err error
-//
-//    for {
-//    	// Pseudo-function to render the form and return the results of those
-//    	// forms when the user confirms it.
-//    	outputs := renderAuthForm(svc.AuthenticateForm())
-//
-//    	s, err = svc.Authenticate(outputs)
-//    	if err != nil {
-//    		renderError(errors.Wrap(err, "Error while authenticating"))
-//    		continue // retry
-//    	}
-//
-//    	break // success
-//    }
+// API that the backend could use. Multistage is done by calling Authenticate
+// and check for AuthenticateError's NextStage method.
 type Authenticator interface {
 	// Authenticate will be called with a list of values with indices correspond to
 	// the returned slice of AuthenticateEntry.
-	Authenticate([]string) (Session, error) // Blocking
+	Authenticate([]string) (Session, AuthenticateError) // Blocking
 	// AuthenticateForm should return a list of authentication entries for the
 	// frontend to render.
 	AuthenticateForm() []AuthenticateEntry

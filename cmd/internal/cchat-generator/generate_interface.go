@@ -62,13 +62,13 @@ func generateInterfaces(ifaces []repository.Interface) jen.Code {
 
 				switch method := method.(type) {
 				case repository.GetterMethod:
-					stmt.Params(generateFuncParams(method.Parameters, false)...)
-					stmt.Params(generateFuncParams(method.Returns, method.ReturnError)...)
+					stmt.Params(generateFuncParams(method.Parameters, "")...)
+					stmt.Params(generateFuncParams(method.Returns, method.ErrorType)...)
 				case repository.SetterMethod:
-					stmt.Params(generateFuncParams(method.Parameters, false)...)
+					stmt.Params(generateFuncParams(method.Parameters, "")...)
 				case repository.IOMethod:
-					stmt.Params(generateFuncParams(method.Parameters, false)...)
-					stmt.Params(generateFuncParamErr(method.ReturnValue, method.ReturnError)...)
+					stmt.Params(generateFuncParams(method.Parameters, "")...)
+					stmt.Params(generateFuncParamErr(method.ReturnValue, method.ErrorType)...)
 					stmt.Comment("// Blocking")
 				case repository.ContainerMethod:
 					stmt.Params(generateContainerFuncParams(method)...)
@@ -92,18 +92,18 @@ func generateInterfaces(ifaces []repository.Interface) jen.Code {
 	return stmt
 }
 
-func generateFuncParamErr(param repository.NamedType, genErr bool) []jen.Code {
+func generateFuncParamErr(param repository.NamedType, errorType string) []jen.Code {
 	stmt := make([]jen.Code, 0, 2)
 
 	if !param.IsZero() {
 		stmt = append(stmt, generateFuncParam(param))
 	}
 
-	if genErr {
+	if errorType != "" {
 		if param.Name == "" {
-			stmt = append(stmt, jen.Error())
+			stmt = append(stmt, jen.Id(errorType))
 		} else {
-			stmt = append(stmt, jen.Err().Error())
+			stmt = append(stmt, jen.Err().Id(errorType))
 		}
 	}
 
@@ -117,7 +117,7 @@ func generateFuncParam(param repository.NamedType) jen.Code {
 	return jen.Id(param.Name).Add(genutils.GenerateType(param))
 }
 
-func generateFuncParams(params []repository.NamedType, withError bool) []jen.Code {
+func generateFuncParams(params []repository.NamedType, errorType string) []jen.Code {
 	if len(params) == 0 {
 		return nil
 	}
@@ -127,11 +127,11 @@ func generateFuncParams(params []repository.NamedType, withError bool) []jen.Cod
 		stmt.Add(generateFuncParam(param))
 	}
 
-	if withError {
+	if errorType != "" {
 		if params[0].Name != "" {
-			stmt.Add(jen.Err().Error())
+			stmt.Add(jen.Err().Id(errorType))
 		} else {
-			stmt.Add(jen.Error())
+			stmt.Add(jen.Id(errorType))
 		}
 	}
 

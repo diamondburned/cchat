@@ -56,7 +56,10 @@ func (c Comment) WrapText(column int) string {
 	buf := bytes.Buffer{}
 	doc.ToText(&buf, txt, "", strings.Repeat(" ", TabWidth-1), column)
 
-	return strings.TrimRight(buf.String(), "\n")
+	text := strings.TrimRight(buf.String(), "\n")
+	text = strings.Replace(text, "\t", strings.Repeat(" ", TabWidth), -1)
+
+	return text
 }
 
 // Unindent removes the indentations that were there for the sake of syntax in
