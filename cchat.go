@@ -6,6 +6,16 @@
 //
 // Backend
 //
+// Almost anything in the backend comes with an ID. For example, a Server must
+// have an ID, or a Session must have a user ID. The backend is required to
+// guarantee that IDs are somehow unique. This should already be the case for
+// most chat services; for example, Discord provides IDs for guilds, channels,
+// members, and more. The only time that the backend should not guarantee ID
+// uniqueness is across Sessions, because it doesn't make sense to do so. In
+// this case, the frontend should guarantee uniqueness instead, either by
+// discarding duplicated items, overriding them, or anything reasonable and
+// explicit.
+//
 // Methods implemented by the backend that have frontend containers as arguments
 // can do IO. Frontends must NOT rely on individual backend states and should
 // always assume that they will block.
