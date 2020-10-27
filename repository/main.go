@@ -638,7 +638,7 @@ var Main = Packages{
 			Comment: Comment{`
 				A service is a complete service that's capable of multiple
 				sessions. It has to implement the Authenticate() method, which
-				returns an implementation of Authenticator.
+				returns multiple implementations of Authenticator.
 
 				A service can implement SessionRestorer, which would indicate
 				the frontend that it can restore past sessions. Sessions are
@@ -661,7 +661,7 @@ var Main = Packages{
 			Methods: []Method{
 				GetterMethod{
 					method:  method{Name: "Authenticate"},
-					Returns: []NamedType{{Type: "Authenticator"}},
+					Returns: []NamedType{{Type: "[]Authenticator"}},
 				},
 				AsserterMethod{
 					ChildType: "Configurator",

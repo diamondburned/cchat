@@ -283,7 +283,8 @@ type Commander interface {
 	//    []string{"echo", "\"This", "is", "a", "string\""}
 	//
 	// A helper function for this kind of behavior is available in package split,
-	// under the ArgsIndexed function.
+	// under the ArgsIndexed function. This implementation also provides the rough
+	// specifications.
 	Run(words []string) ([]byte, error) // Blocking
 
 	// Asserters.
@@ -691,8 +692,8 @@ type ServersContainer interface {
 }
 
 // A service is a complete service that's capable of multiple sessions. It has
-// to implement the Authenticate() method, which returns an implementation of
-// Authenticator.
+// to implement the Authenticate() method, which returns multiple
+// implementations of Authenticator.
 //
 // A service can implement SessionRestorer, which would indicate the frontend
 // that it can restore past sessions. Sessions are saved using the SessionSaver
@@ -707,7 +708,7 @@ type Service interface {
 	// Namer returns the name of the service.
 	Namer
 
-	Authenticate() Authenticator
+	Authenticate() []Authenticator
 
 	// Asserters.
 
