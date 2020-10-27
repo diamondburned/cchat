@@ -706,14 +706,20 @@ var Main = Packages{
 					}
 			`},
 			Name: "Authenticator",
-			Embeds: []EmbeddedInterface{{
-				Comment: Comment{`
-					Namer returns a short and concise name of this Authenticator
-					method. The name should not include the name of the Service.
-				`},
-				InterfaceName: "Namer",
-			}},
 			Methods: []Method{
+				GetterMethod{
+					method: method{
+						Comment: Comment{`
+							Name returns a short and concise name of this
+							Authenticator method. The name should not include
+							the name of the Service.
+						`},
+						Name: "Name",
+					},
+					Returns: []NamedType{{
+						Type: MakeQual("text", "Rich"),
+					}},
+				},
 				GetterMethod{
 					method: method{
 						Comment: Comment{`
