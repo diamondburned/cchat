@@ -524,8 +524,6 @@ type MemberSection interface {
 // MessageCreate is the interface for an incoming message.
 type MessageCreate interface {
 	MessageHeader
-	// Noncer is optional.
-	Noncer
 
 	// Mentioned returns whether or not the message mentions the current user. If a
 	// backend does not implement mentioning, then false can be returned.
@@ -611,36 +609,14 @@ type Nicknamer interface {
 	Nickname(context.Context, LabelContainer) (stop func(), err error)
 }
 
-// Noncer adds nonce support. A nonce is defined in this context as a unique
-// identifier from the frontend. This interface defines the common nonce getter.
-//
-// Nonces are useful for frontends to know if an incoming event is a reply from
-// the server backend. As such, nonces should be roundtripped through the
-// server. For example, IRC would use labeled responses.
-//
-// The Nonce method can return an empty string. This indicates that either the
-// frontend or backend (or neither) supports nonces.
-//
-// Contrary to other interfaces that extend with an "Is" method, the Nonce
-// method could return an empty string here.
-type Noncer interface {
-	Nonce() string
-}
-
 // SendableMessage is the bare minimum interface of a sendable message, that is,
 // a message that can be sent with SendMessage(). This allows the frontend to
 // implement its own message data implementation.
-//
-// An example of extending this interface is MessageNonce, which is similar to
-// IRCv3's labeled response extension or Discord's nonces. The frontend could
-// implement this interface and check if incoming MessageCreate events implement
-// the same interface.
 type SendableMessage interface {
 	Content() string
 
 	// Asserters.
 
-	AsNoncer() Noncer           // Optional
 	AsAttachments() Attachments // Optional
 }
 

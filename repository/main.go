@@ -587,30 +587,6 @@ var Main = Packages{
 			},
 		}, {
 			Comment: Comment{`
-				Noncer adds nonce support. A nonce is defined in this context as
-				a unique identifier from the frontend. This interface defines
-				the common nonce getter.
-
-				Nonces are useful for frontends to know if an incoming event is
-				a reply from the server backend. As such, nonces should be
-				roundtripped through the server. For example, IRC would use
-				labeled responses.
-
-				The Nonce method can return an empty string. This indicates that
-				either the frontend or backend (or neither) supports nonces.
-
-				Contrary to other interfaces that extend with an "Is" method,
-				the Nonce method could return an empty string here.
-			`},
-			Name: "Noncer",
-			Methods: []Method{
-				GetterMethod{
-					method:  method{Name: "Nonce"},
-					Returns: []NamedType{{Type: "string"}},
-				},
-			},
-		}, {
-			Comment: Comment{`
 				Author is the interface for an identifiable author. The
 				interface defines that an author always have an ID and a name.
 
@@ -1481,7 +1457,6 @@ var Main = Packages{
 			Name: "MessageCreate",
 			Embeds: []EmbeddedInterface{
 				{Comment{""}, "MessageHeader"},
-				{Comment{"Noncer is optional."}, "Noncer"},
 			},
 			Methods: []Method{
 				GetterMethod{
@@ -1872,11 +1847,6 @@ var Main = Packages{
 				message, that is, a message that can be sent with SendMessage().
 				This allows the frontend to implement its own message data
 				implementation.
-
-				An example of extending this interface is MessageNonce, which is
-				similar to IRCv3's labeled response extension or Discord's
-				nonces. The frontend could implement this interface and check if
-				incoming MessageCreate events implement the same interface.
 			`},
 			Name: "SendableMessage",
 			Methods: []Method{
@@ -1884,7 +1854,6 @@ var Main = Packages{
 					method:  method{Name: "Content"},
 					Returns: []NamedType{{Type: "string"}},
 				},
-				AsserterMethod{ChildType: "Noncer"},
 				AsserterMethod{ChildType: "Attachments"},
 			},
 		}, {

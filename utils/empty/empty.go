@@ -108,9 +108,6 @@ func (MemberSection) AsMemberDynamicSection() cchat.MemberDynamicSection { retur
 // SendableMessage provides no-op asserters for cchat.SendableMessage.
 type SendableMessage struct{}
 
-// AsNoncer returns nil.
-func (SendableMessage) AsNoncer() cchat.Noncer { return nil }
-
 // AsAttachments returns nil.
 func (SendableMessage) AsAttachments() cchat.Attachments { return nil }
 
