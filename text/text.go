@@ -11,6 +11,8 @@
 // shouldn't be.
 package text
 
+import cchat "cchat"
+
 // Attribute is the type for basic rich text markup attributes.
 type Attribute uint32
 
@@ -136,6 +138,16 @@ type Mentioner interface {
 	// MentionInfo returns the popup information of the mentioned segment. This is
 	// typically user information or something similar to that context.
 	MentionInfo() Rich
+}
+
+// MessageReferencer is similar to Linker, except it references a message
+// instead of an arbitrary URL. As such, its appearance may be formatted
+// similarly to a link, but this is up to the frontend to decide. When clicked,
+// the frontend should scroll to the message with the ID returned by MessageID()
+// and highlight it, though this is also for appearance, so the frontend may
+// decide in detail how to display it.
+type MessageReferencer interface {
+	MessageID() cchat.ID
 }
 
 // Quoteblocker represents a quoteblock that behaves similarly to the blockquote

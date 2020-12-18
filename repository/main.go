@@ -116,6 +116,23 @@ var Main = Packages{
 			},
 		}, {
 			Comment: Comment{`
+				MessageReferencer is similar to Linker, except it references a
+				message instead of an arbitrary URL. As such, its appearance may
+				be formatted similarly to a link, but this is up to the frontend
+				to decide. When clicked, the frontend should scroll to the
+				message with the ID returned by MessageID() and highlight it,
+				though this is also for appearance, so the frontend may decide
+				in detail how to display it.
+			`},
+			Name: "MessageReferencer",
+			Methods: []Method{
+				GetterMethod{
+					method:  method{Name: "MessageID"},
+					Returns: []NamedType{{Type: "cchat.ID"}},
+				},
+			},
+		}, {
+			Comment: Comment{`
 				Linker is a hyperlink format that a segment could implement.
 				This implies that the segment should be replaced with a
 				hyperlink, similarly to the anchor tag with href being the URL
