@@ -113,6 +113,7 @@ var Main = Packages{
 				AsserterMethod{ChildType: "Attributor"},
 				AsserterMethod{ChildType: "Codeblocker"},
 				AsserterMethod{ChildType: "Quoteblocker"},
+				AsserterMethod{ChildType: "MessageReferencer"},
 			},
 		}, {
 			Comment: Comment{`
@@ -128,7 +129,7 @@ var Main = Packages{
 			Methods: []Method{
 				GetterMethod{
 					method:  method{Name: "MessageID"},
-					Returns: []NamedType{{Type: "cchat.ID"}},
+					Returns: []NamedType{{Type: "string"}},
 				},
 			},
 		}, {

@@ -11,8 +11,6 @@
 // shouldn't be.
 package text
 
-import cchat "cchat"
-
 // Attribute is the type for basic rich text markup attributes.
 type Attribute uint32
 
@@ -147,7 +145,7 @@ type Mentioner interface {
 // and highlight it, though this is also for appearance, so the frontend may
 // decide in detail how to display it.
 type MessageReferencer interface {
-	MessageID() cchat.ID
+	MessageID() string
 }
 
 // Quoteblocker represents a quoteblock that behaves similarly to the blockquote
@@ -172,12 +170,13 @@ type Segment interface {
 
 	// Asserters.
 
-	AsColorer() Colorer           // Optional
-	AsLinker() Linker             // Optional
-	AsImager() Imager             // Optional
-	AsAvatarer() Avatarer         // Optional
-	AsMentioner() Mentioner       // Optional
-	AsAttributor() Attributor     // Optional
-	AsCodeblocker() Codeblocker   // Optional
-	AsQuoteblocker() Quoteblocker // Optional
+	AsColorer() Colorer                     // Optional
+	AsLinker() Linker                       // Optional
+	AsImager() Imager                       // Optional
+	AsAvatarer() Avatarer                   // Optional
+	AsMentioner() Mentioner                 // Optional
+	AsAttributor() Attributor               // Optional
+	AsCodeblocker() Codeblocker             // Optional
+	AsQuoteblocker() Quoteblocker           // Optional
+	AsMessageReferencer() MessageReferencer // Optional
 }

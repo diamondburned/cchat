@@ -140,3 +140,6 @@ func (TextSegment) AsCodeblocker() text.Codeblocker { return nil }
 
 // AsQuoteblocker returns nil.
 func (TextSegment) AsQuoteblocker() text.Quoteblocker { return nil }
+
+// AsMessageReferencer returns nil.
+func (TextSegment) AsMessageReferencer() text.MessageReferencer { return nil }
