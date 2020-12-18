@@ -577,6 +577,13 @@ type MessagesContainer interface {
 type Messenger interface {
 	// JoinServer joins a server that's capable of receiving messages. The server
 	// may not necessarily support sending messages.
+	//
+	// Frontends must never call JoinServer on the same server more than twice
+	// without calling the stop function first. This is the best of both worlds, as
+	// it greatly reduces complexity on both sides in most cases, therefore the
+	// backend can safely assume that there will only ever be one active JoinServer.
+	// If the frontend wishes to do this, it must keep its own shared message
+	// buffer.
 	JoinServer(context.Context, MessagesContainer) (stop func(), err error)
 
 	// Asserters.
