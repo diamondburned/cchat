@@ -1912,15 +1912,28 @@ var Main = Packages{
 					Returns: []NamedType{{Type: "string"}},
 				},
 				AsserterMethod{ChildType: "Noncer"},
-				AsserterMethod{ChildType: "Attachments"},
+				AsserterMethod{ChildType: "Replier"},
+				AsserterMethod{ChildType: "Attacher"},
 			},
 		}, {
 			Comment: Comment{`
-				Attachments extends SendableMessage which adds attachments into
-				the message. Backends that can use this interface should
-				implement AttachmentSender.
+				Replier indicates that the message being sent is a reply to
+				something. Frontends that support replies can assume that all
+				messages in a Sender can be replied to, and the backend can
+				choose to do nothing to the replied ID.
 			`},
-			Name: "Attachments",
+			Name: "Replier",
+			Methods: []Method{
+				GetterMethod{
+					method:  method{Name: "ReplyingTo"},
+					Returns: []NamedType{{Type: "cchat.ID"}},
+				},
+			},
+		}, {
+			Comment: Comment{`
+				Attacher adds attachments into the message being sent.
+			`},
+			Name: "Attacher",
 			Methods: []Method{
 				GetterMethod{
 					method:  method{Name: "Attachments"},

@@ -83,6 +83,7 @@
 package cchat
 
 import (
+	cchat "cchat"
 	"context"
 	"fmt"
 	text "github.com/diamondburned/cchat/text"
@@ -174,9 +175,8 @@ type Actioner interface {
 	Actions(id ID) []string
 }
 
-// Attachments extends SendableMessage which adds attachments into the message.
-// Backends that can use this interface should implement AttachmentSender.
-type Attachments interface {
+// Attacher adds attachments into the message being sent.
+type Attacher interface {
 	Attachments() []MessageAttachment
 }
 
@@ -634,6 +634,13 @@ type Noncer interface {
 	Nonce() string
 }
 
+// Replier indicates that the message being sent is a reply to something.
+// Frontends that support replies can assume that all messages in a Sender can
+// be replied to, and the backend can choose to do nothing to the replied ID.
+type Replier interface {
+	ReplyingTo() cchat.ID
+}
+
 // SendableMessage is the bare minimum interface of a sendable message, that is,
 // a message that can be sent with SendMessage(). This allows the frontend to
 // implement its own message data implementation.
@@ -647,8 +654,9 @@ type SendableMessage interface {
 
 	// Asserters.
 
-	AsNoncer() Noncer           // Optional
-	AsAttachments() Attachments // Optional
+	AsNoncer() Noncer     // Optional
+	AsReplier() Replier   // Optional
+	AsAttacher() Attacher // Optional
 }
 
 // Sender adds message sending to a messenger. Messengers that don't implement

@@ -111,8 +111,11 @@ type SendableMessage struct{}
 // AsNoncer returns nil.
 func (SendableMessage) AsNoncer() cchat.Noncer { return nil }
 
-// AsAttachments returns nil.
-func (SendableMessage) AsAttachments() cchat.Attachments { return nil }
+// AsReplier returns nil.
+func (SendableMessage) AsReplier() cchat.Replier { return nil }
+
+// AsAttacher returns nil.
+func (SendableMessage) AsAttacher() cchat.Attacher { return nil }
 
 // TextSegment provides no-op asserters for cchat.TextSegment.
 type TextSegment struct{}
