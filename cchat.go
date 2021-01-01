@@ -83,7 +83,6 @@
 package cchat
 
 import (
-	cchat "cchat"
 	"context"
 	"fmt"
 	text "github.com/diamondburned/cchat/text"
@@ -638,7 +637,7 @@ type Noncer interface {
 // Frontends that support replies can assume that all messages in a Sender can
 // be replied to, and the backend can choose to do nothing to the replied ID.
 type Replier interface {
-	ReplyingTo() cchat.ID
+	ReplyingTo() ID
 }
 
 // SendableMessage is the bare minimum interface of a sendable message, that is,

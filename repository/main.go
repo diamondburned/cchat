@@ -1926,7 +1926,7 @@ var Main = Packages{
 			Methods: []Method{
 				GetterMethod{
 					method:  method{Name: "ReplyingTo"},
-					Returns: []NamedType{{Type: "cchat.ID"}},
+					Returns: []NamedType{{Type: "ID"}},
 				},
 			},
 		}, {
