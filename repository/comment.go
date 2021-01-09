@@ -31,6 +31,10 @@ func (c Comment) IsEmpty() bool {
 // prefix each line with "// ". The ident argument controls the nested level. If
 // less than or equal to zero, then it is changed to 1, which is the top level.
 func (c Comment) GoString(ident int) string {
+	if c.Raw == "" {
+		return ""
+	}
+
 	if ident < 1 {
 		ident = 1
 	}
@@ -40,7 +44,12 @@ func (c Comment) GoString(ident int) string {
 
 	var lines = strings.Split(c.WrapText(80-len("// ")-ident), "\n")
 	for i, line := range lines {
-		lines[i] = "// " + line
+		if line != "" {
+			line = "// " + line
+		} else {
+			line = "//"
+		}
+		lines[i] = line
 	}
 
 	return strings.Join(lines, "\n")

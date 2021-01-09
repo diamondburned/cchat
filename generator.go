@@ -1,6 +1,7 @@
 package cchat
 
-//go:generate go run ./cmd/internal/cchat-generator
+//go:generate go run ./cmd/internal/cchat-generator ./
+//go:generate go run ./cmd/internal/cchat-empty-gen ./utils/empty/
 
 type authenticateError struct{ error }
 

@@ -5,6 +5,7 @@ import (
 	"log"
 	"os"
 	"path"
+	"path/filepath"
 	"sort"
 	"strings"
 
@@ -74,7 +75,7 @@ func main() {
 		}
 	}
 
-	f, err := os.Create("empty.go")
+	f, err := os.Create(filepath.Join(os.Args[1], "empty.go"))
 	if err != nil {
 		log.Fatalln("Failed to create output file:", err)
 	}

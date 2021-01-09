@@ -21,8 +21,11 @@ func main() {
 	for pkgPath, pkg := range repository.Main {
 		g := generate(pkgPath, pkg)
 
-		var destDir = filepath.FromSlash(trimPrefix(repository.RootPath, pkgPath))
-		var destFle = filepath.Base(pkgPath)
+		destDir := filepath.Join(
+			os.Args[1],
+			filepath.FromSlash(trimPrefix(repository.RootPath, pkgPath)),
+		)
+		destFile := filepath.Base(pkgPath) + ".go"
 
 		// Guarantee that the directory exists.
 		if destDir != "" {
@@ -31,7 +34,7 @@ func main() {
 			}
 		}
 
-		f, err := os.Create(filepath.Join(destDir, destFle+".go"))
+		f, err := os.Create(filepath.Join(destDir, destFile))
 		if err != nil {
 			log.Fatalln("Failed to create output file:", err)
 		}
