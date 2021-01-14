@@ -37,14 +37,68 @@ type Package struct {
 
 // Interface finds an interface. Nil is returned if none is found.
 func (p Package) Interface(name string) *Interface {
-	for _, iface := range p.Interfaces {
+	for i, iface := range p.Interfaces {
 		if iface.Name == name {
-			return &iface
+			return &p.Interfaces[i]
 		}
 	}
 	return nil
 }
 
+// Struct finds a struct or an error struct. Nil is returned if none is found.
+func (p Package) Struct(name string) *Struct {
+	for i, sstruct := range p.Structs {
+		if sstruct.Name == name {
+			return &p.Structs[i]
+		}
+	}
+	for i, estruct := range p.ErrorStructs {
+		if estruct.Name == name {
+			return &p.ErrorStructs[i].Struct
+		}
+	}
+	return nil
+}
+
+// Enum finds an enumeration. Nil is returned if none is found.
+func (p Package) Enum(name string) *Enumeration {
+	for i, enum := range p.Enums {
+		if enum.Name == name {
+			return &p.Enums[i]
+		}
+	}
+	return nil
+}
+
+// TypeAlias finds a type alias. Nil is returned if none is found.
+func (p Package) TypeAlias(name string) *TypeAlias {
+	for i, alias := range p.TypeAliases {
+		if alias.Name == name {
+			return &p.TypeAliases[i]
+		}
+	}
+	return nil
+}
+
+// FindType finds any type. Nil is returned if nothing is found; a pointer to
+// any of the type is returned if name is found.
+func (p Package) FindType(name string) interface{} {
+	if iface := p.Interface(name); iface != nil {
+		return iface
+	}
+	if sstr := p.Struct(name); sstr != nil {
+		return sstr
+	}
+	if enum := p.Enum(name); enum != nil {
+		return enum
+	}
+	if alias := p.TypeAlias(name); alias != nil {
+		return alias
+	}
+	return nil
+}
+
+// NamedType is an optionally named value with a type.
 type NamedType struct {
 	Name string // optional
 	Type string // import/path.Type OR (import/path).Type
