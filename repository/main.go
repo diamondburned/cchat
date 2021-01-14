@@ -848,7 +848,7 @@ var Main = Packages{
 				A session can implement SessionSaver, which would allow the
 				frontend to save the session into its keyring at any time.
 				Whether the keyring is completely secure or not is up to the
-				frontend. For a Gtk client, that would be using the GNOME
+				frontend. For a GTK client, that would be using the GNOME
 				Keyring daemon.
 			`},
 			Name: "Session",
@@ -888,6 +888,7 @@ var Main = Packages{
 						Name: "Disconnect",
 					},
 					ErrorType: "error",
+					Disposer:  true,
 				},
 				AsserterMethod{ChildType: "Commander"},
 				AsserterMethod{ChildType: "SessionSaver"},
@@ -1202,7 +1203,7 @@ var Main = Packages{
 			Comment: Comment{`
 				Backlogger adds message history capabilities into a message
 				container. The backend should send old messages using the
-				MessageCreate method of the MessageContainer, and the frontend
+				MessageCreate method of the MessagesContainer, and the frontend
 				should automatically sort messages based on the timestamp.
 
 				As there is no stop callback, if the backend needs to fetch

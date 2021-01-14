@@ -69,7 +69,11 @@ func generateInterfaces(ifaces []repository.Interface) jen.Code {
 				case repository.IOMethod:
 					stmt.Params(generateFuncParams(method.Parameters, "")...)
 					stmt.Params(generateFuncParamErr(method.ReturnValue, method.ErrorType)...)
-					stmt.Comment("// Blocking")
+					var comment = "Blocking"
+					if method.Disposer {
+						comment += ", Disposer"
+					}
+					stmt.Comment("// " + comment)
 				case repository.ContainerMethod:
 					stmt.Params(generateContainerFuncParams(method)...)
 					stmt.Params(generateContainerFuncReturns(method)...)
