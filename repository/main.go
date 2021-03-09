@@ -995,7 +995,30 @@ var Main = Packages{
 				AsserterMethod{ChildType: "Lister"},
 				AsserterMethod{ChildType: "Messenger"},
 				AsserterMethod{ChildType: "Commander"},
+				AsserterMethod{ChildType: "Columnator"},
 				AsserterMethod{ChildType: "Configurator"},
+			},
+		}, {
+			Comment: Comment{`
+				Columnator is optionally used by servers to give different
+				nested servers its own nesting values. Top-level servers must
+				start at 1. The zero-value (0) indicates that the server that
+				implements this interface is inherently the children of its
+				parent server. This is also the behavior for servers that don't
+				implement this interface.
+
+				For example, in Discord, guilds can be placed in guild folders,
+				but guilds and guild folders are put in the same column while
+				guilds are actually children of the folders. To replicate this
+				behavior, both guild and guild folders can implement
+				ServerColumnator to both return 1.
+			`},
+			Name: "Columnator",
+			Methods: []Method{
+				GetterMethod{
+					method:  method{Name: "Column"},
+					Returns: []NamedType{{Type: "int"}},
+				},
 			},
 		}, {
 			Comment: Comment{`

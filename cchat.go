@@ -261,6 +261,20 @@ type Backlogger interface {
 	Backlog(ctx context.Context, before ID, msgc MessagesContainer) error // Blocking
 }
 
+// Columnator is optionally used by servers to give different nested servers its
+// own nesting values. Top-level servers must start at 1. The zero-value (0)
+// indicates that the server that implements this interface is inherently the
+// children of its parent server. This is also the behavior for servers that
+// don't implement this interface.
+//
+// For example, in Discord, guilds can be placed in guild folders, but guilds
+// and guild folders are put in the same column while guilds are actually
+// children of the folders. To replicate this behavior, both guild and guild
+// folders can implement ServerColumnator to both return 1.
+type Columnator interface {
+	Column() int
+}
+
 // Commander is an optional interface that a session could implement for command
 // support. This is different from just intercepting the SendMessage() API, as
 // this extends globally to the entire session.
@@ -683,6 +697,7 @@ type Server interface {
 	AsLister() Lister             // Optional
 	AsMessenger() Messenger       // Optional
 	AsCommander() Commander       // Optional
+	AsColumnator() Columnator     // Optional
 	AsConfigurator() Configurator // Optional
 }
 
