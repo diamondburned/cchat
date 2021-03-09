@@ -532,6 +532,21 @@ var Main = Packages{
 				{NamedType: NamedType{"", "io.Reader"}},
 				{NamedType: NamedType{"Name", "string"}},
 			},
+		}, {
+			Comment: Comment{`
+				ReadIndication represents a read indication of a user/author in
+				a messager server. It relates to a message ID within the server
+				and is meant to imply that the user/author has read up to the
+				given message ID.
+
+				The frontend should override an existing author with the
+				received ones. This could be treated as upsert operations.
+			`},
+			Name: "ReadIndication",
+			Fields: []StructField{
+				{NamedType: NamedType{"Author", "Author"}},
+				{NamedType: NamedType{"MessageID", "ID"}},
+			},
 		}},
 		ErrorStructs: []ErrorStruct{{
 			Struct: Struct{
@@ -580,28 +595,6 @@ var Main = Packages{
 						Type: MakeQual("text", "Rich"),
 					}},
 				},
-				AsserterMethod{
-					ChildType: "Iconer",
-				},
-			},
-		}, {
-			Comment: Comment{`
-				Iconer adds icon support into Namer, which in turn is returned
-				by other interfaces. Typically, Service would return the service
-				logo, Session would return the user's avatar, and Server would
-				return the server icon.
-
-				For session, the avatar should be the same as the one returned
-				by messages sent by the current user.
-			`},
-			Name: "Iconer",
-			Methods: []Method{
-				ContainerMethod{
-					method:        method{Name: "Icon"},
-					HasContext:    true,
-					ContainerType: "IconContainer",
-					HasStopFn:     true,
-				},
 			},
 		}, {
 			Comment: Comment{`
@@ -643,25 +636,7 @@ var Main = Packages{
 			Name: "Author",
 			Embeds: []EmbeddedInterface{
 				{InterfaceName: "Identifier"},
-			},
-			Methods: []Method{
-				GetterMethod{
-					method: method{Name: "Name"},
-					Returns: []NamedType{{
-						Type: MakeQual("text", "Rich"),
-					}},
-				},
-				GetterMethod{
-					method: method{
-						Comment: Comment{`
-							Avatar returns the URL to the user's avatar or an
-							empty string if they have no avatar or the service
-							does not have any avatars.
-						`},
-						Name: "Avatar",
-					},
-					Returns: []NamedType{{Name: "url", Type: "string"}},
-				},
+				{InterfaceName: "Namer"},
 			},
 		}, {
 			Comment: Comment{`
@@ -1294,10 +1269,57 @@ var Main = Packages{
 			},
 		}, {
 			Comment: Comment{`
+				ReadIndicator adds a read indicator API for frontends to show.
+				An example of the read indicator is in Matrix, where each
+				message can have a small avatar indicating that the user in the
+				room has read the message.
+			`},
+			Name: "ReadIndicator",
+			Methods: []Method{
+				ContainerMethod{
+					method: method{
+						Comment: Comment{`
+							ReadIndicate subscribes the given container for read
+							activities. The backend must keep track of which
+							read states to send over to not overwhelm the
+							frontend, and the frontend must either keep track of
+							them, or it should not display it at all.
+						`},
+						Name: "ReadIndicate",
+					},
+					ContainerType: "ReadContainer",
+					HasStopFn:     true,
+				},
+			},
+		}, {
+			Comment: Comment{`
 				UnreadIndicator adds an unread state API for frontends to use.
+				The unread state describes whether a channel has been read or
+				not by the current user. It is not to be confused with
+				ReadIndicator, which indicates the unread state of others.
 			`},
 			Name: "UnreadIndicator",
 			Methods: []Method{
+				SetterMethod{
+					method: method{
+						Comment: Comment{`
+							MarkRead marks a message in the server messenger as
+							read. Backends that implement the UnreadIndicator
+							interface must give control of marking messages as
+							read to the frontend if possible.
+
+							This method is assumed to be a setter method that
+							does not error out, because the frontend has no use
+							in knowing the error. As such, marking messages as
+							read is best-effort. The backend is in charge of
+							synchronizing the read state with the server and
+							coordinating it with reasonable rate limits, if
+							needed.
+						`},
+						Name: "MarkRead",
+					},
+					Parameters: []NamedType{{"messageID", "ID"}},
+				},
 				ContainerMethod{
 					method: method{
 						Comment: Comment{`
@@ -1560,23 +1582,12 @@ var Main = Packages{
 		}, {
 			Comment: Comment{`
 				MessageUpdate is the interface for a message update (or edit)
-				event. If the returned text.Rich returns true for Empty(), then
-				the element shouldn't be changed.
+				event. It behaves similarly to MessageCreate, except all fields
+				are optional. The frontend is responsible for checking which
+				field is not empty and check it.
 			`},
 			Name:   "MessageUpdate",
-			Embeds: []EmbeddedInterface{{InterfaceName: "MessageHeader"}},
-			Methods: []Method{
-				GetterMethod{
-					method:  method{Name: "Author"},
-					Returns: []NamedType{{Type: "Author"}},
-				},
-				GetterMethod{
-					method: method{Name: "Content"},
-					Returns: []NamedType{{
-						Type: MakeQual("text", "Rich"),
-					}},
-				},
-			},
+			Embeds: []EmbeddedInterface{{InterfaceName: "MessageCreate"}},
 		}, {
 			Comment: Comment{`
 				MessageDelete is the interface for a message delete event.
@@ -1593,6 +1604,9 @@ var Main = Packages{
 				state and may call SetLabel any time it wants. Thus, the
 				frontend should synchronize calls with the main thread if
 				needed.
+
+				Labels given to the frontend may contain images or avatars, and
+				the frontend has the choice to display them or not.
 			`},
 			Name: "LabelContainer",
 			Methods: []Method{
@@ -1605,38 +1619,36 @@ var Main = Packages{
 			},
 		}, {
 			Comment: Comment{`
-				IconContainer is a generic interface for any container that can
-				hold an image. It's typically used for icons that can update
-				itself. Frontends should round these icons. For images that
-				shouldn't be rounded, use ImageContainer.
-
-				Methods may call SetIcon at any time in its main thread, so the
-				frontend must do any I/O (including downloading the image) in
-				another goroutine to avoid blocking the backend.
+				ReadContainer is an interface that a frontend container can
+				implement to show the read bubbles on messages. This container
+				typically implies the message container, but that is up to the
+				frontend's implementation.
 			`},
-			Name: "IconContainer",
+			Name: "ReadContainer",
 			Methods: []Method{
 				SetterMethod{
-					method:     method{Name: "SetIcon"},
-					Parameters: []NamedType{{Name: "url", Type: "string"}},
+					method: method{
+						Comment: Comment{`
+							AddIndications adds a map of users/authors to the
+							respective message ID of the server that implements
+							ReadIndicator.
+						`},
+						Name: "AddIndications",
+					},
+					Parameters: []NamedType{{"", "[]ReadIndication"}},
 				},
-			},
-		}, {
-			Comment: Comment{`
-				ImageContainer is a generic interface for any container that can
-				hold an image. It's typically used for icons that can update
-				itself. Frontends should not round these icons. For images that
-				should be rounded, use IconContainer.
-
-				Methods may call SetIcon at any time in its main thread, so the
-				frontend must do any I/O (including downloading the image) in
-				another goroutine to avoid blocking the backend.
-			`},
-			Name: "ImageContainer",
-			Methods: []Method{
 				SetterMethod{
-					method:     method{Name: "SetImage"},
-					Parameters: []NamedType{{Name: "url", Type: "string"}},
+					method: method{
+						Comment: Comment{`
+							DeleteIndications deletes a list of unused
+							users/authors associated with their read indicators.
+							The backend can use this to free up users/authors
+							that are no longer in the server, for example when
+							they are offline or have left the server.
+						`},
+						Name: "DeleteIndications",
+					},
+					Parameters: []NamedType{{"authorIDs", "[]ID"}},
 				},
 			},
 		}, {
@@ -1808,19 +1820,9 @@ var Main = Packages{
 				or it may not show any avatars at all.
 			`},
 			Name: "ListMember",
-			Embeds: []EmbeddedInterface{{
-				Comment: Comment{`
-					Identifier identifies the individual member. This works
-					similarly to MessageAuthor.
-				`},
-				InterfaceName: "Identifier",
-			}, {
-				Comment: Comment{`
-					Namer returns the name of the member. This works similarly
-					to a MessageAuthor.
-				`},
-				InterfaceName: "Namer",
-			}},
+			Embeds: []EmbeddedInterface{
+				{InterfaceName: "Author"},
+			},
 			Methods: []Method{
 				GetterMethod{
 					method: method{

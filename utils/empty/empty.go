@@ -9,17 +9,8 @@ import (
 	"github.com/diamondburned/cchat/text"
 )
 
-// Namer provides no-op asserters for cchat.Namer.
-type Namer struct{}
-
-// AsIconer returns nil.
-func (Namer) AsIconer() cchat.Iconer { return nil }
-
 // Service provides no-op asserters for cchat.Service.
 type Service struct{}
-
-// AsIconer returns nil.
-func (Service) AsIconer() cchat.Iconer { return nil }
 
 // AsConfigurator returns nil.
 func (Service) AsConfigurator() cchat.Configurator { return nil }
@@ -29,9 +20,6 @@ func (Service) AsSessionRestorer() cchat.SessionRestorer { return nil }
 
 // Session provides no-op asserters for cchat.Session.
 type Session struct{}
-
-// AsIconer returns nil.
-func (Session) AsIconer() cchat.Iconer { return nil }
 
 // AsCommander returns nil.
 func (Session) AsCommander() cchat.Commander { return nil }
@@ -47,9 +35,6 @@ func (Commander) AsCompleter() cchat.Completer { return nil }
 
 // Server provides no-op asserters for cchat.Server.
 type Server struct{}
-
-// AsIconer returns nil.
-func (Server) AsIconer() cchat.Iconer { return nil }
 
 // AsLister returns nil.
 func (Server) AsLister() cchat.Lister { return nil }
@@ -101,9 +86,6 @@ func (Sender) AsCompleter() cchat.Completer { return nil }
 
 // MemberSection provides no-op asserters for cchat.MemberSection.
 type MemberSection struct{}
-
-// AsIconer returns nil.
-func (MemberSection) AsIconer() cchat.Iconer { return nil }
 
 // AsMemberDynamicSection returns nil.
 func (MemberSection) AsMemberDynamicSection() cchat.MemberDynamicSection { return nil }

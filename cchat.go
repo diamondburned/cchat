@@ -143,6 +143,17 @@ type MessageAttachment struct {
 	Name string
 }
 
+// ReadIndication represents a read indication of a user/author in a messager
+// server. It relates to a message ID within the server and is meant to imply
+// that the user/author has read up to the given message ID.
+//
+// The frontend should override an existing author with the received ones. This
+// could be treated as upsert operations.
+type ReadIndication struct {
+	Author    Author
+	MessageID ID
+}
+
 // ErrInvalidConfigAtField is the structure for an error at a specific
 // configuration field. Frontends can use this and highlight fields if the
 // backends support it.
@@ -228,11 +239,7 @@ type Authenticator interface {
 // The frontend may use the ID to squash messages with the same author together.
 type Author interface {
 	Identifier
-
-	// Avatar returns the URL to the user's avatar or an empty string if they have
-	// no avatar or the service does not have any avatars.
-	Avatar() (url string)
-	Name() text.Rich
+	Namer
 }
 
 // Backlogger adds message history capabilities into a message container. The
@@ -360,27 +367,6 @@ type Editor interface {
 	IsEditable(id ID) bool
 }
 
-// IconContainer is a generic interface for any container that can hold an
-// image. It's typically used for icons that can update itself. Frontends should
-// round these icons. For images that shouldn't be rounded, use ImageContainer.
-//
-// Methods may call SetIcon at any time in its main thread, so the frontend must
-// do any I/O (including downloading the image) in another goroutine to avoid
-// blocking the backend.
-type IconContainer interface {
-	SetIcon(url string)
-}
-
-// Iconer adds icon support into Namer, which in turn is returned by other
-// interfaces. Typically, Service would return the service logo, Session would
-// return the user's avatar, and Server would return the server icon.
-//
-// For session, the avatar should be the same as the one returned by messages
-// sent by the current user.
-type Iconer interface {
-	Icon(context.Context, IconContainer) (stop func(), err error)
-}
-
 // Identifier requires ID() to return a uniquely identifiable string for
 // whatever this is embedded into. Typically, servers and messages have IDs. It
 // is worth mentioning that IDs should be consistent throughout the lifespan of
@@ -389,23 +375,15 @@ type Identifier interface {
 	ID() ID
 }
 
-// ImageContainer is a generic interface for any container that can hold an
-// image. It's typically used for icons that can update itself. Frontends should
-// not round these icons. For images that should be rounded, use IconContainer.
-//
-// Methods may call SetIcon at any time in its main thread, so the frontend must
-// do any I/O (including downloading the image) in another goroutine to avoid
-// blocking the backend.
-type ImageContainer interface {
-	SetImage(url string)
-}
-
 // LabelContainer is a generic interface for any container that can hold texts.
 // It's typically used for rich text labelling for usernames and server names.
 //
 // Methods that takes in a LabelContainer typically holds it in the state and
 // may call SetLabel any time it wants. Thus, the frontend should synchronize
 // calls with the main thread if needed.
+//
+// Labels given to the frontend may contain images or avatars, and the frontend
+// has the choice to display them or not.
 type LabelContainer interface {
 	SetLabel(text.Rich)
 }
@@ -417,12 +395,7 @@ type LabelContainer interface {
 // Note that the frontend may give everyone an avatar regardless, or it may not
 // show any avatars at all.
 type ListMember interface {
-	// Identifier identifies the individual member. This works similarly to
-	// MessageAuthor.
-	Identifier
-	// Namer returns the name of the member. This works similarly to a
-	// MessageAuthor.
-	Namer
+	Author
 
 	// Secondary returns the subtext of this member. This could be anything, such as
 	// a user's custom status or away reason.
@@ -559,14 +532,11 @@ type MessageHeader interface {
 	Time() time.Time
 }
 
-// MessageUpdate is the interface for a message update (or edit) event. If the
-// returned text.Rich returns true for Empty(), then the element shouldn't be
-// changed.
+// MessageUpdate is the interface for a message update (or edit) event. It
+// behaves similarly to MessageCreate, except all fields are optional. The
+// frontend is responsible for checking which field is not empty and check it.
 type MessageUpdate interface {
-	MessageHeader
-
-	Content() text.Rich
-	Author() Author
+	MessageCreate
 }
 
 // MessagesContainer is a view implementation that displays a list of messages
@@ -615,10 +585,6 @@ type Messenger interface {
 // implies usernames for sessions or service names for services.
 type Namer interface {
 	Name() text.Rich
-
-	// Asserters.
-
-	AsIconer() Iconer // Optional
 }
 
 // Nicknamer adds the current user's nickname.
@@ -645,6 +611,31 @@ type Nicknamer interface {
 // method could return an empty string here.
 type Noncer interface {
 	Nonce() string
+}
+
+// ReadContainer is an interface that a frontend container can implement to show
+// the read bubbles on messages. This container typically implies the message
+// container, but that is up to the frontend's implementation.
+type ReadContainer interface {
+	// DeleteIndications deletes a list of unused users/authors associated with
+	// their read indicators. The backend can use this to free up users/authors that
+	// are no longer in the server, for example when they are offline or have left
+	// the server.
+	DeleteIndications(authorIDs []ID)
+	// AddIndications adds a map of users/authors to the respective message ID of
+	// the server that implements ReadIndicator.
+	AddIndications([]ReadIndication)
+}
+
+// ReadIndicator adds a read indicator API for frontends to show. An example of
+// the read indicator is in Matrix, where each message can have a small avatar
+// indicating that the user in the room has read the message.
+type ReadIndicator interface {
+	// ReadIndicate subscribes the given container for read activities. The backend
+	// must keep track of which read states to send over to not overwhelm the
+	// frontend, and the frontend must either keep track of them, or it should not
+	// display it at all.
+	ReadIndicate(ReadContainer) (stop func(), err error)
 }
 
 // Replier indicates that the message being sent is a reply to something.
@@ -893,7 +884,10 @@ type UnreadContainer interface {
 	SetUnread(unread bool, mentioned bool)
 }
 
-// UnreadIndicator adds an unread state API for frontends to use.
+// UnreadIndicator adds an unread state API for frontends to use. The unread
+// state describes whether a channel has been read or not by the current user.
+// It is not to be confused with ReadIndicator, which indicates the unread state
+// of others.
 type UnreadIndicator interface {
 	// UnreadIndicate subscribes the given unread indicator for unread and mention
 	// events. Examples include when a new message is arrived and the backend needs
@@ -902,4 +896,13 @@ type UnreadIndicator interface {
 	// This function must provide a way to remove callbacks, as clients must call
 	// this when the old server is destroyed, such as when Servers is called.
 	UnreadIndicate(UnreadContainer) (stop func(), err error)
+	// MarkRead marks a message in the server messenger as read. Backends that
+	// implement the UnreadIndicator interface must give control of marking messages
+	// as read to the frontend if possible.
+	//
+	// This method is assumed to be a setter method that does not error out, because
+	// the frontend has no use in knowing the error. As such, marking messages as
+	// read is best-effort. The backend is in charge of synchronizing the read state
+	// with the server and coordinating it with reasonable rate limits, if needed.
+	MarkRead(messageID ID)
 }
