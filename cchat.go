@@ -150,7 +150,7 @@ type MessageAttachment struct {
 // The frontend should override an existing author with the received ones. This
 // could be treated as upsert operations.
 type ReadIndication struct {
-	Author    Author
+	User      User
 	MessageID ID
 }
 
@@ -226,20 +226,6 @@ type Authenticator interface {
 	// Name returns a short and concise name of this Authenticator method. The name
 	// should not include the name of the Service.
 	Name() text.Rich
-}
-
-// Author is the interface for an identifiable author. The interface defines
-// that an author always have an ID and a name.
-//
-// An example of where this interface is used would be in MessageCreate's Author
-// method or embedded in Typer. The returned ID may or may not be used by the
-// frontend, but backends must guarantee that the Author's ID is in fact a user
-// ID.
-//
-// The frontend may use the ID to squash messages with the same author together.
-type Author interface {
-	Identifier
-	Namer
 }
 
 // Backlogger adds message history capabilities into a message container. The
@@ -395,7 +381,7 @@ type LabelContainer interface {
 // Note that the frontend may give everyone an avatar regardless, or it may not
 // show any avatars at all.
 type ListMember interface {
-	Author
+	User
 
 	// Secondary returns the subtext of this member. This could be anything, such as
 	// a user's custom status or away reason.
@@ -517,7 +503,7 @@ type MessageCreate interface {
 	// backend does not implement mentioning, then false can be returned.
 	Mentioned() bool
 	Content() text.Rich
-	Author() Author
+	Author() User
 }
 
 // MessageDelete is the interface for a message delete event.
@@ -583,8 +569,15 @@ type Messenger interface {
 
 // Namer requires Name() to return the name of the object. Typically, this
 // implies usernames for sessions or service names for services.
+//
+// Frontends can show the ID of the object when a name hasn't yet been set. The
+// backend may immediately update the name afterwards, but assumptions should
+// not be made.
 type Namer interface {
-	Name() text.Rich
+	// Name sets the given container to contain the name of the parent context. The
+	// method has no stop method; stopping is implied to be dependent on the parent
+	// context. As such, it's only used for updating.
+	Name(context.Context, LabelContainer) (err error)
 }
 
 // Nicknamer adds the current user's nickname.
@@ -756,8 +749,8 @@ type Service interface {
 
 // A session is returned after authentication on the service. Session implements
 // Name(), which should return the username most of the time. It also implements
-// ID(), which might be used by frontends to check against MessageAuthor.ID()
-// and other things.
+// ID(), which might be used by frontends to check against User.ID() and other
+// things.
 //
 // A session can implement SessionSaver, which would allow the frontend to save
 // the session into its keyring at any time. Whether the keyring is completely
@@ -812,15 +805,6 @@ type SessionSaver interface {
 	SaveSession() map[string]string
 }
 
-// Typer is an individual user that's typing. This interface is used
-// interchangably in TypingIndicator and thus ServerMessageTypingIndicator as
-// well.
-type Typer interface {
-	Author
-
-	Time() time.Time
-}
-
 // TypingContainer is a generic interface for any container that can display
 // users typing in the current chatbox. The typing indicator must adhere to the
 // TypingTimeout returned from ServerMessageTypingIndicator. The backend should
@@ -832,10 +816,11 @@ type TypingContainer interface {
 	// of typers. This function is usually not needed, as the client will take care
 	// of removing them after TypingTimeout has been reached or other conditions
 	// listed in ServerMessageTypingIndicator are met.
-	RemoveTyper(typerID ID)
-	// AddTyper appends the typer into the frontend's list of typers, or it pushes
-	// this typer on top of others.
-	AddTyper(typer Typer)
+	RemoveTyper(authorID ID)
+	// AddTyper appends the typer (author) into the frontend's list of typers, or it
+	// pushes this typer on top of others. The frontend should assume current time
+	// every time AddTyper is called.
+	AddTyper(User)
 }
 
 // TypingIndicator optionally extends ServerMessage to provide bidirectional
@@ -905,4 +890,18 @@ type UnreadIndicator interface {
 	// read is best-effort. The backend is in charge of synchronizing the read state
 	// with the server and coordinating it with reasonable rate limits, if needed.
 	MarkRead(messageID ID)
+}
+
+// User is the interface for an identifiable author. The interface defines that
+// an author always have an ID and a name.
+//
+// An example of where this interface is used would be in MessageCreate's User
+// method or embedded in Typer. The returned ID may or may not be used by the
+// frontend, but backends must guarantee that the User's ID is in fact a user
+// ID.
+//
+// The frontend may use the ID to squash messages with the same author together.
+type User interface {
+	Identifier
+	Namer
 }

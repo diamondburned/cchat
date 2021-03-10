@@ -544,7 +544,7 @@ var Main = Packages{
 			`},
 			Name: "ReadIndication",
 			Fields: []StructField{
-				{NamedType: NamedType{"Author", "Author"}},
+				{NamedType: NamedType{"User", "User"}},
 				{NamedType: NamedType{"MessageID", "ID"}},
 			},
 		}},
@@ -586,14 +586,25 @@ var Main = Packages{
 				Namer requires Name() to return the name of the object.
 				Typically, this implies usernames for sessions or service
 				names for services.
+
+				Frontends can show the ID of the object when a name hasn't yet
+				been set. The backend may immediately update the name
+				afterwards, but assumptions should not be made.
 			`},
 			Name: "Namer",
 			Methods: []Method{
-				GetterMethod{
-					method: method{Name: "Name"},
-					Returns: []NamedType{{
-						Type: MakeQual("text", "Rich"),
-					}},
+				ContainerMethod{
+					method: method{
+						Comment: Comment{`
+							Name sets the given container to contain the name of
+							the parent context. The method has no stop method;
+							stopping is implied to be dependent on the parent
+							context. As such, it's only used for updating.
+						`},
+						Name: "Name",
+					},
+					HasContext:    true,
+					ContainerType: "LabelContainer",
 				},
 			},
 		}, {
@@ -622,18 +633,18 @@ var Main = Packages{
 			},
 		}, {
 			Comment: Comment{`
-				Author is the interface for an identifiable author. The
+				User is the interface for an identifiable author. The
 				interface defines that an author always have an ID and a name.
 
 				An example of where this interface is used would be in
-				MessageCreate's Author method or embedded in Typer. The returned
+				MessageCreate's User method or embedded in Typer. The returned
 				ID may or may not be used by the frontend, but backends must
-				guarantee that the Author's ID is in fact a user ID.
+				guarantee that the User's ID is in fact a user ID.
 
 				The frontend may use the ID to squash messages with the same
 				author together.
 			`},
-			Name: "Author",
+			Name: "User",
 			Embeds: []EmbeddedInterface{
 				{InterfaceName: "Identifier"},
 				{InterfaceName: "Namer"},
@@ -815,10 +826,9 @@ var Main = Packages{
 		}, {
 			Comment: Comment{`
 				A session is returned after authentication on the service.
-				Session implements Name(), which should return the username
-				most of the time. It also implements ID(), which might be
-				used by frontends to check against MessageAuthor.ID() and
-				other things.
+				Session implements Name(), which should return the username most
+				of the time. It also implements ID(), which might be used by
+				frontends to check against User.ID() and other things.
 
 				A session can implement SessionSaver, which would allow the
 				frontend to save the session into its keyring at any time.
@@ -1559,7 +1569,7 @@ var Main = Packages{
 			Methods: []Method{
 				GetterMethod{
 					method:  method{Name: "Author"},
-					Returns: []NamedType{{Type: "Author"}},
+					Returns: []NamedType{{Type: "User"}},
 				},
 				GetterMethod{
 					method: method{Name: "Content"},
@@ -1700,12 +1710,14 @@ var Main = Packages{
 				SetterMethod{
 					method: method{
 						Comment: Comment{`
-							AddTyper appends the typer into the frontend's list
-							of typers, or it pushes this typer on top of others.
+							AddTyper appends the typer (author) into the
+							frontend's list of typers, or it pushes this typer
+							on top of others. The frontend should assume current
+							time every time AddTyper is called.
 						`},
 						Name: "AddTyper",
 					},
-					Parameters: []NamedType{{Name: "typer", Type: "Typer"}},
+					Parameters: []NamedType{{"", "User"}},
 				},
 				SetterMethod{
 					method: method{
@@ -1719,21 +1731,7 @@ var Main = Packages{
 						`},
 						Name: "RemoveTyper",
 					},
-					Parameters: []NamedType{{Name: "typerID", Type: "ID"}},
-				},
-			},
-		}, {
-			Comment: Comment{`
-				Typer is an individual user that's typing. This interface is
-				used interchangably in TypingIndicator and thus
-				ServerMessageTypingIndicator as well.
-			`},
-			Name:   "Typer",
-			Embeds: []EmbeddedInterface{{InterfaceName: "Author"}},
-			Methods: []Method{
-				GetterMethod{
-					method:  method{Name: "Time"},
-					Returns: []NamedType{{Type: "time.Time"}},
+					Parameters: []NamedType{{Name: "authorID", Type: "ID"}},
 				},
 			},
 		}, {
@@ -1821,7 +1819,7 @@ var Main = Packages{
 			`},
 			Name: "ListMember",
 			Embeds: []EmbeddedInterface{
-				{InterfaceName: "Author"},
+				{InterfaceName: "User"},
 			},
 			Methods: []Method{
 				GetterMethod{
