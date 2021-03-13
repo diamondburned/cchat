@@ -1060,7 +1060,6 @@ var Main = Packages{
 					},
 					HasContext:    true,
 					ContainerType: "MessagesContainer",
-					HasStopFn:     true,
 				},
 				AsserterMethod{ChildType: "Sender"},
 				AsserterMethod{ChildType: "Editor"},
@@ -1204,7 +1203,6 @@ var Main = Packages{
 					method:        method{Name: "Nickname"},
 					HasContext:    true,
 					ContainerType: "LabelContainer",
-					HasStopFn:     true,
 				},
 			},
 		}, {
@@ -1274,7 +1272,6 @@ var Main = Packages{
 					},
 					HasContext:    true,
 					ContainerType: "MemberListContainer",
-					HasStopFn:     true,
 				},
 			},
 		}, {
@@ -1298,7 +1295,6 @@ var Main = Packages{
 						Name: "ReadIndicate",
 					},
 					ContainerType: "ReadContainer",
-					HasStopFn:     true,
 				},
 			},
 		}, {
@@ -1345,7 +1341,6 @@ var Main = Packages{
 						Name: "UnreadIndicate",
 					},
 					ContainerType: "UnreadContainer",
-					HasStopFn:     true,
 				},
 			},
 		}, {
@@ -1401,7 +1396,6 @@ var Main = Packages{
 						Name: "TypingSubscribe",
 					},
 					ContainerType: "TypingContainer",
-					HasStopFn:     true,
 				},
 			},
 		}, {

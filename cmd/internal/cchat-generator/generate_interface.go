@@ -145,9 +145,7 @@ func generateFuncParams(params []repository.NamedType, errorType string) []jen.C
 func generateContainerFuncReturns(method repository.ContainerMethod) []jen.Code {
 	var stmt jen.Statement
 
-	if method.HasStopFn {
-		stmt.Add(jen.Id("stop").Func().Params())
-	}
+	stmt.Add(jen.Id("stop").Func().Params())
 	stmt.Add(jen.Err().Error())
 
 	return stmt

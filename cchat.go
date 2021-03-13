@@ -405,7 +405,7 @@ type Lister interface {
 	// Servers should call SetServers() on the given ServersContainer to render all
 	// servers. This function can do IO, and the frontend should run this in a
 	// goroutine.
-	Servers(ServersContainer) (err error)
+	Servers(ServersContainer) (stop func(), err error)
 }
 
 // MemberDynamicSection represents a dynamically loaded member list section. The
@@ -577,7 +577,7 @@ type Namer interface {
 	// Name sets the given container to contain the name of the parent context. The
 	// method has no stop method; stopping is implied to be dependent on the parent
 	// context. As such, it's only used for updating.
-	Name(context.Context, LabelContainer) (err error)
+	Name(context.Context, LabelContainer) (stop func(), err error)
 }
 
 // Nicknamer adds the current user's nickname.

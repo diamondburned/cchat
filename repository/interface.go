@@ -112,7 +112,7 @@ func (m IOMethod) ReturnError() bool {
 }
 
 // ContainerMethod is a method that uses a Container. These methods can do IO
-// and always return an error.
+// and always return a stop callback and an error.
 type ContainerMethod struct {
 	method
 
@@ -121,13 +121,6 @@ type ContainerMethod struct {
 	// ContainerType is the name of the container interface. The name will
 	// almost always have "Container" as its suffix.
 	ContainerType string
-	// HasStopFn is true if the function returns a callback of type func() as
-	// its first return. The function will return an error in addition. If this
-	// is false, then only the error is returned.
-	//
-	// Once the stop function is called, the instance that the method belongs to
-	// will also be considered invalidated and should be freed accordingly.
-	HasStopFn bool
 }
 
 // Qual returns what TypeQual returns with m.ContainerType.
