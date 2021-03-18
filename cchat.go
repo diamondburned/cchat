@@ -254,20 +254,6 @@ type Backlogger interface {
 	Backlog(ctx context.Context, before ID, msgc MessagesContainer) error // Blocking
 }
 
-// Columnator is optionally used by servers to give different nested servers its
-// own nesting values. Top-level servers must start at 1. The zero-value (0)
-// indicates that the server that implements this interface is inherently the
-// children of its parent server. This is also the behavior for servers that
-// don't implement this interface.
-//
-// For example, in Discord, guilds can be placed in guild folders, but guilds
-// and guild folders are put in the same column while guilds are actually
-// children of the folders. To replicate this behavior, both guild and guild
-// folders can implement ServerColumnator to both return 1.
-type Columnator interface {
-	Column() int
-}
-
 // Commander is an optional interface that a session could implement for command
 // support. This is different from just intercepting the SendMessage() API, as
 // this extends globally to the entire session.
@@ -458,8 +444,12 @@ type MemberListContainer interface {
 	// SetMember adds or updates (or upsert) a member into a section. This operation
 	// must not change the section's member count. As such, changes should be done
 	// separately in SetSection. If the section does not exist, then the client
-	// should ignore this member. As such, backends must call SetSections first
-	// before SetMember on a new section.
+	// should ignore this member, so, backends must call SetSections first before
+	// SetMember on a new section.
+	//
+	// Typically, the backend should try and avoid calling this method and instead
+	// update the labeler in the name. This method should only be used for adding
+	// members.
 	SetMember(sectionID ID, member ListMember)
 	// SetSections (re)sets the list of sections to be the given slice. Members from
 	// the old section list should be transferred over to the new section entry if
@@ -672,16 +662,29 @@ type Sender interface {
 // Server is a single server-like entity that could translate to a guild, a
 // channel, a chat-room, and such. A server must implement at least ServerList
 // or ServerMessage, else the frontend must treat it as a no-op.
+//
+// Note that the Server is allowed to implement both Lister and Messenger. This
+// is useful when the messenger contains sub-servers, such as threads.
 type Server interface {
 	Identifier
 	Namer
+
+	// Columnate is optionally used by servers to give different nested servers its
+	// own nesting values. Top-level servers must start at 1. The zero-value (0)
+	// indicates that the server that implements this interface is inherently the
+	// children of its parent server.
+	//
+	// For example, in Discord, guilds can be placed in guild folders, but guilds
+	// and guild folders are put in the same column while guilds are actually
+	// children of the folders. To replicate this behavior, both guild and guild
+	// folders can return 1.
+	Columnate()
 
 	// Asserters.
 
 	AsLister() Lister             // Optional
 	AsMessenger() Messenger       // Optional
 	AsCommander() Commander       // Optional
-	AsColumnator() Columnator     // Optional
 	AsConfigurator() Configurator // Optional
 }
 
@@ -719,6 +722,12 @@ type ServersContainer interface {
 	// SetServer is called by the backend service to request a reset of the server
 	// list. The frontend can choose to call Servers() on each of the given servers,
 	// or it can call that later. The backend should handle both cases.
+	//
+	// If the backend sets a nil server slice, then the frontend should take that as
+	// an unavailable server list rather than an empty server list. The server list
+	// should only be considered empty if it's an empty non-nil slice. An
+	// unavailable list, on the other hand, can be treated as backend issues, e.g. a
+	// connection issue.
 	SetServers([]Server)
 }
 
@@ -747,7 +756,7 @@ type Service interface {
 	AsSessionRestorer() SessionRestorer // Optional
 }
 
-// A session is returned after authentication on the service. Session implements
+// Session is returned after authentication on the service. It implements
 // Name(), which should return the username most of the time. It also implements
 // ID(), which might be used by frontends to check against User.ID() and other
 // things.

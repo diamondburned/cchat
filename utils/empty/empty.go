@@ -45,9 +45,6 @@ func (Server) AsMessenger() cchat.Messenger { return nil }
 // AsCommander returns nil.
 func (Server) AsCommander() cchat.Commander { return nil }
 
-// AsColumnator returns nil.
-func (Server) AsColumnator() cchat.Columnator { return nil }
-
 // AsConfigurator returns nil.
 func (Server) AsConfigurator() cchat.Configurator { return nil }
 
