@@ -16,18 +16,3 @@ func WrapAuthenticateError(err error) AuthenticateError {
 	}
 	return authenticateError{err}
 }
-
-// ServerColumn is a convenient function to get the column of a server. It
-// returns 0 if server does not implement Columnator.
-func ServerColumn(server Server) int {
-	var column int
-	if columnator := server.AsColumnator(); columnator != nil {
-		column = columnator.Column()
-	}
-
-	if column < 1 {
-		return 0
-	}
-
-	return column
-}
