@@ -392,6 +392,16 @@ type Lister interface {
 	// servers. This function can do IO, and the frontend should run this in a
 	// goroutine.
 	Servers(ServersContainer) (stop func(), err error)
+	// Columnate is optionally used by servers to give different nested servers its
+	// own nesting values. Top-level servers must start at 1. The zero-value (0)
+	// indicates that the server that implements this interface is inherently the
+	// children of its parent server.
+	//
+	// For example, in Discord, guilds can be placed in guild folders, but guilds
+	// and guild folders are put in the same column while guilds are actually
+	// children of the folders. To replicate this behavior, both guild and guild
+	// folders can return 1.
+	Columnate() int
 }
 
 // MemberDynamicSection represents a dynamically loaded member list section. The
@@ -668,17 +678,6 @@ type Sender interface {
 type Server interface {
 	Identifier
 	Namer
-
-	// Columnate is optionally used by servers to give different nested servers its
-	// own nesting values. Top-level servers must start at 1. The zero-value (0)
-	// indicates that the server that implements this interface is inherently the
-	// children of its parent server.
-	//
-	// For example, in Discord, guilds can be placed in guild folders, but guilds
-	// and guild folders are put in the same column while guilds are actually
-	// children of the folders. To replicate this behavior, both guild and guild
-	// folders can return 1.
-	Columnate() int
 
 	// Asserters.
 

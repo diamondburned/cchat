@@ -981,26 +981,6 @@ var Main = Packages{
 				{InterfaceName: "Namer"},
 			},
 			Methods: []Method{
-				GetterMethod{
-					method: method{
-						Comment: Comment{`
-							Columnate is optionally used by servers to give
-							different nested servers its own nesting values.
-							Top-level servers must start at 1. The zero-value
-							(0) indicates that the server that implements this
-							interface is inherently the children of its parent
-							server.
-
-							For example, in Discord, guilds can be placed in
-							guild folders, but guilds and guild folders are put
-							in the same column while guilds are actually
-							children of the folders. To replicate this behavior,
-							both guild and guild folders can return 1.
-						`},
-						Name: "Columnate",
-					},
-					Returns: []NamedType{{"", "int"}},
-				},
 				AsserterMethod{ChildType: "Lister"},
 				AsserterMethod{ChildType: "Messenger"},
 				AsserterMethod{ChildType: "Commander"},
@@ -1021,6 +1001,26 @@ var Main = Packages{
 			`},
 			Name: "Lister",
 			Methods: []Method{
+				GetterMethod{
+					method: method{
+						Comment: Comment{`
+							Columnate is optionally used by servers to give
+							different nested servers its own nesting values.
+							Top-level servers must start at 1. The zero-value
+							(0) indicates that the server that implements this
+							interface is inherently the children of its parent
+							server.
+
+							For example, in Discord, guilds can be placed in
+							guild folders, but guilds and guild folders are put
+							in the same column while guilds are actually
+							children of the folders. To replicate this behavior,
+							both guild and guild folders can return 1.
+						`},
+						Name: "Columnate",
+					},
+					Returns: []NamedType{{"", "int"}},
+				},
 				ContainerMethod{
 					method: method{
 						Comment: Comment{`
