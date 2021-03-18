@@ -678,7 +678,7 @@ type Server interface {
 	// and guild folders are put in the same column while guilds are actually
 	// children of the folders. To replicate this behavior, both guild and guild
 	// folders can return 1.
-	Columnate()
+	Columnate() int
 
 	// Asserters.
 

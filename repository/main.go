@@ -999,6 +999,7 @@ var Main = Packages{
 						`},
 						Name: "Columnate",
 					},
+					Returns: []NamedType{{"", "int"}},
 				},
 				AsserterMethod{ChildType: "Lister"},
 				AsserterMethod{ChildType: "Messenger"},
