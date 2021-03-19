@@ -651,7 +651,7 @@ var Main = Packages{
 			},
 		}, {
 			Comment: Comment{`
-				A service is a complete service that's capable of multiple
+				Service is a complete service that's capable of multiple
 				sessions. It has to implement the Authenticate() method, which
 				returns multiple implementations of Authenticator.
 
@@ -668,6 +668,17 @@ var Main = Packages{
 			`},
 			Name: "Service",
 			Embeds: []EmbeddedInterface{{
+				Comment: Comment{`
+					Identifier returns the unique identifier for the service. There
+					is no enforced representation, but services are recommended to
+					follow the Reverse Domain Name Notation for consistency. An
+					example of that would be:
+
+						com.github.diamondburned.cchat-discord
+						com.github.username.service
+				`},
+				InterfaceName: "Identifier",
+			}, {
 				Comment: Comment{`
 					Namer returns the name of the service.
 				`},

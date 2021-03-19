@@ -731,9 +731,9 @@ type ServersContainer interface {
 	SetServers([]Server)
 }
 
-// A service is a complete service that's capable of multiple sessions. It has
-// to implement the Authenticate() method, which returns multiple
-// implementations of Authenticator.
+// Service is a complete service that's capable of multiple sessions. It has to
+// implement the Authenticate() method, which returns multiple implementations
+// of Authenticator.
 //
 // A service can implement SessionRestorer, which would indicate the frontend
 // that it can restore past sessions. Sessions are saved using the SessionSaver
@@ -745,6 +745,13 @@ type ServersContainer interface {
 // configurations must be optional, as frontends may not implement a
 // configurator UI.
 type Service interface {
+	// Identifier returns the unique identifier for the service. There is no
+	// enforced representation, but services are recommended to follow the Reverse
+	// Domain Name Notation for consistency. An example of that would be:
+	//
+	//    com.github.diamondburned.cchat-discord
+	//    com.github.username.service
+	Identifier
 	// Namer returns the name of the service.
 	Namer
 
