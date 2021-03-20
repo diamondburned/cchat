@@ -1211,14 +1211,8 @@ var Main = Packages{
 				implement ServerNickname. By default, the session name should be
 				used.
 			`},
-			Name: "Nicknamer",
-			Methods: []Method{
-				ContainerMethod{
-					method:        method{Name: "Nickname"},
-					HasContext:    true,
-					ContainerType: "LabelContainer",
-				},
-			},
+			Name:   "Nicknamer",
+			Embeds: []EmbeddedInterface{{InterfaceName: "Namer"}},
 		}, {
 			Comment: Comment{`
 				Backlogger adds message history capabilities into a message

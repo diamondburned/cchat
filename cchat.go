@@ -588,7 +588,7 @@ type Namer interface {
 // implement ServerMessage also don't need to implement ServerNickname. By
 // default, the session name should be used.
 type Nicknamer interface {
-	Nickname(context.Context, LabelContainer) (stop func(), err error)
+	Namer
 }
 
 // Noncer adds nonce support. A nonce is defined in this context as a unique
