@@ -1602,12 +1602,20 @@ var Main = Packages{
 		}, {
 			Comment: Comment{`
 				MessageUpdate is the interface for a message update (or edit)
-				event. It behaves similarly to MessageCreate, except all fields
-				are optional. The frontend is responsible for checking which
-				field is not empty and check it.
+				event. It is only responsible for updating a message's content.
+				The author's name should be updated using MessageCreate's
+				Author.
 			`},
 			Name:   "MessageUpdate",
-			Embeds: []EmbeddedInterface{{InterfaceName: "MessageCreate"}},
+			Embeds: []EmbeddedInterface{{InterfaceName: "MessageHeader"}},
+			Methods: []Method{
+				GetterMethod{
+					method: method{Name: "Content"},
+					Returns: []NamedType{{
+						Type: MakeQual("text", "Rich"),
+					}},
+				},
+			},
 		}, {
 			Comment: Comment{`
 				MessageDelete is the interface for a message delete event.

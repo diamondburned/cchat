@@ -523,7 +523,9 @@ type MessageHeader interface {
 // behaves similarly to MessageCreate, except all fields are optional. The
 // frontend is responsible for checking which field is not empty and check it.
 type MessageUpdate interface {
-	MessageCreate
+	MessageHeader
+
+	Content() text.Rich
 }
 
 // MessagesContainer is a view implementation that displays a list of messages
