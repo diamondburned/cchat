@@ -378,7 +378,7 @@ type ListMember interface {
 	Status() Status
 	// Name returns the username or the nickname of the member, whichever the
 	// backend should prefer.
-	Name()
+	Name() text.Rich
 }
 
 // Lister is for servers that contain children servers. This is similar to

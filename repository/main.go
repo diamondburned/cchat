@@ -1854,6 +1854,7 @@ var Main = Packages{
 							member, whichever the backend should prefer.
 						`},
 					},
+					Returns: []NamedType{{Type: MakeQual("text", "Rich")}},
 				},
 				GetterMethod{
 					method: method{
