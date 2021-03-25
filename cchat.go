@@ -360,14 +360,14 @@ type LabelContainer interface {
 	SetLabel(text.Rich)
 }
 
-// ListMember represents a single member in the member list. This is a base
-// interface that may implement more interfaces, such as Iconer for the user's
-// avatar.
+// ListMember represents a single member in the member list. Note that this
+// interface should be treated as a static container: updating a member will
+// involve a completely new ListMember instance with the same ID.
 //
 // Note that the frontend may give everyone an avatar regardless, or it may not
 // show any avatars at all.
 type ListMember interface {
-	User
+	Identifier
 
 	// Secondary returns the subtext of this member. This could be anything, such as
 	// a user's custom status or away reason.
@@ -376,6 +376,9 @@ type ListMember interface {
 	// offline members with the offline status if it doesn't want to show offline
 	// menbers at all.
 	Status() Status
+	// Name returns the username or the nickname of the member, whichever the
+	// backend should prefer.
+	Name()
 }
 
 // Lister is for servers that contain children servers. This is similar to
@@ -519,9 +522,9 @@ type MessageHeader interface {
 	Time() time.Time
 }
 
-// MessageUpdate is the interface for a message update (or edit) event. It
-// behaves similarly to MessageCreate, except all fields are optional. The
-// frontend is responsible for checking which field is not empty and check it.
+// MessageUpdate is the interface for a message update (or edit) event. It is
+// only responsible for updating a message's content. The author's name should
+// be updated using MessageCreate's Author.
 type MessageUpdate interface {
 	MessageHeader
 

@@ -1833,18 +1833,28 @@ var Main = Packages{
 			},
 		}, {
 			Comment: Comment{`
-				ListMember represents a single member in the member list. This
-				is a base interface that may implement more interfaces, such as
-				Iconer for the user's avatar.
+				ListMember represents a single member in the member list. Note
+				that this interface should be treated as a static container:
+				updating a member will involve a completely new ListMember
+				instance with the same ID.
 
 				Note that the frontend may give everyone an avatar regardless,
 				or it may not show any avatars at all.
 			`},
 			Name: "ListMember",
 			Embeds: []EmbeddedInterface{
-				{InterfaceName: "User"},
+				{InterfaceName: "Identifier"},
 			},
 			Methods: []Method{
+				GetterMethod{
+					method: method{
+						Name: "Name",
+						Comment: Comment{`
+							Name returns the username or the nickname of the
+							member, whichever the backend should prefer.
+						`},
+					},
+				},
 				GetterMethod{
 					method: method{
 						Comment: Comment{`
