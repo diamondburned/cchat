@@ -81,7 +81,9 @@ type SetterMethod struct {
 }
 
 // IOMethod is a regular method that can do IO and thus is blocking. These
-// methods usually always return errors.
+// methods usually always return errors. IOMethods must always have means of
+// cancelling them in the API, but implementations don't have to use it; as
+// such, the user should always have a timeout to gracefully wait.
 type IOMethod struct {
 	method
 

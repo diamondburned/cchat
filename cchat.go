@@ -176,7 +176,7 @@ type Actioner interface {
 	// Do executes a message action on the given messageID, which would be taken
 	// from MessageHeader.ID(). This method is allowed to do IO; the frontend should
 	// take care of running it asynchronously.
-	Do(action string, id ID) error // Blocking
+	Do(ctx context.Context, action string, id ID) error // Blocking
 	// MessageActions returns a list of possible actions to a message in pretty
 	// strings that the frontend will use to directly display. This method must not
 	// do IO.
@@ -217,7 +217,7 @@ type AuthenticateError interface {
 type Authenticator interface {
 	// Authenticate will be called with a list of values with indices correspond to
 	// the returned slice of AuthenticateEntry.
-	Authenticate([]string) (Session, AuthenticateError) // Blocking
+	Authenticate(context.Context, []string) (Session, AuthenticateError) // Blocking
 	// AuthenticateForm should return a list of authentication entries for the
 	// frontend to render.
 	AuthenticateForm() []AuthenticateEntry
@@ -295,7 +295,7 @@ type Commander interface {
 	// A helper function for this kind of behavior is available in package split,
 	// under the ArgsIndexed function. This implementation also provides the rough
 	// specifications.
-	Run(words []string) ([]byte, error) // Blocking
+	Run(ctx context.Context, words []string) ([]byte, error) // Blocking
 
 	// Asserters.
 
@@ -322,15 +322,15 @@ type Completer interface {
 // to do IO. The frontend should handle this appropriately, including running
 // them asynchronously.
 type Configurator interface {
-	SetConfiguration(map[string]string) error  // Blocking
-	Configuration() (map[string]string, error) // Blocking
+	SetConfiguration(context.Context, map[string]string) error // Blocking
+	Configuration(context.Context) (map[string]string, error)  // Blocking
 }
 
 // Editor adds message editing to the messenger. Only EditMessage can do IO.
 type Editor interface {
 	// Edit edits the message with the given ID to the given content, which is the
 	// edited string from RawMessageContent. This method can do IO.
-	Edit(id ID, content string) error // Blocking
+	Edit(ctx context.Context, id ID, content string) error // Blocking
 	// RawContent gets the original message text for editing. This method must not
 	// do IO.
 	RawContent(id ID) (string, error)
@@ -421,14 +421,14 @@ type MemberDynamicSection interface {
 	// The client can call this method exactly as many times as it has called
 	// LoadMore. However, false should be returned if the client should stop, and
 	// future calls without LoadMore should still return false.
-	LoadLess() bool // Blocking
+	LoadLess(context.Context) bool // Blocking
 	// LoadMore is a method which the client can call to ask for more members. This
 	// method can do IO.
 	//
 	// Clients may call this method on the last section in the section slice;
 	// however, calling this method on any section is allowed. Clients may not call
 	// this method if the number of members in this section is equal to Total.
-	LoadMore() bool // Blocking
+	LoadMore(context.Context) bool // Blocking
 }
 
 // MemberListContainer is a generic interface for any container that can display
@@ -634,7 +634,7 @@ type ReadIndicator interface {
 	// must keep track of which read states to send over to not overwhelm the
 	// frontend, and the frontend must either keep track of them, or it should not
 	// display it at all.
-	ReadIndicate(ReadContainer) (stop func(), err error)
+	ReadIndicate(context.Context, ReadContainer) (stop func(), err error)
 }
 
 // Replier indicates that the message being sent is a reply to something.
@@ -668,7 +668,7 @@ type Sender interface {
 	// CanAttach returns whether or not the client is allowed to upload files.
 	CanAttach() bool
 	// Send is called by the frontend to send a message to this channel.
-	Send(SendableMessage) error // Blocking
+	Send(context.Context, SendableMessage) error // Blocking
 
 	// Asserters.
 
@@ -796,7 +796,7 @@ type Session interface {
 	// When this function fails, the frontend may display the error upfront.
 	// However, it will treat the session as actually disconnected. If needed, the
 	// backend must implement reconnection by itself.
-	Disconnect() error // Blocking, Disposer
+	Disconnect(context.Context) error // Blocking, Disposer
 
 	// Asserters.
 
@@ -810,7 +810,7 @@ type Session interface {
 //
 // To save a session, refer to SessionSaver.
 type SessionRestorer interface {
-	RestoreSession(map[string]string) (Session, error) // Blocking
+	RestoreSession(context.Context, map[string]string) (Session, error) // Blocking
 }
 
 // SessionSaver extends Session and is called by the frontend to save the
@@ -859,7 +859,7 @@ type TypingIndicator interface {
 	// This method does not take in a context, as it's supposed to only use event
 	// handlers and not do any IO calls. Nonetheless, the client must treat it like
 	// it does and call it asynchronously.
-	TypingSubscribe(TypingContainer) (stop func(), err error)
+	TypingSubscribe(context.Context, TypingContainer) (stop func(), err error)
 	// TypingTimeout returns the interval between typing events sent by the client
 	// as well as the timeout before the client should remove the typer. Typically,
 	// a constant should be returned.
@@ -868,7 +868,7 @@ type TypingIndicator interface {
 	// function can do IO calls, and the client must take care of calling it in a
 	// goroutine (or an asynchronous queue) as well as throttling it to
 	// TypingTimeout.
-	Typing() error // Blocking
+	Typing(context.Context) error // Blocking
 }
 
 // UnreadContainer is an interface that a single server container (such as a
@@ -901,7 +901,7 @@ type UnreadIndicator interface {
 	//
 	// This function must provide a way to remove callbacks, as clients must call
 	// this when the old server is destroyed, such as when Servers is called.
-	UnreadIndicate(UnreadContainer) (stop func(), err error)
+	UnreadIndicate(context.Context, UnreadContainer) (stop func(), err error)
 	// MarkRead marks a message in the server messenger as read. Backends that
 	// implement the UnreadIndicator interface must give control of marking messages
 	// as read to the frontend if possible.

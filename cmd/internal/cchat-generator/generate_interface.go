@@ -67,8 +67,8 @@ func generateInterfaces(ifaces []repository.Interface) jen.Code {
 				case repository.SetterMethod:
 					stmt.Params(generateFuncParams(method.Parameters, "")...)
 				case repository.IOMethod:
-					stmt.Params(generateFuncParams(method.Parameters, "")...)
-					stmt.Params(generateFuncParamErr(method.ReturnValue, method.ErrorType)...)
+					stmt.Params(generateFuncParamsCtx(method.Parameters, "")...)
+					stmt.Params(generateFuncParamsErr(method.ReturnValue, method.ErrorType)...)
 					var comment = "Blocking"
 					if method.Disposer {
 						comment += ", Disposer"
@@ -96,7 +96,7 @@ func generateInterfaces(ifaces []repository.Interface) jen.Code {
 	return stmt
 }
 
-func generateFuncParamErr(param repository.NamedType, errorType string) []jen.Code {
+func generateFuncParamsErr(param repository.NamedType, errorType string) []jen.Code {
 	stmt := make([]jen.Code, 0, 2)
 
 	if !param.IsZero() {
@@ -119,6 +119,18 @@ func generateFuncParam(param repository.NamedType) jen.Code {
 		return genutils.GenerateType(param)
 	}
 	return jen.Id(param.Name).Add(genutils.GenerateType(param))
+}
+
+func generateFuncParamsCtx(params []repository.NamedType, errorType string) []jen.Code {
+	var name string
+	if len(params) > 0 && params[0].Name != "" {
+		name = "ctx"
+	}
+
+	p := []repository.NamedType{{Name: name, Type: "context.Context"}}
+	p = append(p, params...)
+
+	return generateFuncParams(p, errorType)
 }
 
 func generateFuncParams(params []repository.NamedType, errorType string) []jen.Code {
