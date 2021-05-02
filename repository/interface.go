@@ -78,6 +78,10 @@ type SetterMethod struct {
 	// Parameters is the list of parameters in the function. These parameters
 	// should be the parameters to set.
 	Parameters []NamedType
+	// ErrorType is non-empty if the function returns an error at the end of
+	// returns. An error may be returned from the backend if the input is
+	// invalid, but it must not do IO. Frontend setters must never error.
+	ErrorType string
 }
 
 // IOMethod is a regular method that can do IO and thus is blocking. These

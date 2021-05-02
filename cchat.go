@@ -318,12 +318,10 @@ type Completer interface {
 }
 
 // Configurator is an interface which the backend can implement for a primitive
-// configuration API. Since these methods do return an error, they are allowed
-// to do IO. The frontend should handle this appropriately, including running
-// them asynchronously.
+// configuration API.
 type Configurator interface {
-	SetConfiguration(context.Context, map[string]string) error // Blocking
-	Configuration(context.Context) (map[string]string, error)  // Blocking
+	SetConfiguration(map[string]string) error
+	Configuration() map[string]string
 }
 
 // Editor adds message editing to the messenger. Only EditMessage can do IO.

@@ -817,18 +817,15 @@ var Main = Packages{
 		}, {
 			Comment: Comment{`
 				Configurator is an interface which the backend can implement for a
-				primitive configuration API. Since these methods do return an error,
-				they are allowed to do IO. The frontend should handle this
-				appropriately, including running them asynchronously.
+				primitive configuration API.
 			`},
 			Name: "Configurator",
 			Methods: []Method{
-				IOMethod{
-					method:      method{Name: "Configuration"},
-					ReturnValue: NamedType{Type: "map[string]string"},
-					ErrorType:   "error",
+				GetterMethod{
+					method:  method{Name: "Configuration"},
+					Returns: []NamedType{{Type: "map[string]string"}},
 				},
-				IOMethod{
+				SetterMethod{
 					method:     method{Name: "SetConfiguration"},
 					Parameters: []NamedType{{Type: "map[string]string"}},
 					ErrorType:  "error",

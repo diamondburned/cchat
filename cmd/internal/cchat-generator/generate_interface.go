@@ -66,6 +66,7 @@ func generateInterfaces(ifaces []repository.Interface) jen.Code {
 					stmt.Params(generateFuncParams(method.Returns, method.ErrorType)...)
 				case repository.SetterMethod:
 					stmt.Params(generateFuncParams(method.Parameters, "")...)
+					stmt.Params(generateFuncParamsErr(repository.NamedType{}, method.ErrorType)...)
 				case repository.IOMethod:
 					stmt.Params(generateFuncParamsCtx(method.Parameters, "")...)
 					stmt.Params(generateFuncParamsErr(method.ReturnValue, method.ErrorType)...)
