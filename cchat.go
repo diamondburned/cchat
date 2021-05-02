@@ -392,7 +392,7 @@ type Lister interface {
 	// Servers should call SetServers() on the given ServersContainer to render all
 	// servers. This function can do IO, and the frontend should run this in a
 	// goroutine.
-	Servers(ServersContainer) (stop func(), err error)
+	Servers(context.Context, ServersContainer) error
 	// Columnate is optionally used by servers to tell the frontend whether or not
 	// its children should be put onto a new column instead of underneath it within
 	// the same tree. If the method returns false, then the frontend can treat its
@@ -477,7 +477,7 @@ type MemberLister interface {
 	// frontends must not rely solely on this, as the general context rules applies.
 	//
 	// Further behavioral documentations may be in Messenger's JoinServer method.
-	ListMembers(context.Context, MemberListContainer) (stop func(), err error)
+	ListMembers(context.Context, MemberListContainer) error
 }
 
 // MemberSection represents a member list section. The section name's content
@@ -557,7 +557,7 @@ type Messenger interface {
 	// backend can safely assume that there will only ever be one active JoinServer.
 	// If the frontend wishes to do this, it must keep its own shared message
 	// buffer.
-	JoinServer(context.Context, MessagesContainer) (stop func(), err error)
+	JoinServer(context.Context, MessagesContainer) error
 
 	// Asserters.
 
@@ -581,7 +581,7 @@ type Namer interface {
 	// Name sets the given container to contain the name of the parent context. The
 	// method has no stop method; stopping is implied to be dependent on the parent
 	// context. As such, it's only used for updating.
-	Name(context.Context, LabelContainer) (stop func(), err error)
+	Name(context.Context, LabelContainer) error
 }
 
 // Nicknamer adds the current user's nickname.
@@ -632,7 +632,7 @@ type ReadIndicator interface {
 	// must keep track of which read states to send over to not overwhelm the
 	// frontend, and the frontend must either keep track of them, or it should not
 	// display it at all.
-	ReadIndicate(context.Context, ReadContainer) (stop func(), err error)
+	ReadIndicate(context.Context, ReadContainer) error
 }
 
 // Replier indicates that the message being sent is a reply to something.
@@ -857,7 +857,7 @@ type TypingIndicator interface {
 	// This method does not take in a context, as it's supposed to only use event
 	// handlers and not do any IO calls. Nonetheless, the client must treat it like
 	// it does and call it asynchronously.
-	TypingSubscribe(context.Context, TypingContainer) (stop func(), err error)
+	TypingSubscribe(context.Context, TypingContainer) error
 	// TypingTimeout returns the interval between typing events sent by the client
 	// as well as the timeout before the client should remove the typer. Typically,
 	// a constant should be returned.
@@ -899,7 +899,7 @@ type UnreadIndicator interface {
 	//
 	// This function must provide a way to remove callbacks, as clients must call
 	// this when the old server is destroyed, such as when Servers is called.
-	UnreadIndicate(context.Context, UnreadContainer) (stop func(), err error)
+	UnreadIndicate(context.Context, UnreadContainer) error
 	// MarkRead marks a message in the server messenger as read. Backends that
 	// implement the UnreadIndicator interface must give control of marking messages
 	// as read to the frontend if possible.
