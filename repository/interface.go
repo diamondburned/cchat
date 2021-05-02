@@ -10,6 +10,7 @@ func init() {
 	gob.Register(AsserterMethod{})
 	gob.Register(GetterMethod{})
 	gob.Register(SetterMethod{})
+	gob.Register(ContainerUpdaterMethod{})
 	gob.Register(IOMethod{})
 }
 
@@ -67,12 +68,24 @@ func (m GetterMethod) ReturnError() bool {
 }
 
 // SetterMethod is a method that sets values. These methods must not do IO, and
-// they have to be non-blocking. They're used only for containers. Actual setter
-// methods implemented by the backend belongs to IOMethods.
-//
-// Clients should always keep track of the values given to setters and free them
-// once the setters are called again with new values.
+// they have to be non-blocking.
 type SetterMethod struct {
+	method
+
+	// Parameters is the list of parameters in the function. These parameters
+	// should be the parameters to set.
+	Parameters []NamedType
+	// ErrorType is non-empty if the function returns an error at the end of
+	// returns. An error may be returned from the backend if the input is
+	// invalid, but it must not do IO. Frontend setters must never error.
+	ErrorType string
+}
+
+// ContainerUpdaterMethod is a SetterMethod that passes to the container the
+// current context to prevent race conditions when synchronizing.
+// The rule of thumb is that any setter method done inside a method with a
+// context is usually this type of method.
+type ContainerUpdaterMethod struct {
 	method
 
 	// Parameters is the list of parameters in the function. These parameters

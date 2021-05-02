@@ -1307,7 +1307,7 @@ var Main = Packages{
 			`},
 			Name: "UnreadIndicator",
 			Methods: []Method{
-				SetterMethod{
+				ContainerUpdaterMethod{
 					method: method{
 						Comment: Comment{`
 							MarkRead marks a message in the server messenger as
@@ -1446,7 +1446,7 @@ var Main = Packages{
 			`},
 			Name: "ServersContainer",
 			Methods: []Method{
-				SetterMethod{
+				ContainerUpdaterMethod{
 					method: method{
 						Comment: Comment{`
 							SetServer is called by the backend service to
@@ -1467,7 +1467,7 @@ var Main = Packages{
 					},
 					Parameters: []NamedType{{Type: "[]Server"}},
 				},
-				SetterMethod{
+				ContainerUpdaterMethod{
 					method:     method{Name: "UpdateServer"},
 					Parameters: []NamedType{{Type: "ServerUpdate"}},
 				},
@@ -1527,7 +1527,7 @@ var Main = Packages{
 			`},
 			Name: "MessagesContainer",
 			Methods: []Method{
-				SetterMethod{
+				ContainerUpdaterMethod{
 					method: method{
 						Comment: Comment{`
 							CreateMessage inserts a message into the container.
@@ -1538,11 +1538,11 @@ var Main = Packages{
 					},
 					Parameters: []NamedType{{Type: "MessageCreate"}},
 				},
-				SetterMethod{
+				ContainerUpdaterMethod{
 					method:     method{Name: "UpdateMessage"},
 					Parameters: []NamedType{{Type: "MessageUpdate"}},
 				},
-				SetterMethod{
+				ContainerUpdaterMethod{
 					method:     method{Name: "DeleteMessage"},
 					Parameters: []NamedType{{Type: "MessageDelete"}},
 				},
@@ -1631,7 +1631,7 @@ var Main = Packages{
 			`},
 			Name: "LabelContainer",
 			Methods: []Method{
-				SetterMethod{
+				ContainerUpdaterMethod{
 					method: method{Name: "SetLabel"},
 					Parameters: []NamedType{{
 						Type: MakeQual("text", "Rich"),
@@ -1647,7 +1647,7 @@ var Main = Packages{
 			`},
 			Name: "ReadContainer",
 			Methods: []Method{
-				SetterMethod{
+				ContainerUpdaterMethod{
 					method: method{
 						Comment: Comment{`
 							AddIndications adds a map of users/authors to the
@@ -1658,7 +1658,7 @@ var Main = Packages{
 					},
 					Parameters: []NamedType{{"", "[]ReadIndication"}},
 				},
-				SetterMethod{
+				ContainerUpdaterMethod{
 					method: method{
 						Comment: Comment{`
 							DeleteIndications deletes a list of unused
@@ -1692,7 +1692,7 @@ var Main = Packages{
 			`},
 			Name: "UnreadContainer",
 			Methods: []Method{
-				SetterMethod{
+				ContainerUpdaterMethod{
 					method: method{
 						Comment: Comment{`
 							SetUnread sets the container's unread state to the
@@ -1718,7 +1718,7 @@ var Main = Packages{
 			`},
 			Name: "TypingContainer",
 			Methods: []Method{
-				SetterMethod{
+				ContainerUpdaterMethod{
 					method: method{
 						Comment: Comment{`
 							AddTyper appends the typer (author) into the
@@ -1730,7 +1730,7 @@ var Main = Packages{
 					},
 					Parameters: []NamedType{{"", "User"}},
 				},
-				SetterMethod{
+				ContainerUpdaterMethod{
 					method: method{
 						Comment: Comment{`
 							RemoveTyper explicitly removes the typer with the
@@ -1770,7 +1770,7 @@ var Main = Packages{
 			`},
 			Name: "MemberListContainer",
 			Methods: []Method{
-				SetterMethod{
+				ContainerUpdaterMethod{
 					method: method{
 						Comment: Comment{`
 							SetSections (re)sets the list of sections to be the
@@ -1786,7 +1786,7 @@ var Main = Packages{
 						{Name: "sections", Type: "[]MemberSection"},
 					},
 				},
-				SetterMethod{
+				ContainerUpdaterMethod{
 					method: method{
 						Comment: Comment{`
 							SetMember adds or updates (or upsert) a member into
@@ -1809,7 +1809,7 @@ var Main = Packages{
 						{"member", "ListMember"},
 					},
 				},
-				SetterMethod{
+				ContainerUpdaterMethod{
 					method: method{
 						Comment: Comment{`
 							RemoveMember removes a member from a section. If

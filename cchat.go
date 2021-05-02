@@ -355,7 +355,7 @@ type Identifier interface {
 // Labels given to the frontend may contain images or avatars, and the frontend
 // has the choice to display them or not.
 type LabelContainer interface {
-	SetLabel(text.Rich)
+	SetLabel(context.Context, text.Rich)
 }
 
 // ListMember represents a single member in the member list. Note that this
@@ -452,7 +452,7 @@ type MemberDynamicSection interface {
 type MemberListContainer interface {
 	// RemoveMember removes a member from a section. If neither the member nor the
 	// section exists, then the client should ignore it.
-	RemoveMember(sectionID ID, memberID ID)
+	RemoveMember(ctx context.Context, sectionID ID, memberID ID)
 	// SetMember adds or updates (or upsert) a member into a section. This operation
 	// must not change the section's member count. As such, changes should be done
 	// separately in SetSection. If the section does not exist, then the client
@@ -462,12 +462,12 @@ type MemberListContainer interface {
 	// Typically, the backend should try and avoid calling this method and instead
 	// update the labeler in the name. This method should only be used for adding
 	// members.
-	SetMember(sectionID ID, member ListMember)
+	SetMember(ctx context.Context, sectionID ID, member ListMember)
 	// SetSections (re)sets the list of sections to be the given slice. Members from
 	// the old section list should be transferred over to the new section entry if
 	// the section name's content is the same. Old sections that don't appear in the
 	// new slice should be removed.
-	SetSections(sections []MemberSection)
+	SetSections(ctx context.Context, sections []MemberSection)
 }
 
 // MemberLister adds a member list into a message server.
@@ -537,12 +537,12 @@ type MessageUpdate interface {
 // allowed to have multiple views. This is usually done with tabs or splits, but
 // the backend should update them all nonetheless.
 type MessagesContainer interface {
-	DeleteMessage(MessageDelete)
-	UpdateMessage(MessageUpdate)
+	DeleteMessage(context.Context, MessageDelete)
+	UpdateMessage(context.Context, MessageUpdate)
 	// CreateMessage inserts a message into the container. The frontend must
 	// guarantee that the messages are in order based on what's returned from
 	// Time().
-	CreateMessage(MessageCreate)
+	CreateMessage(context.Context, MessageCreate)
 }
 
 // Messenger is for servers that contain messages. This is similar to Discord or
@@ -618,10 +618,10 @@ type ReadContainer interface {
 	// their read indicators. The backend can use this to free up users/authors that
 	// are no longer in the server, for example when they are offline or have left
 	// the server.
-	DeleteIndications(authorIDs []ID)
+	DeleteIndications(ctx context.Context, authorIDs []ID)
 	// AddIndications adds a map of users/authors to the respective message ID of
 	// the server that implements ReadIndicator.
-	AddIndications([]ReadIndication)
+	AddIndications(context.Context, []ReadIndication)
 }
 
 // ReadIndicator adds a read indicator API for frontends to show. An example of
@@ -721,7 +721,7 @@ type ServerUpdate interface {
 // as servers can be infinitely nested. Frontends should also reset the entire
 // node and its children when SetServers is called again.
 type ServersContainer interface {
-	UpdateServer(ServerUpdate)
+	UpdateServer(context.Context, ServerUpdate)
 	// SetServer is called by the backend service to request a reset of the server
 	// list. The frontend can choose to call Servers() on each of the given servers,
 	// or it can call that later. The backend should handle both cases.
@@ -731,7 +731,7 @@ type ServersContainer interface {
 	// should only be considered empty if it's an empty non-nil slice. An
 	// unavailable list, on the other hand, can be treated as backend issues, e.g. a
 	// connection issue.
-	SetServers([]Server)
+	SetServers(context.Context, []Server)
 }
 
 // Service is a complete service that's capable of multiple sessions. It has to
@@ -835,11 +835,11 @@ type TypingContainer interface {
 	// of typers. This function is usually not needed, as the client will take care
 	// of removing them after TypingTimeout has been reached or other conditions
 	// listed in ServerMessageTypingIndicator are met.
-	RemoveTyper(authorID ID)
+	RemoveTyper(ctx context.Context, authorID ID)
 	// AddTyper appends the typer (author) into the frontend's list of typers, or it
 	// pushes this typer on top of others. The frontend should assume current time
 	// every time AddTyper is called.
-	AddTyper(User)
+	AddTyper(context.Context, User)
 }
 
 // TypingIndicator optionally extends ServerMessage to provide bidirectional
@@ -885,7 +885,7 @@ type TypingIndicator interface {
 type UnreadContainer interface {
 	// SetUnread sets the container's unread state to the given boolean. The
 	// frontend may choose how to represent this.
-	SetUnread(unread bool, mentioned bool)
+	SetUnread(ctx context.Context, unread bool, mentioned bool)
 }
 
 // UnreadIndicator adds an unread state API for frontends to use. The unread
@@ -908,7 +908,7 @@ type UnreadIndicator interface {
 	// the frontend has no use in knowing the error. As such, marking messages as
 	// read is best-effort. The backend is in charge of synchronizing the read state
 	// with the server and coordinating it with reasonable rate limits, if needed.
-	MarkRead(messageID ID)
+	MarkRead(ctx context.Context, messageID ID)
 }
 
 // User is the interface for an identifiable author. The interface defines that
