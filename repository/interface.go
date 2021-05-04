@@ -130,13 +130,13 @@ func (m IOMethod) ReturnError() bool {
 	return m.ErrorType != ""
 }
 
-// ContainerMethod is a method that uses a Container. These methods can do IO,
-// and they must always take in a context and return an error. The context is
-// used for both stopping an ongoing IO operation and disconnecting background
-// handlers for the container.
+// ContainerMethod is a method that uses a Container. These methods can do IO
+// and always return a stop callback and an error.
 type ContainerMethod struct {
 	method
 
+	// HasContext is true if the method accepts a context as its first argument.
+	HasContext bool
 	// ContainerType is the name of the container interface. The name will
 	// almost always have "Container" as its suffix.
 	ContainerType string

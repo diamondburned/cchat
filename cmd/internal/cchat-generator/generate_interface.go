@@ -159,13 +159,20 @@ func generateFuncParams(params []repository.NamedType, errorType string) []jen.C
 }
 
 func generateContainerFuncReturns(method repository.ContainerMethod) []jen.Code {
-	return []jen.Code{jen.Error()}
+	var stmt jen.Statement
+
+	stmt.Add(jen.Id("stop").Func().Params())
+	stmt.Add(jen.Err().Error())
+
+	return stmt
 }
 
 func generateContainerFuncParams(method repository.ContainerMethod) []jen.Code {
 	var stmt jen.Statement
 
-	stmt.Qual("context", "Context")
+	if method.HasContext {
+		stmt.Qual("context", "Context")
+	}
 	stmt.Add(genutils.GenerateType(method))
 
 	return stmt

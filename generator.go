@@ -1,7 +1,5 @@
 package cchat
 
-import "context"
-
 //go:generate go run ./cmd/internal/cchat-generator ./
 //go:generate go run ./cmd/internal/cchat-empty-gen ./utils/empty/
 
@@ -17,15 +15,4 @@ func WrapAuthenticateError(err error) AuthenticateError {
 		return nil
 	}
 	return authenticateError{err}
-}
-
-// CtxCallbacks binds a set of given callbacks to the given context. This is
-// useful for disconnecting handlers when the context expires.
-func CtxCallbacks(ctx context.Context, fns ...func()) {
-	go func() {
-		<-ctx.Done()
-		for _, fn := range fns {
-			fn()
-		}
-	}()
 }
